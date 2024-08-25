@@ -1,11 +1,8 @@
 ---
-title: "isss626-gaa"
+title: "ISSS626 Geospatial Analytics and Applications"
+author: "Teng Kok Wai (Walter)"
 ---
 
-This is a Quarto website.
+# Welcome to the ISSS626 Geospatial Analytics and Applications
 
-To learn more about Quarto websites visit <https://quarto.org/docs/websites>.
-
-```{r}
-1 + 1
-```
+This website contains the coursework by Teng Kok Wai (Walter).
