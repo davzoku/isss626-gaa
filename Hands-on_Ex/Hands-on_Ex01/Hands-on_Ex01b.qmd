@@ -6,6 +6,8 @@ author: Teng Kok Wai (Walter)
 execute:
   echo: true
   eval: true
+  freeze: true
+  message: false
   warning: false
 format:
   html:
@@ -19,7 +21,6 @@ editor: visual
 
 [R for Geospatial Data Science and Analytics - 2  Thematic Mapping and GeoVisualisation with R](https://r4gdsa.netlify.app/chap02.html)
 
-
 ## Overview
 
 In general, thematic mapping involves the use of map symbols to visualize selected properties of geographic features that are not naturally visible, such as population, temperature, crime rate, and property prices.
@@ -28,7 +29,7 @@ Meanwhile, geovisualization leverages graphical representation to make places, p
 
 ## Learning Outcome
 
-1. create functional and accurate choropleth map using `tmap` in R
+1.  create functional and accurate choropleth map using `tmap` in R
 
 ## Import R Packages
 
@@ -97,7 +98,7 @@ popdata2020 <- popdata %>%
   pivot_wider(names_from=AG, 
               values_from=POP) %>%
   mutate(YOUNG = rowSums(.[3:6])
-         +rowSums(.[12])) %>%
+         +rowSums(.[14])) %>%
 mutate(`ECONOMY ACTIVE` = rowSums(.[7:11])+
 rowSums(.[13:15]))%>%
 mutate(`AGED`=rowSums(.[16:21])) %>%
@@ -128,7 +129,7 @@ mpsz_pop2020 <- left_join(mpsz, popdata2020,
 ```
 
 > **Key Takeaway:**
-> 
+>
 > The left_join() function from the dplyr package is applied to ensure that the resulting output remains a simple features data frame, with mpsz as the left table.
 
 ```{r}
@@ -142,8 +143,8 @@ Choropleth mapping involves the symbolisation of enumeration units, such as coun
 
 There are two methods for creating thematic maps using tmap:
 
-- Using `qtm()` for quick thematic map plotting.
-- Using individual tmap elements for creating highly customizable maps.
+-   Using `qtm()` for quick thematic map plotting.
+-   Using individual tmap elements for creating highly customizable maps.
 
 ### Plotting a choropleth map quickly by using *qtm()*
 
@@ -159,8 +160,8 @@ qtm(mpsz_pop2020,
 
 > **Key Takeaway:**
 >
-> - tmap_mode("plot") is used to generate a static map. To enable interactive mode, use the "view" option.
-> - The fill argument is used to map the attribute to be visualized (in this case, DEPENDENCY).
+> -   tmap_mode("plot") is used to generate a static map. To enable interactive mode, use the "view" option.
+> -   The fill argument is used to map the attribute to be visualized (in this case, DEPENDENCY).
 
 ### Creating a choropleth map by using *tmap*'s elements
 
@@ -210,9 +211,9 @@ tm_shape(mpsz_pop2020)+
 
 > Key takeaways from *tm_polygons()*:
 >
-> - The default method for interval binning when creating a choropleth map is "pretty." A detailed explanation of the data classification methods available in **tmap** will be covered in sub-section 4.3.
-> - The default color palette used is `YlOrRd` from ColorBrewer. More information on color schemes will be explored in sub-section 4.4.
-> - Missing values are automatically represented with a grey shade by default.
+> -   The default method for interval binning when creating a choropleth map is "pretty." A detailed explanation of the data classification methods available in **tmap** will be covered in sub-section 4.3.
+> -   The default color palette used is `YlOrRd` from ColorBrewer. More information on color schemes will be explored in sub-section 4.4.
+> -   Missing values are automatically represented with a grey shade by default.
 
 #### Drawing a choropleth map using *tm_fill()* and \*tm_border()\*\*
 
@@ -553,9 +554,9 @@ tmap_style("white")
 
 In **tmap**, small multiple maps can be created through three methods:
 
-- Assigning multiple values to an aesthetic argument.
-- Defining a grouping variable with `tm_facets()`.
-- Creating multiple stand-alone maps with `tmap_arrange()`.
+-   Assigning multiple values to an aesthetic argument.
+-   Defining a grouping variable with `tm_facets()`.
+-   Creating multiple stand-alone maps with `tmap_arrange()`.
 
 #### Assigning Multiple Values to an Aesthetic Argument
 
@@ -584,7 +585,6 @@ tm_shape(mpsz_pop2020)+
 #### Grouping by a Variable with *tm_facets()*
 
 This example generates multiple small maps by using `tm_facets()`.
-
 
 ```{r}
 tm_shape(mpsz_pop2020) +

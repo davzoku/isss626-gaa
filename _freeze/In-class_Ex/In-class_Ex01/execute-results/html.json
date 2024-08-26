@@ -1,0 +1,15 @@
+{
+  "hash": "677b1c42b0a1ac259aa9da7e325e13a6",
+  "result": {
+    "engine": "knitr",
+    "markdown": "---\ntitle: \"In-Class Exercise 1\"\ndate: \"Aug 26, 2024\"\ndate-modified: \"last-modified\"\nauthor: Teng Kok Wai (Walter)\nexecute:\n  echo: true\n  eval: true\n  freeze: true\n  message: false   \n  warning: false\nformat:\n  html:\n    toc: true\nnumber-sections: true\nnumber-offset: 1    \neditor: visual\n---\n\n\n## Import R Packages\n\n\n::: {.cell}\n\n```{.r .cell-code}\npacman::p_load(tidyverse, sf, tmap, ggstatsplot)\n```\n:::\n\n\n## Working with Master Plan Planning Sub-zone Data\n\nTo import the shapefile version of the Sub-zone data:\n\n\n::: {.cell}\n\n```{.r .cell-code}\nmpsz14_shp <- st_read(dsn = \"data/geospatial\", \n                  layer = \"MP14_SUBZONE_WEB_PL\")\n```\n\n::: {.cell-output .cell-output-stdout}\n\n```\nReading layer `MP14_SUBZONE_WEB_PL' from data source \n  `/Users/walter/code/isss626-gaa/In-class_Ex/data/geospatial' \n  using driver `ESRI Shapefile'\nSimple feature collection with 323 features and 15 fields\nGeometry type: MULTIPOLYGON\nDimension:     XY\nBounding box:  xmin: 2667.538 ymin: 15748.72 xmax: 56396.44 ymax: 50256.33\nProjected CRS: SVY21\n```\n\n\n:::\n:::\n\nNotice that `mpsz14_shp` is of class `sf` and inherits from `data.frame`. This means it combines spatial features with tabular data structure.\n\n::: {.cell}\n\n```{.r .cell-code}\nclass(mpsz14_shp)\n```\n\n::: {.cell-output .cell-output-stdout}\n\n```\n[1] \"sf\"         \"data.frame\"\n```\n\n\n:::\n:::\n\n\nTo import the kml version of the Sub-zone data:\n\n\n::: {.cell}\n\n```{.r .cell-code}\nmpsz14_kml <- st_read(\"data/geospatial/MasterPlan2014SubzoneBoundaryWebKML.kml\")\n```\n:::\n\n\nNote that this is a corrupted file.\n",
+    "supporting": [],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {},
+    "engineDependencies": {},
+    "preserve": {},
+    "postProcess": true
+  }
+}

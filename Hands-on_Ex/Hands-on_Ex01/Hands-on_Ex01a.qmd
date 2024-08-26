@@ -6,6 +6,8 @@ author: Teng Kok Wai (Walter)
 execute:
   echo: true
   eval: true
+  freeze: true
+  message: false   
   warning: false
 format:
   html:
@@ -48,11 +50,11 @@ pacman::p_load(sf, tidyverse)
 
 ## Import Geospatial Data
 
-The code chunk below uses st_read() function of sf package to import the `MP14_SUBZONE_WEB_PL` shapefile into R as a polygon feature data frame. 
+The code chunk below uses st_read() function of sf package to import the `MP14_SUBZONE_WEB_PL` shapefile into R as a polygon feature data frame.
 
-- `dsn` refers to data source name
-- `layer` points to the file name.
-- more details: [st_read function - RDocumentation](https://www.rdocumentation.org/packages/sf/versions/0.2-2/topics/st_read)
+-   `dsn` refers to data source name
+-   `layer` points to the file name.
+-   more details: [st_read function - RDocumentation](https://www.rdocumentation.org/packages/sf/versions/0.2-2/topics/st_read)
 
 ### Import polygon feature data in shapefile format
 
@@ -93,11 +95,12 @@ There are different ways to retrieve information related to the content of a sim
 The column in the sf data.frame that contains the geometries is a list, of class `sfc`.
 
 The code chunk below shows the general way to use `st_geometry()`. Alternative is mpsz\$geom or mpsz\[\[1\]\] to retrieve the geometry list-column.
+
 ```{r}
 st_geometry(mpsz)
 ```
 
-**Output Explanation:**  The print only displays _basic information_ of the feature class such as type of geometry, the geographic extent of the features and the coordinate system of the data.
+**Output Explanation:** The print only displays *basic information* of the feature class such as type of geometry, the geographic extent of the features and the coordinate system of the data.
 
 ### Working with *glimpse()*
 
@@ -127,9 +130,9 @@ This section covers visualization of geospatial features using `plot()` of R gra
 plot(mpsz)
 ```
 
-**Output Explanation:** The default plot of an sf object is a _multi-plot of all attributes_, up to a reasonable maximum as shown above. 
+**Output Explanation:** The default plot of an sf object is a *multi-plot of all attributes*, up to a reasonable maximum as shown above.
 
-Alternatively, we can also choose the plot the sf object by _using a specific attribute_ as shown in the code chunk below.
+Alternatively, we can also choose the plot the sf object by *using a specific attribute* as shown in the code chunk below.
 
 ```{r}
 plot(mpsz["PLN_AREA_N"])
@@ -141,8 +144,8 @@ plot(mpsz["PLN_AREA_N"])
 
 Map projection is an important property of a geospatial data. In order to perform geoprocessing using two geospatial data, **we need to ensure that both geospatial data are projected using similar coordinate system.**
 
- **Projection transformation** is a method to project a simple feature data frame from one coordinate system to another coordinate system.
- 
+**Projection transformation** is a method to project a simple feature data frame from one coordinate system to another coordinate system.
+
 ### Assigning EPSG code to a simple feature data frame
 
 One of the common issue that can happen during importing geospatial data into R is that the coordinate system of the source data was either missing (such as due to missing .proj for ESRI shapefile) or wrongly assigned during the importing process.
@@ -188,7 +191,6 @@ preschool3414 <- st_transform(preschool,
 
 > Note: In practice, we need find out the appropriate project coordinate system to use before performing the projection transformation.
 
-
 Next, let us display the content of preschool3414 sf data frame as shown below.
 
 ```{r echo=FALSE}
@@ -205,7 +207,7 @@ We will first import the aspatial data and save it as a tibble dataframe and con
 
 ### Import the aspatial data
 
-Since `listings` data set is in csv file format, we will use [*read_csv()*](https://readr.tidyverse.org/reference/read_delim.html) of **readr** package to import `listing.csv` as shown the code chunk below. 
+Since `listings` data set is in csv file format, we will use [*read_csv()*](https://readr.tidyverse.org/reference/read_delim.html) of **readr** package to import `listing.csv` as shown the code chunk below.
 
 ```{r}
 listings <- read_csv("data/aspatial/listings.csv")
@@ -287,10 +289,10 @@ A pre-school service group want to find out the numbers of pre-schools in each P
 
 **Solution:**
 
-The code chunk below performs two operations at one go. 
+The code chunk below performs two operations at one go.
 
-1. identify pre-schools located inside each Planning Subzone by using [st_intersects()](https://r-spatial.github.io/sf/reference/geos_binary_pred.html).
-2. [*length()*](https://www.rdocumentation.org/packages/base/versions/3.6.2/topics/length) of Base R is used to calculate numbers of pre-schools that fall inside each planning subzone.
+1.  identify pre-schools located inside each Planning Subzone by using [st_intersects()](https://r-spatial.github.io/sf/reference/geos_binary_pred.html).
+2.  [*length()*](https://www.rdocumentation.org/packages/base/versions/3.6.2/topics/length) of Base R is used to calculate numbers of pre-schools that fall inside each planning subzone.
 
 ```{r}
 mpsz3414$`PreSch Count`<- lengths(st_intersects(mpsz3414, preschool3414))
@@ -330,7 +332,7 @@ mpsz3414 <- mpsz3414 %>%
 
 In this section, we will learn how to use `ggplot2` to create functional and yet truthful statistical graphs for EDA purposes.
 
-1. We will plot a histogram to reveal the distribution of `PreSch Density`. Conventionally, *hist()* of R Graphics will be used as shown in the code chunk below.
+1.  We will plot a histogram to reveal the distribution of `PreSch Density`. Conventionally, *hist()* of R Graphics will be used as shown in the code chunk below.
 
 ```{r}
 hist(mpsz3414$`PreSch Density`)

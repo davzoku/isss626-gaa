@@ -1,0 +1,72 @@
+---
+title: "In-Class Exercise 1"
+date: "Aug 26, 2024"
+date-modified: "last-modified"
+author: Teng Kok Wai (Walter)
+execute:
+  echo: true
+  eval: true
+  freeze: true
+  message: false   
+  warning: false
+format:
+  html:
+    toc: true
+number-sections: true
+number-offset: 1    
+editor: visual
+---
+
+## Import R Packages
+
+```{r}
+pacman::p_load(tidyverse, sf, tmap, ggstatsplot)
+```
+
+## Working with Master Plan Planning Sub-zone Data
+
+To import the shapefile version of the Sub-zone data:
+
+```{r}
+mpsz14_shp <- st_read(dsn = "data", 
+                  layer = "MP14_SUBZONE_WEB_PL")
+```
+
+Notice that `mpsz14_shp` is of class `sf` and inherits from `data.frame`. This means it combines spatial features with tabular data structure.
+
+```{r}
+class(mpsz14_shp)
+```
+
+To import the kml version of the Sub-zone data:
+
+```{r}
+#| eval: false
+mpsz14_kml <- st_read("data/MasterPlan2014SubzoneBoundaryWebKML.kml")
+```
+
+Note that this is a corrupted file.
+
+To render a workable kml, we can convert the shp object and save it as a kml file.
+
+```{r}
+#| output: false
+st_write(mpsz14_shp,
+         "data/MasterPlan2014SubzoneBoundaryWebKML.kml",
+         delete_dsn=TRUE)
+```
+
+Note that the `delete_dsn=TRUE` argument ensures that any existing file with the same name is deleted before saving the new KML file, preventing potential conflicts or errors from overwriting.
+
+## To import MPSZ-2019
+
+```{r}
+mpsz19_shp <- st_read(dsn = "data", 
+                  layer = "MPSZ-2019") %>%
+  st_transform(crs=3414)
+```
+
+
+```{r}
+mpsz19_kml <- st_read("data/MasterPlan2019RegionBoundaryNoSeaKML.kml")
+```

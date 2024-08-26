@@ -3,14 +3,25 @@ project:
 
 website:
   title: "ISSS626 Geospatial Analytics and Applications"
+  # image: ""
+  # favicon: ""
+  page-navigation: true  
   navbar:
+    # logo: ""
+    title: "ISSS626 Geospatial Analytics and Applications"
+    collapse-below: lg
+    search: true  
     left:
-      - text: "Hands-on Exercise"
+      - text: "Hands-on Exercises"
         menu: 
         - text: "1A: Geospatial Data Wrangling with R"
           href: "Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01a.html"
         - text: "1B: Choropleth Mapping with R"
           href: "Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01b.html"
+      - text: "In-class Exercises"
+        menu: 
+          - text: "In-class Exercises"
+            href: In-class_Ex/In-class_Ex01/In-class_Ex01.html          
     right:
       - href: index.qmd
         text: Home
@@ -23,7 +34,10 @@ website:
 
 format:
   html:
-    theme: flatly
+    theme:
+      light: flatly
+      dark: darkly
+    highlight-style: monokai
     css: styles.css
     toc: true
 
