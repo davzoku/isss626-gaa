@@ -2,12 +2,22 @@ project:
   type: website
 
 website:
-  title: "ISSS626 Geospatial Analytics and Applications"
+  title: "Walter Teng's Coursework for SMU ISSS626: Geospatial Analytics and Applications"
   # image: ""
-  # favicon: ""
+  favicon: "favicon.ico"
+  description: "A collection of projects, assignments and notes for the SMU ISSS626 Geospatial Analytics and Applications course"
   page-navigation: true  
+  open-graph: true
+  site-url: "https://isss626-gaa.netlify.app/"
+  repo-url:  "https://github.com/davzoku/isss626-gaa"
+  google-analytics: "G-4MGB7PXBSL"    
+  twitter-card:
+     creator: "@davzoku"
+     site: "@davzoku"
+     card-style: summary_large_image  
   navbar:
     # logo: ""
+    background: dark
     title: "ISSS626 Geospatial Analytics and Applications"
     collapse-below: lg
     search: true  
@@ -24,21 +34,23 @@ website:
             href: In-class_Ex/In-class_Ex01/In-class_Ex01.html          
     right:
       - href: index.qmd
-        text: Home
-      - icon: linkedin
-        href: https://www.linkedin.com/in/tengkokwai/
-        aria-label: Linkedin
-      - icon: github
-        href: https://github.com/davzoku/isss626-gaa
-        aria-label: Github
+        text: "{{< fa house size=md >}}"
+      - href: https://www.walterteng.com
+        text: "{{< fa user size=md >}}"        
+      - href: https://www.linkedin.com/in/tengkokwai/
+        # text: "{{< fa fa-linkedin size=md >}}"
+        icon: linkedin
+      - href: https://github.com/davzoku/isss626-gaa
+        # text: "{{< fa fa-github size=md >}}"
+        icon: github
 
 format:
   html:
     theme:
-      light: flatly
-      dark: darkly
+      dark: [darkly, custom.scss]
+      light: [flatly, custom-light.scss]
+    css: styles.css      
     highlight-style: monokai
-    css: styles.css
     toc: true
 
 editor: visual

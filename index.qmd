@@ -1,8 +1,21 @@
 ---
-title: "ISSS626 Geospatial Analytics and Applications"
-author: "Teng Kok Wai (Walter)"
+title: ""
+listing:
+  max-items: 5
+  type: default
+  contents:
+    - "Hands-on_Ex/*/*.qmd"
+    - "Take-home_Ex/*/*.qmd"
+    - "In-class_Ex/*/*.qmd"
+  sort: 
+    - "date desc"
+    - "title desc"
+toc: false
 ---
 
 # Welcome to the ISSS626 Geospatial Analytics and Applications
 
 This website contains the coursework by Teng Kok Wai (Walter).
+
+
+---

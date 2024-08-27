@@ -1,9 +1,11 @@
 <h1 align="center">
 SMU ISSS626 Geospatial Analytics and Applications
-<span style='font-size:80px;'>🗺️📊</span>
+
 </h1>
+<div style='font-size:80px;' align="center">🗺️📊</div>
 
 <p align="center">
+
   <a href="https://app.netlify.com/sites/walterteng/deploys" target="_blank">
     <img src="https://api.netlify.com/api/v1/badges/c8232a4a-8711-496d-87f7-5b900c9ec700/deploy-status" alt="Netlify Status" />
   </a>
