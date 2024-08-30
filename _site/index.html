@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Walter Teng’s Coursework for SMU ISSS626: Geospatial Analytics and Applications</title>
+<title>quarto-inputa406b19792095149 – Walter Teng's Coursework for SMU ISSS626: Geospatial Analytics and Applications</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -44,6 +44,7 @@ ul.task-list li input[type="checkbox"] {
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
 <link href="site_libs/bootstrap/bootstrap-dark.min.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="site_libs/quarto-contrib/animate-4.1.1/animate.min.css" rel="stylesheet">
 <link href="site_libs/quarto-contrib/fontawesome6-0.1.0/all.css" rel="stylesheet">
 <link href="site_libs/quarto-contrib/fontawesome6-0.1.0/latex-fontsize.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
@@ -76,20 +77,76 @@ ul.task-list li input[type="checkbox"] {
 <script>
 
   window.document.addEventListener("DOMContentLoaded", function (_event) {
-    const listingTargetEl = window.document.querySelector('#listing-listing .list');
+    const listingTargetEl = window.document.querySelector('#listing-hands-on .list');
     if (!listingTargetEl) {
       // No listing discovered, do not attach.
       return; 
     }
 
     const options = {
-      valueNames: ['listing-date','listing-title','listing-author','listing-image','listing-description',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
+      valueNames: ['listing-image','listing-date','listing-title','listing-subtitle','listing-reading-time',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
       
-      searchColumns: ["listing-date","listing-title","listing-author","listing-image","listing-description"],
+      searchColumns: ["listing-title","listing-author","listing-date","listing-image","listing-description"],
     };
 
     window['quarto-listings'] = window['quarto-listings'] || {};
-    window['quarto-listings']['listing-listing'] = new List('listing-listing', options);
+    window['quarto-listings']['listing-hands-on'] = new List('listing-hands-on', options);
+
+    if (window['quarto-listing-loaded']) {
+      window['quarto-listing-loaded']();
+    }
+  });
+
+  window.addEventListener('hashchange',() => {
+    if (window['quarto-listing-loaded']) {
+      window['quarto-listing-loaded']();
+    }
+  })
+  
+
+  window.document.addEventListener("DOMContentLoaded", function (_event) {
+    const listingTargetEl = window.document.querySelector('#listing-in-class .list');
+    if (!listingTargetEl) {
+      // No listing discovered, do not attach.
+      return; 
+    }
+
+    const options = {
+      valueNames: ['listing-image','listing-date','listing-title','listing-subtitle','listing-reading-time',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
+      
+      searchColumns: ["listing-title","listing-author","listing-date","listing-image","listing-description"],
+    };
+
+    window['quarto-listings'] = window['quarto-listings'] || {};
+    window['quarto-listings']['listing-in-class'] = new List('listing-in-class', options);
+
+    if (window['quarto-listing-loaded']) {
+      window['quarto-listing-loaded']();
+    }
+  });
+
+  window.addEventListener('hashchange',() => {
+    if (window['quarto-listing-loaded']) {
+      window['quarto-listing-loaded']();
+    }
+  })
+  
+
+  window.document.addEventListener("DOMContentLoaded", function (_event) {
+    const listingTargetEl = window.document.querySelector('#listing-take-home .list');
+    if (!listingTargetEl) {
+      // No listing discovered, do not attach.
+      return; 
+    }
+
+    const options = {
+      valueNames: ['listing-image','listing-date','listing-title','listing-subtitle','listing-reading-time',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
+      
+      searchColumns: [],
+    };
+
+    window['quarto-listings'] = window['quarto-listings'] || {};
+    window['quarto-listings']['listing-take-home'] = new List('listing-take-home', options);
 
     if (window['quarto-listing-loaded']) {
       window['quarto-listing-loaded']();
@@ -111,6 +168,10 @@ function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
 gtag('config', 'G-4MGB7PXBSL', { 'anonymize_ip': true});
 </script>
+<style>:root{--animate-duration:3s;--animate-delay:2s;--animate-repeat:1}</style>
+<style>:root{--animate-duration:3s;--animate-delay:2s;--animate-repeat:1}</style>
+<style>:root{--animate-duration:3s;--animate-delay:2s;--animate-repeat:1}</style>
+<style>:root{--animate-duration:3s;--animate-delay:2s;--animate-repeat:1}</style>
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
@@ -143,14 +204,19 @@ window.Quarto = {
 </script>
 
 <link rel="stylesheet" href="styles.css">
-<meta property="og:title" content="– Walter Teng’s Coursework for SMU ISSS626: Geospatial Analytics and Applications">
-<meta property="og:description" content="A collection of projects, assignments and notes for the SMU ISSS626 Geospatial Analytics and Applications course">
+<link rel="stylesheet" href="index-styles.css">
+<meta property="og:title" content="Welcome to the ISSS626 Geospatial Analytics and Applications – Walter Teng’s Coursework for SMU ISSS626: Geospatial Analytics and Applications">
+<meta property="og:image" content="https://isss626-gaa.netlify.app/og-img.png">
 <meta property="og:site_name" content="Walter Teng's Coursework for SMU ISSS626: Geospatial Analytics and Applications">
-<meta name="twitter:title" content="– Walter Teng’s Coursework for SMU ISSS626: Geospatial Analytics and Applications">
-<meta name="twitter:description" content="A collection of projects, assignments and notes for the SMU ISSS626 Geospatial Analytics and Applications course">
+<meta property="og:image:height" content="638">
+<meta property="og:image:width" content="1208">
+<meta name="twitter:title" content="Welcome to the ISSS626 Geospatial Analytics and Applications – Walter Teng’s Coursework for SMU ISSS626: Geospatial Analytics and Applications">
+<meta name="twitter:image" content="https://isss626-gaa.netlify.app/og-img.png">
 <meta name="twitter:creator" content="@davzoku">
 <meta name="twitter:site" content="@davzoku">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image-height" content="638">
+<meta name="twitter:image-width" content="1208">
 </head>
 
 <body class="nav-fixed fullcontent">
@@ -232,109 +298,136 @@ window.Quarto = {
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title"><span class="animate__animated animate__fadeInDown" style="display: inline-block;">Welcome to the ISSS626 Geospatial Analytics and Applications</span></h1>
+</div>
 
 
 
-<section id="welcome-to-the-isss626-geospatial-analytics-and-applications" class="level1">
-<h1>Welcome to the ISSS626 Geospatial Analytics and Applications</h1>
-<p>This website contains the coursework by Teng Kok Wai (Walter).</p>
-<hr>
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
 
 
+</header>
 
-</section>
 
-<div class="quarto-listing quarto-listing-container-default" id="listing-listing">
-<div class="list quarto-listing-default">
-<div class="quarto-post image-right" data-index="0" data-listing-date-sort="1724601600000" data-listing-file-modified-sort="1724770129523" data-listing-date-modified-sort="1724770129000" data-listing-reading-time-sort="1" data-listing-word-count-sort="180">
-<div class="thumbnail">
-<p><a href="./In-class_Ex/In-class_Ex01/In-class_Ex01.html" class="no-external"></a></p><a href="./In-class_Ex/In-class_Ex01/In-class_Ex01.html" class="no-external">
-<div class="listing-item-img-placeholder card-img-top" >&nbsp;</div>
-</a><p><a href="./In-class_Ex/In-class_Ex01/In-class_Ex01.html" class="no-external"></a></p>
+<div class="animate__animated animate__fadeIn animate__faster">
+<p><img src="banner.png" class="img-fluid"></p>
+<p>This website contains the coursework by Teng Kok Wai (Walter). It features a collection of projects, assignments, and notes from the class, complete with geospatial visualizations and analytical insights.</p>
 </div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./In-class_Ex/In-class_Ex01/In-class_Ex01.html" class="no-external">In-Class Exercise 1</a>
-</h3>
-<div class="listing-subtitle">
-<a href="./In-class_Ex/In-class_Ex01/In-class_Ex01.html" class="no-external"></a>
+<div class="animate__animated animate__fadeIn animate__faster">
+<section id="hands-on-exercise" class="level2">
+<h2 class="anchored" data-anchor-id="hands-on-exercise"><a href="./hands-on_ex/">✍️ Hands-on Exercise</a></h2>
+<div id="listing-hands-on" class="quarto-listing quarto-listing-container-grid">
+<div class="list grid quarto-listing-cols-3">
+<div class="g-col-1" data-index="0" data-listing-date-sort="1724428800000" data-listing-file-modified-sort="1724988445225" data-listing-date-modified-sort="1724988445000" data-listing-reading-time-sort="19" data-listing-word-count-sort="3730">
+<a href="./Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01b.html" class="quarto-grid-link">
+<div class="quarto-grid-item card h-100 card-left">
+<p class="card-img-top"><img src="Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01b_files/figure-html/unnamed-chunk-9-1.png" style="height: 150px;"  class="thumbnail-image card-img"/></p>
+<div class="card-body post-contents">
+<h5 class="no-anchor card-title listing-title">
+1B: Thematic Mapping and GeoVisualisation with R
+</h5>
+<div class="card-subtitle listing-subtitle">
+In this exercise, we will learn to create effective choropleth maps using the tmap package in R for visualizing geographic data properties.
 </div>
-<div class="listing-description">
-<a href="./In-class_Ex/In-class_Ex01/In-class_Ex01.html" class="no-external">To import the shapefile version of the Sub-zone data:</a>
+<div class="listing-reading-time card-text text-muted">
+19 min
 </div>
-</div>
-<div class="metadata">
-<a href="./In-class_Ex/In-class_Ex01/In-class_Ex01.html" class="no-external">
-<div class="listing-date">
-Aug 26, 2024
-</div>
-<div class="listing-author">
-Teng Kok Wai (Walter)
-</div>
-</a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="1" data-listing-date-sort="1724428800000" data-listing-file-modified-sort="1724770129523" data-listing-date-modified-sort="1724770129000" data-listing-reading-time-sort="19" data-listing-word-count-sort="3771">
-<div class="thumbnail">
-<p><a href="./Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01b.html" class="no-external"></a></p><a href="./Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01b.html" class="no-external">
-<p class="card-img-top"><img src="Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01b_files/figure-html/unnamed-chunk-9-1.png"  class="thumbnail-image card-img"/></p>
-</a><p><a href="./Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01b.html" class="no-external"></a></p>
-</div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01b.html" class="no-external">1B: Thematic Mapping and GeoVisualisation with R</a>
-</h3>
-<div class="listing-subtitle">
-<a href="./Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01b.html" class="no-external"></a>
-</div>
-<div class="listing-description">
-<a href="./Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01b.html" class="no-external">R for Geospatial Data Science and Analytics - 2&nbsp; Thematic Mapping and GeoVisualisation with R</a>
-</div>
-</div>
-<div class="metadata">
-<a href="./Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01b.html" class="no-external">
+<div class="card-attribution card-text-small end">
 <div class="listing-date">
 Aug 24, 2024
 </div>
-<div class="listing-author">
-Teng Kok Wai (Walter)
+</div>
+</div>
 </div>
 </a>
 </div>
+<div class="g-col-1" data-index="1" data-listing-date-sort="1724428800000" data-listing-file-modified-sort="1724988349291" data-listing-date-modified-sort="1724988349000" data-listing-reading-time-sort="12" data-listing-word-count-sort="2210">
+<a href="./Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01a.html" class="quarto-grid-link">
+<div class="quarto-grid-item card h-100 card-left">
+<p class="card-img-top"><img src="Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01a_files/figure-html/unnamed-chunk-8-1.png" style="height: 150px;"  class="thumbnail-image card-img"/></p>
+<div class="card-body post-contents">
+<h5 class="no-anchor card-title listing-title">
+1A: Geospatial Data Wrangling with R
+</h5>
+<div class="card-subtitle listing-subtitle">
+In this exercise, we will learn to use R for geospatial data handling, including importing, transforming, wrangling, and visualizing data with sf, tidyverse, and ggplot2.
 </div>
-<div class="quarto-post image-right" data-index="2" data-listing-date-sort="1724428800000" data-listing-file-modified-sort="1724770129522" data-listing-date-modified-sort="1724770129000" data-listing-reading-time-sort="12" data-listing-word-count-sort="2224">
-<div class="thumbnail">
-<p><a href="./Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01a.html" class="no-external"></a></p><a href="./Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01a.html" class="no-external">
-<p class="card-img-top"><img src="Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01a_files/figure-html/unnamed-chunk-8-1.png"  class="thumbnail-image card-img"/></p>
-</a><p><a href="./Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01a.html" class="no-external"></a></p>
+<div class="listing-reading-time card-text text-muted">
+12 min
 </div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01a.html" class="no-external">1A: Geospatial Data Wrangling with R</a>
-</h3>
-<div class="listing-subtitle">
-<a href="./Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01a.html" class="no-external"></a>
-</div>
-<div class="listing-description">
-<a href="./Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01a.html" class="no-external">R for Geospatial Data Science and Analytics - 1&nbsp; Geospatial Data Science with R</a>
-</div>
-</div>
-<div class="metadata">
-<a href="./Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01a.html" class="no-external">
+<div class="card-attribution card-text-small end">
 <div class="listing-date">
 Aug 24, 2024
 </div>
-<div class="listing-author">
-Teng Kok Wai (Walter)
+</div>
+</div>
 </div>
 </a>
-</div>
 </div>
 </div>
 <div class="listing-no-matching d-none">
 No matching items
 </div>
-</div></main> <!-- /main -->
+</div>
+</section>
+<section id="in-class-exercise" class="level2">
+<h2 class="anchored" data-anchor-id="in-class-exercise"><a href="./in-class_ex/">🏫 In-class Exercise</a></h2>
+<div id="listing-in-class" class="quarto-listing quarto-listing-container-grid">
+<div class="list grid quarto-listing-cols-3">
+<div class="g-col-1" data-index="0" data-listing-date-sort="1724601600000" data-listing-file-modified-sort="1724999079385" data-listing-date-modified-sort="1724999079000" data-listing-reading-time-sort="2" data-listing-word-count-sort="233">
+<a href="./In-class_Ex/In-class_Ex01/In-class_Ex01.html" class="quarto-grid-link">
+<div class="quarto-grid-item card h-100 card-left">
+<div class="listing-item-img-placeholder card-img-top" style="height: 150px;">&nbsp;</div>
+<div class="card-body post-contents">
+<h5 class="no-anchor card-title listing-title">
+In-Class Exercise 1
+</h5>
+<div class="card-subtitle listing-subtitle">
+In the exercise, we will learn to handle geospatial data in R, create various maps, and perform statistical analysis using sf, tmap, and ggstatsplot.
+</div>
+<div class="listing-reading-time card-text text-muted">
+2 min
+</div>
+<div class="card-attribution card-text-small end">
+<div class="listing-date">
+Aug 26, 2024
+</div>
+</div>
+</div>
+</div>
+</a>
+</div>
+</div>
+<div class="listing-no-matching d-none">
+No matching items
+</div>
+</div>
+</section>
+<section id="take-home-exercise" class="level2">
+<h2 class="anchored" data-anchor-id="take-home-exercise"><a href="./take-home_ex/">🏠 Take-home Exercise</a></h2>
+<div id="listing-take-home" class="quarto-listing quarto-listing-container-grid">
+<div class="list grid quarto-listing-cols-3">
+
+</div>
+<div class="listing-no-matching d-none">
+No matching items
+</div>
+</div>
+</section>
+</div>
+
+
+
+
+</main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {

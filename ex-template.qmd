@@ -1,0 +1,24 @@
+---
+title: ""
+subtitle: ""
+draft: true
+date: "Aug 24, 2024"
+date-modified: "last-modified"
+author: Teng Kok Wai (Walter)
+execute:
+  echo: true
+  eval: true
+  freeze: true
+  message: false
+  warning: false
+format:
+  html:
+    toc: true
+number-sections: true
+number-offset: 1
+editor: visual
+---
+
+## Exercise 1A Reference
+
+

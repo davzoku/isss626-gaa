@@ -1,0 +1,26 @@
+---
+title: "2A: 1st Order Spatial Point Patterns Analysis"
+subtitle: ""
+draft: true
+date: "Aug 28, 2024"
+date-modified: "last-modified"
+author: Teng Kok Wai (Walter)
+execute:
+  echo: true
+  eval: true
+  freeze: true
+  message: false
+  warning: false
+format:
+  html:
+    toc: true
+number-sections: true
+number-offset: 1
+editor: visual
+---
+
+# WIP
+
+## Exercise 2A Reference
+
+[R for Geospatial Data Science and Analytics - 4  1st Order Spatial Point Patterns Analysis Methods](https://r4gdsa.netlify.app/chap04.html)

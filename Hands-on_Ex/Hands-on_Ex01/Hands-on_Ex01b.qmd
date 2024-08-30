@@ -1,5 +1,6 @@
 ---
 title: "1B: Thematic Mapping and GeoVisualisation with R"
+subtitle: "In this exercise, we will learn to create effective choropleth maps using the tmap package in R for visualizing geographic data properties."
 date: "Aug 24, 2024"
 date-modified: "last-modified"
 author: Teng Kok Wai (Walter)
@@ -13,7 +14,7 @@ format:
   html:
     toc: true
 number-sections: true
-number-offset: 1    
+number-offset: 1
 editor: visual
 ---
 
@@ -52,7 +53,7 @@ pacman::p_load(sf, tmap, tidyverse)
 The code chunk below uses st_read() function of sf package to import the `MP14_SUBZONE_WEB_PL` shapefile into R as a polygon feature data frame.
 
 ```{r}
-mpsz = st_read(dsn = "data/geospatial", 
+mpsz = st_read(dsn = "data/geospatial",
                   layer = "MP14_SUBZONE_WEB_PL")
 ```
 
@@ -95,18 +96,18 @@ popdata2020 <- popdata %>%
   group_by(PA, SZ, AG) %>%
   summarise(`POP` = sum(`Pop`)) %>%
   ungroup()%>%
-  pivot_wider(names_from=AG, 
+  pivot_wider(names_from=AG,
               values_from=POP) %>%
   mutate(YOUNG = rowSums(.[3:6])
          +rowSums(.[14])) %>%
 mutate(`ECONOMY ACTIVE` = rowSums(.[7:11])+
 rowSums(.[13:15]))%>%
 mutate(`AGED`=rowSums(.[16:21])) %>%
-mutate(`TOTAL`=rowSums(.[3:21])) %>%  
+mutate(`TOTAL`=rowSums(.[3:21])) %>%
 mutate(`DEPENDENCY` = (`YOUNG` + `AGED`)
 /`ECONOMY ACTIVE`) %>%
-  select(`PA`, `SZ`, `YOUNG`, 
-       `ECONOMY ACTIVE`, `AGED`, 
+  select(`PA`, `SZ`, `YOUNG`,
+       `ECONOMY ACTIVE`, `AGED`,
        `TOTAL`, `DEPENDENCY`)
 ```
 
@@ -116,7 +117,7 @@ Before performing a georelational join, one additional step is necessary: conver
 
 ```{r}
 popdata2020 <- popdata2020 %>%
-  mutate_at(.vars = vars(PA, SZ), 
+  mutate_at(.vars = vars(PA, SZ),
           .funs = list(toupper)) %>%
   filter(`ECONOMY ACTIVE` > 0)
 ```
@@ -154,7 +155,7 @@ The following code draws a standard choropleth map:
 
 ```{r}
 tmap_mode("plot")
-qtm(mpsz_pop2020, 
+qtm(mpsz_pop2020,
     fill = "DEPENDENCY")
 ```
 
@@ -169,21 +170,21 @@ While `qtm()` is useful for quickly and easily drawing choropleth maps, its draw
 
 ```{r}
 tm_shape(mpsz_pop2020)+
-  tm_fill("DEPENDENCY", 
-          style = "quantile", 
+  tm_fill("DEPENDENCY",
+          style = "quantile",
           palette = "Blues",
           title = "Dependency ratio") +
   tm_layout(main.title = "Distribution of Dependency Ratio by planning subzone",
             main.title.position = "center",
             main.title.size = 1.2,
-            legend.height = 0.45, 
+            legend.height = 0.45,
             legend.width = 0.35,
             frame = TRUE) +
   tm_borders(alpha = 0.5) +
   tm_compass(type="8star", size = 2) +
   tm_scale_bar() +
   tm_grid(alpha =0.2) +
-  tm_credits("Source: Planning Sub-zone boundary from Urban Redevelopment Authorithy (URA)\n and Population data from Department of Statistics DOS", 
+  tm_credits("Source: Planning Sub-zone boundary from Urban Redevelopment Authorithy (URA)\n and Population data from Department of Statistics DOS",
              position = c("left", "bottom"))
 ```
 
@@ -488,16 +489,16 @@ In **tmap**, there are several legend options for adjusting the placement, forma
 
 ```{r}
 tm_shape(mpsz_pop2020)+
-  tm_fill("DEPENDENCY", 
-          style = "jenks", 
-          palette = "Blues", 
-          legend.hist = TRUE, 
+  tm_fill("DEPENDENCY",
+          style = "jenks",
+          palette = "Blues",
+          legend.hist = TRUE,
           legend.is.portrait = TRUE,
           legend.hist.z = 0.1) +
   tm_layout(main.title = "Distribution of Dependency Ratio by planning subzone \n(Jenks classification)",
             main.title.position = "center",
             main.title.size = 1,
-            legend.height = 0.45, 
+            legend.height = 0.45,
             legend.width = 0.35,
             legend.outside = FALSE,
             legend.position = c("right", "bottom"),
@@ -511,8 +512,8 @@ tm_shape(mpsz_pop2020)+
 
 ```{r}
 tm_shape(mpsz_pop2020)+
-  tm_fill("DEPENDENCY", 
-          style = "quantile", 
+  tm_fill("DEPENDENCY",
+          style = "quantile",
           palette = "-Greens") +
   tm_borders(alpha = 0.5) +
   tmap_style("classic")
@@ -524,21 +525,21 @@ Beside map style, **tmap** also also provides arguments to draw other map furnit
 
 ```{r}
 tm_shape(mpsz_pop2020)+
-  tm_fill("DEPENDENCY", 
-          style = "quantile", 
+  tm_fill("DEPENDENCY",
+          style = "quantile",
           palette = "Blues",
           title = "No. of persons") +
   tm_layout(main.title = "Distribution of Dependency Ratio \nby planning subzone",
             main.title.position = "center",
             main.title.size = 1.2,
-            legend.height = 0.45, 
+            legend.height = 0.45,
             legend.width = 0.35,
             frame = TRUE) +
   tm_borders(alpha = 0.5) +
   tm_compass(type="8star", size = 2) +
   tm_scale_bar(width = 0.15) +
   tm_grid(lwd = 0.1, alpha = 0.2) +
-  tm_credits("Source: Planning Sub-zone boundary from Urban Redevelopment Authorithy (URA)\n and Population data from Department of Statistics DOS", 
+  tm_credits("Source: Planning Sub-zone boundary from Urban Redevelopment Authorithy (URA)\n and Population data from Department of Statistics DOS",
              position = c("left", "bottom"))
 ```
 
@@ -565,7 +566,7 @@ In this example, small multiple choropleth maps are created by defining ***ncols
 ```{r}
 tm_shape(mpsz_pop2020)+
   tm_fill(c("YOUNG", "AGED"),
-          style = "equal", 
+          style = "equal",
           palette = "Blues") +
   tm_layout(legend.position = c("right", "bottom")) +
   tm_borders(alpha = 0.5) +
@@ -575,9 +576,9 @@ tm_shape(mpsz_pop2020)+
 This example creates small multiple choropleth maps by assigning multiple values to at least one of the aesthetic arguments:
 
 ```{r}
-tm_shape(mpsz_pop2020)+ 
+tm_shape(mpsz_pop2020)+
   tm_polygons(c("DEPENDENCY","AGED"),
-          style = c("equal", "quantile"), 
+          style = c("equal", "quantile"),
           palette = list("Blues","Greens")) +
   tm_layout(legend.position = c("right", "bottom"))
 ```
@@ -591,12 +592,12 @@ tm_shape(mpsz_pop2020) +
   tm_fill("DEPENDENCY",
           style = "quantile",
           palette = "Blues",
-          thres.poly = 0) + 
-  tm_facets(by="REGION_N", 
-            free.coords=TRUE, 
+          thres.poly = 0) +
+  tm_facets(by="REGION_N",
+            free.coords=TRUE,
             drop.shapes=TRUE) +
   tm_layout(legend.show = FALSE,
-            title.position = c("center", "center"), 
+            title.position = c("center", "center"),
             title.size = 20) +
   tm_borders(alpha = 0.5)
 ```
@@ -606,14 +607,14 @@ tm_shape(mpsz_pop2020) +
 In this example, multiple small choropleth maps are created by creating multiple stand-alone maps with **tmap_arrange()**.
 
 ```{r}
-youngmap <- tm_shape(mpsz_pop2020)+ 
-  tm_polygons("YOUNG", 
-              style = "quantile", 
+youngmap <- tm_shape(mpsz_pop2020)+
+  tm_polygons("YOUNG",
+              style = "quantile",
               palette = "Blues")
 
-agedmap <- tm_shape(mpsz_pop2020)+ 
-  tm_polygons("AGED", 
-              style = "quantile", 
+agedmap <- tm_shape(mpsz_pop2020)+
+  tm_polygons("AGED",
+              style = "quantile",
               palette = "Blues")
 
 tmap_arrange(youngmap, agedmap, asp=1, ncol=2)
@@ -625,14 +626,14 @@ Instead of creating small multiple choropleth map, you can also use selection fu
 
 ```{r}
 tm_shape(mpsz_pop2020[mpsz_pop2020$REGION_N=="CENTRAL REGION", ])+
-  tm_fill("DEPENDENCY", 
-          style = "quantile", 
-          palette = "Blues", 
-          legend.hist = TRUE, 
+  tm_fill("DEPENDENCY",
+          style = "quantile",
+          palette = "Blues",
+          legend.hist = TRUE,
           legend.is.portrait = TRUE,
           legend.hist.z = 0.1) +
   tm_layout(legend.outside = TRUE,
-            legend.height = 0.45, 
+            legend.height = 0.45,
             legend.width = 5.0,
             legend.position = c("right", "bottom"),
             frame = FALSE) +

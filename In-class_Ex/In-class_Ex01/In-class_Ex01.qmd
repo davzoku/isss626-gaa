@@ -1,21 +1,30 @@
 ---
 title: "In-Class Exercise 1"
+subtitle: "In the exercise, we will learn to handle geospatial data in R, create various maps, and perform statistical analysis using sf, tmap, and ggstatsplot."
 date: "Aug 26, 2024"
 date-modified: "last-modified"
 author: Teng Kok Wai (Walter)
 execute:
-  echo: true
+  echo: true # Include the source code in output
   eval: true
   freeze: true
-  message: false   
-  warning: false
+  message: false
+  warning: false # if false, don't include warnings in the output
 format:
   html:
     toc: true
 number-sections: true
-number-offset: 1    
+number-offset: 1
 editor: visual
 ---
+
+## Exercise Reference
+
+- [ISSS626 Geospatial Analytics and Applications - In-class Exercise 1: Geospatial Data Science with R](https://isss626-ay2024-25aug.netlify.app/in-class_ex/in-class_ex01/in-class_ex01)
+
+## Learning Outcome
+
+In the exercise, we will learn to manage and visualize geospatial data in R by importing, transforming, and analyzing spatial datasets, creating choropleth and analytical maps, and performing statistical analysis using packages like `sf`, `tmap`, and `ggstatsplot`.
 
 ## Import R Packages
 
@@ -28,7 +37,7 @@ pacman::p_load(tidyverse, sf, tmap, ggstatsplot)
 To import the shapefile version of the Sub-zone data:
 
 ```{r}
-mpsz14_shp <- st_read(dsn = "data", 
+mpsz14_shp <- st_read(dsn = "data",
                   layer = "MP14_SUBZONE_WEB_PL")
 ```
 
@@ -61,11 +70,10 @@ Note that the `delete_dsn=TRUE` argument ensures that any existing file with the
 ## To import MPSZ-2019
 
 ```{r}
-mpsz19_shp <- st_read(dsn = "data", 
+mpsz19_shp <- st_read(dsn = "data",
                   layer = "MPSZ-2019") %>%
   st_transform(crs=3414)
 ```
-
 
 ```{r}
 mpsz19_kml <- st_read("data/MasterPlan2019RegionBoundaryNoSeaKML.kml")

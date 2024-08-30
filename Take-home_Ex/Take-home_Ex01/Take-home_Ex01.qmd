@@ -1,0 +1,22 @@
+---
+title: "Take Home Exercise 1"
+subtitle: ""
+draft: true
+date: ""
+date-modified: "last-modified"
+author: Teng Kok Wai (Walter)
+execute:
+  echo: true
+  eval: true
+  freeze: true
+  message: false
+  warning: false
+format:
+  html:
+    toc: true
+number-sections: true
+number-offset: 1
+editor: visual
+---
+
+# WIP

@@ -1,8 +1,7 @@
 <h1 align="center">
 SMU ISSS626 Geospatial Analytics and Applications
-
+<div align="center">🗺️📊</div>
 </h1>
-<div style='font-size:80px;' align="center">🗺️📊</div>
 
 <p align="center">
 

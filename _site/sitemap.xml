@@ -1,23 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://isss626-gaa.netlify.app/In-class_Ex/In-class_Ex01/In-class_Ex01.html</loc>
-    <lastmod>2024-08-27T14:48:49.523Z</lastmod>
+    <loc>https://isss626-gaa.netlify.app/In-class_Ex/In-class_Ex01/data/MPSZ-2019.html</loc>
+    <lastmod>2024-03-30T05:51:46.000Z</lastmod>
   </url>
   <url>
-    <loc>https://isss626-gaa.netlify.app/index.html</loc>
-    <lastmod>2024-08-27T17:37:40.519Z</lastmod>
+    <loc>https://isss626-gaa.netlify.app/In-class_Ex/index.html</loc>
+    <lastmod>2024-08-30T03:58:39.502Z</lastmod>
   </url>
   <url>
-    <loc>https://isss626-gaa.netlify.app/Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01b.html</loc>
-    <lastmod>2024-08-27T14:48:49.523Z</lastmod>
-  </url>
-  <url>
-    <loc>https://isss626-gaa.netlify.app/Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01a.html</loc>
-    <lastmod>2024-08-27T14:48:49.522Z</lastmod>
+    <loc>https://isss626-gaa.netlify.app/Take-home_Ex/index.html</loc>
+    <lastmod>2024-08-30T03:48:53.065Z</lastmod>
   </url>
   <url>
     <loc>https://isss626-gaa.netlify.app/about.html</loc>
     <lastmod>2024-08-24T05:39:30.519Z</lastmod>
+  </url>
+  <url>
+    <loc>https://isss626-gaa.netlify.app/Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01a.html</loc>
+    <lastmod>2024-08-30T03:25:49.291Z</lastmod>
+  </url>
+  <url>
+    <loc>https://isss626-gaa.netlify.app/Hands-on_Ex/index.html</loc>
+    <lastmod>2024-08-30T03:22:39.463Z</lastmod>
+  </url>
+  <url>
+    <loc>https://isss626-gaa.netlify.app/Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01b.html</loc>
+    <lastmod>2024-08-30T03:27:25.225Z</lastmod>
+  </url>
+  <url>
+    <loc>https://isss626-gaa.netlify.app/index.html</loc>
+    <lastmod>2024-08-30T12:25:55.266Z</lastmod>
+  </url>
+  <url>
+    <loc>https://isss626-gaa.netlify.app/In-class_Ex/In-class_Ex01/In-class_Ex01.html</loc>
+    <lastmod>2024-08-30T06:24:39.385Z</lastmod>
   </url>
 </urlset>

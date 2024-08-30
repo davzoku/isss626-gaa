@@ -1,21 +1,63 @@
 ---
-title: ""
+title: '{{< animate fadeInDown "Welcome to the ISSS626 Geospatial Analytics and Applications" duration=faster >}}'
 listing:
-  max-items: 5
-  type: default
-  contents:
-    - "Hands-on_Ex/*/*.qmd"
-    - "Take-home_Ex/*/*.qmd"
-    - "In-class_Ex/*/*.qmd"
-  sort: 
-    - "date desc"
-    - "title desc"
+  - id: hands-on
+    contents: "**/*/Hands-on_*.qmd"
+    type: grid
+    fields: [image, date, title, subtitle, reading-time]
+    sort:
+      - "date desc"
+      - "title desc"
+    sort-ui: false
+    filter-ui: false
+    page-size: 3
+  - id: in-class
+    contents: "**/*/In-class_*.qmd"
+    type: grid
+    fields: [image, date, title, subtitle, reading-time]
+    sort:
+      - "date desc"
+      - "title desc"
+    sort-ui: false
+    filter-ui: false
+    page-size: 3
+  - id: take-home
+    contents: "**/*/Take-home_*.qmd"
+    type: grid
+    fields: [image, date, title, subtitle, reading-time]
+    sort:
+      - "date desc"
+      - "title desc"
+    sort-ui: false
+    filter-ui: false
+    page-size: 3
 toc: false
+format:
+  html:
+    css: index-styles.css
 ---
 
-# Welcome to the ISSS626 Geospatial Analytics and Applications
+::::{.animate__animated .animate__fadeIn .animate__faster}
+![](banner.png)
 
-This website contains the coursework by Teng Kok Wai (Walter).
+This website contains the coursework by Teng Kok Wai (Walter). It features a collection of projects, assignments, and notes from the class, complete with geospatial visualizations and analytical insights.
+::::
 
+::::{.animate__animated .animate__fadeIn .animate__faster}
 
----
+## [✍️ Hands-on Exercise](/hands-on_ex/)
+
+::: {#hands-on}
+:::
+
+## [🏫 In-class Exercise](/in-class_ex/)
+
+::: {#in-class}
+:::
+
+## [🏠 Take-home Exercise](/take-home_ex/)
+
+::: {#take-home}
+:::
+::::
+
