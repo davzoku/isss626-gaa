@@ -1,14 +1,14 @@
 ---
 title: "2A: 1st Order Spatial Point Patterns Analysis"
-subtitle: ""
-draft: true
+subtitle: "In this exercise, we will learn to analyze spatial point patterns in R, including importing geospatial data, performing kernel density estimation and nearest neighbor analysis, and visualizing results using spatstat, sf, and tmap packages."
+# draft: true
 date: "Aug 28, 2024"
 date-modified: "last-modified"
 author: Teng Kok Wai (Walter)
 execute:
   echo: true
   eval: true
-  freeze: true
+  freeze: auto
   message: false
   warning: false
 format:
@@ -19,8 +19,841 @@ number-offset: 1
 editor: visual
 ---
 
-# WIP
-
 ## Exercise 2A Reference
 
 [R for Geospatial Data Science and Analytics - 4  1st Order Spatial Point Patterns Analysis Methods](https://r4gdsa.netlify.app/chap04.html)
+
+## Overview
+
+Spatial Point Pattern Analysis is the evaluation of the pattern or distribution, of a set of points on a surface. The point can be location of:
+
+-   events such as crime, traffic accident and disease onset, or
+-   business services (coffee and fastfood outlets) or facilities such as childcare and eldercare.
+
+Using appropriate functions of [spatstat](https://cran.r-project.org/web/packages/spatstat/), this hands-on exercise aims to discover the spatial point processes of childecare centres in Singapore.
+
+The specific questions we would like to answer are as follows:
+
+-   are the childcare centres in Singapore randomly distributed throughout the country?\
+-   if the answer is not, then the next logical question is where are the locations with higher concentration of childcare centres?
+
+## Learning Outcome
+
+-   Importing and managing geospatial data using `sf` and `spatstat` packages.
+-   Converting simple feature data frames to various spatial data formats.
+-   Performing kernel density estimation (KDE) using different methods and bandwidths.
+-   Conducting nearest neighbor analysis to test spatial point distribution.
+-   Visualizing spatial patterns and KDE results using `tmap` and `spatstat`.
+-   Handling duplicate spatial points and creating point patterns for analysis.
+-   Applying appropriate statistical methods for confirmatory spatial point pattern analysis.
+
+Here's the improved section with relevant information presented in a table format:
+
+## The Data
+
+| Dataset                 | Description                                                         | Source                         | Format         |
+|-------------------------|---------------------------------------------------------------------|--------------------------------|----------------|
+| **CHILDCARE**           | Point data containing location and attributes of childcare centers. | Data.gov.sg                    | GeoJSON        |
+| **MP14_SUBZONE_WEB_PL** | Polygon data with URA 2014 Master Plan Planning Subzone boundaries. | Data.gov.sg                    | ESRI Shapefile |
+| **CoastalOutline**      | Polygon data representing Singapore's national boundary.            | Singapore Land Authority (SLA) | ESRI Shapefile |
+
+This table summarizes the datasets used for the analysis, including their descriptions, sources, and formats.
+
+Here's the improved section with relevant information presented in a table format:
+
+## Installing and Loading the R Packages
+
+The following R packages will be used in this exercise:
+
+| Package      | Purpose                                                                           | Use Case in Exercise                                                                                       |
+|--------------|-----------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------|
+| **sf**       | Imports, manages, and processes vector-based geospatial data.                     | Handling vector geospatial data in R.                                                                      |
+| **spatstat** | Provides tools for point pattern analysis.                                        | Performing 1st- and 2nd-order spatial point pattern analysis and deriving kernel density estimation (KDE). |
+| **raster**   | Reads, writes, and manipulates gridded spatial data (raster).                     | Converting image outputs from `spatstat` into raster format.                                               |
+| **maptools** | Offers tools for manipulating geographic data.                                    | Converting spatial objects into `ppp` format for use with `spatstat`.                                      |
+| **tmap**     | Creates static and interactive thematic maps using cartographic quality elements. | Plotting static and interactive point pattern maps.                                                        |
+
+To install and load these packages in R, use the following code:
+
+```{r}
+pacman::p_load(sf, raster, spatstat, tmap, tidyverse)
+```
+
+## Spatial Data Wrangling
+
+### Importing the Spatial Data
+
+To import the three geographical datasets, we will use `st_read()` from `sf`.
+
+```{r}
+childcare_sf <- st_read("data/child-care-services-geojson.geojson")
+```
+
+```{r}
+sg_sf <- st_read(dsn = "data", layer="CostalOutline")
+```
+
+```{r}
+mpsz_sf <- st_read(dsn = "data",
+                layer = "MP14_SUBZONE_WEB_PL")
+```
+
+### Inspect and Reproject to Same Projection System
+
+Before we can use these data for analysis, it is important for us to ensure that they are projected in same projection system.
+
+First, we check the childcare dataset.
+
+```{r}
+st_crs(childcare_sf)
+```
+
+This dataset is using the WGS84 crs. We will reproject all the dataset to SVY21 crs for standardization and analysis.
+
+```{r}
+childcare_sf <- st_transform(childcare_sf , crs = 3414)
+st_crs(childcare_sf)
+```
+
+The childcare dataset has been reprojected to SVY21 successfully.
+
+Next, we inspect the Coastal Outline dataset.
+
+```{r}
+st_crs(sg_sf)
+```
+
+Notice that this dataset is using SVY21 crs, however the ID provided is `EPSG:9001` does not match the intended ID, `EPSG:3414` of SVY21. In this case, we will set the crs to the correct ID using the code block below.
+
+```{r}
+sg_sf <- st_set_crs(sg_sf, 3414)
+st_crs(sg_sf)
+```
+
+Similarly, we will inspect the Master Plan Subzone Dataset.
+
+```{r}
+st_crs(mpsz_sf)
+```
+
+Since the ID is also `EPSG:9001`, we will set the crs to `EPSG:3414` too.
+
+```{r}
+mpsz_sf <- st_set_crs(mpsz_sf, 3414)
+st_crs(mpsz_sf)
+```
+
+## Mapping the Geospatial Datasets
+
+After checking the referencing system of each geospatial data data frame, it is also useful for us to plot a map to show their spatial patterns.
+
+### Static Map
+
+```{r}
+# add polygon layer of the coastal outline of sg island
+tm_shape(sg_sf)+ tm_polygons() +
+# add polygon layer of the subzone based on sg masterplan
+tm_shape(mpsz_sf) + tm_polygons() +
+# add dot layer to show the locations of childcare centres
+tm_shape(childcare_sf) + tm_dots() +
+tm_layout()
+```
+
+When all the 3 datasets are overlayed together, it shows the locations of childcare centres on the Singapore island. Since all the geospatial layers are within the same map context, it means their referencing system and coordinate values are referred to similar spatial context. This consistency is crucial for accurate geospatial analysis.
+
+### Interactive Map
+
+Alternatively, we can also prepare a pin map by using the code block below.
+
+```{r}
+tmap_mode('view')
+
+# tm_basemap("Esri.WorldGrayCanvas") +
+# tm_basemap("OpenStreetMap") +
+tm_basemap("Esri.WorldTopoMap") +
+tm_shape(childcare_sf) +
+  tm_dots(alpha = 0.5)
+```
+
+```{r}
+tmap_mode('plot')
+```
+
+In interactive mode, `tmap` uses the Leaflet for R API, allowing you to freely navigate, zoom, and click on features for detailed information. You can also change the map's background using layers like ESRI.WorldGrayCanvas, OpenStreetMap, and ESRI.WorldTopoMap, with ESRI.WorldGrayCanvas as the default.
+
+::: callout-tip
+Remember to switch back to plot mode after interacting to avoid connection issues and limit interactive maps to fewer than 10 in RMarkdown documents for Netlify publishing.
+:::
+
+## Geospatial Data Wrangling
+
+While simple feature data frames are becoming more popular compared to `sp`'s Spatial\* classes, many geospatial analysis packages still require data in the Spatial\* format. This section will show you how to convert a simple feature data frame to `sp`'s Spatial\* class.
+
+### Converting sf data frames to sp’s Spatial\* class
+
+The code block below uses [`as_Spatial()`](https://r4gdsa.netlify.app/chap04.html) of **sf** package to convert the three geospatial data from simple feature data frame to sp's Spatial\* class.
+
+```{r}
+childcare <- as_Spatial(childcare_sf)
+mpsz <- as_Spatial(mpsz_sf)
+sg <- as_Spatial(sg_sf)
+```
+
+After the sf dataframe to sp Spatial\* conversion, let's inspect the Spatial\* classes.
+
+```{r}
+childcare
+```
+
+```{r}
+mpsz
+```
+
+```{r}
+sg
+```
+
+The geospatial data have been converted into their respective sp’s Spatial\* classes.
+
+### Converting the Spatial\* Class into Generic sp Format
+
+**spatstat** requires the analytical data in ***ppp*** object form. There is no straightforward way to convert a Spatial\* classes into ***ppp*** object. We need to convert the ***Spatial*** **classes**\* into ***Spatial*** object first.
+
+::: callout-tip
+`ppp` refers to **planar point pattern**. It is used to represent spatial point patterns in `spatstat`; it contains the event locations with possibly associated marks, and the observation window where the events occur.
+
+see [Chapter 18 The spatstat package \| Spatial Statistics for Data Science: Theory and Practice with R](https://www.paulamoraga.com/book-spatial/the-spatstat-package.html#creating-spatial-point-patterns)
+:::
+
+The codes block below converts the Spatial\* classes into generic sp objects.
+
+```{r}
+childcare_sp <- as(childcare, "SpatialPoints")
+sg_sp <- as(sg, "SpatialPolygons")
+```
+
+Next, we can display the sp objects properties.
+
+```{r}
+childcare_sp
+sg_sp
+```
+
+Let's further inspect the differences between Spatial\* classes and generic sp object with the example of `childcare` and `childcare_sp` object.
+
+```{r}
+head(childcare)
+```
+
+```{r}
+head(childcare_sp)
+```
+
+Note that the Spatial\* classes contain more attribute data as compared its generic sp object counterpart.
+
+::: callout-tip
+**Differences between Spatial\* classes and generic sp object**
+
+-   **Data Storage**: SpatialPoints stores only the coordinates, while SpatialPointsDataFrame stores both coordinates and additional attribute data
+
+-   **Functionality**: SpatialPointsDataFrame allows for more complex operations and analyses due to the additional data it holds
+
+see [Introduction to spatial points in R - Michael T. Hallworth, Ph.D.](https://mhallwor.github.io/_pages/basics_SpatialPoints#:~:text=The%20difference%20between,about%20the%20point.)
+:::
+
+### Converting the Generic sp Format into spatstat’s ppp Format
+
+Now, we will use `as.ppp()` function of **spatstat** to convert the spatial data into **spatstat**'s ***ppp*** object format.
+
+```{r}
+childcare_ppp <- as.ppp(childcare_sf)
+childcare_ppp
+```
+
+Let's examine the difference by plotting *childcare_ppp*:
+
+```{r}
+plot(childcare_ppp)
+```
+
+We can also view the summary statistics of the newly created ppp object by using the code block below.
+
+```{r}
+summary(childcare_ppp)
+```
+
+::: callout-tip
+Be aware of the warning message regarding duplicates. In spatial point pattern analysis, duplicates can be a significant issue. The statistical methods used for analyzing spatial point patterns often assume that the points are distinct and non-coincident.
+:::
+
+### Handling Duplicated Points
+
+We can check the duplication in a **ppp** object by using the `duplicated` function with different configurations.
+
+::: callout-tip
+**Tips on using `duplicated`**
+
+If rule="spatstat" (the default), two points are deemed identical if their coordinates are equal according to ==, and their marks are equal according to ==. This is the most stringent possible test. If rule="unmark", duplicated points are determined by testing equality of their coordinates only, using ==. If rule="deldir", duplicated points are determined by testing equality of their coordinates only, using the function duplicatedxy in the package deldir, which currently uses duplicated.data.frame. Setting rule="deldir" will ensure consistency with functions in the deldir package.
+
+see [R: Determine Duplicated Points in a Spatial Point Pattern](https://search.r-project.org/CRAN/refmans/spatstat.geom/html/duplicated.ppp.html)
+:::
+
+```{r}
+# duplicated(childcare_ppp)
+# any(duplicated(childcare_ppp))
+rules <- c("spatstat", "deldir", "unmark")
+
+duplicate_counts <- list()
+for (rule in rules) {
+  duplicates <- duplicated(childcare_ppp, rule = rule)
+  num_duplicates <- sum(duplicates)
+  duplicate_counts[[rule]] <- num_duplicates
+}
+
+print(duplicate_counts)
+```
+
+Using `unmark`, we can find 74 duplicates.
+
+We can also use [anyDuplicated(x)](https://rdrr.io/cran/spatstat.geom/man/duplicated.ppp.html#:~:text=anyDuplicated(x)%20is%20a%20faster%20version%20of%20any(duplicated(x)).) as it is a faster version of `any(duplicated(x))`.
+
+```{r}
+sum(anyDuplicated(childcare_ppp, rule="unmark"))
+```
+
+To count the number of [coincident points](https://www.quora.com/What-is-exactly-coincident-points-and-lines-as-per-SMSG-postulates-1-According-to-this-points-and-lines-are-different-objects-or-same-say-line-is-made-of-set-of-points-What-about-coincident-lines-in-this-context#:~:text=Coincident%20points%20and%20lines%20are,that%20share%20the%20same%20points.), we will use the `multiplicity()` function as shown in the code block below. see [R: Multiplicity](https://search.r-project.org/CRAN/refmans/mlr3pipelines/html/Multiplicity.html) for more info.
+
+```{r eval=FALSE}
+multiplicity(childcare_ppp)
+```
+
+If we want to know how many locations have more than one point event:
+
+```{r}
+sum(multiplicity(childcare_ppp) > 1)
+```
+
+```{r}
+# double check
+coincident_points <- duplicated(childcare_ppp,  rule="deldir")
+coincident_coordinates <- childcare_ppp[coincident_points]
+print(coincident_coordinates)
+```
+
+The output shows that there are ~~128~~(???) 0 duplicated point events.
+
+```{r}
+tmap_mode('view')
+tm_basemap("Esri.WorldTopoMap") +
+tm_shape(childcare) +
+  tm_dots(alpha=0.4,
+          size=0.05)
+tmap_mode('plot')
+```
+
+### How to Spot Duplicate Points on the Map
+
+There are three ways to overcome this problem. The easiest way is to delete the duplicates. But, that will also mean that some useful point events will be lost.
+
+The second solution is use *jittering*, which will add a small perturbation to the duplicate points so that they do not occupy the exact same space.
+
+The third solution is to make each point "unique" and then attach the duplicates of the points to the patterns as **marks**, as attributes of the points. Then you would need analytical techniques that take into account these marks.
+
+#### Jittering
+
+The code block below implements the jittering approach.
+
+```{r}
+childcare_ppp_jit <- rjitter(childcare_ppp,
+                             retry=TRUE,
+                             nsim=1,
+                             drop=TRUE)
+```
+
+```{r}
+any(duplicated(childcare_ppp_jit))
+```
+
+### Creating *owin* Object
+
+When analysing spatial point patterns, it is a good practice to confine the analysis with a geographical area like Singapore boundary. In **spatstat**, an object called ***owin*** is specially designed to represent this polygonal region.
+
+The code block below is used to covert *sg* SpatialPolygon object into owin object of **spatstat**.
+
+```{r}
+sg_owin <- as.owin(sg_sf)
+```
+
+The output object can be displayed by using `plot()` function:
+
+```{r}
+plot(sg_owin)
+```
+
+And using `summary()` function of Base R:
+
+```{r}
+summary(sg_owin)
+```
+
+## Combining Point Events Object and Owin Object
+
+For the last step of geospatial data wrangling, we will extract childcare events that are located within Singapore by using the code block below.
+
+```{r}
+childcareSG_ppp = childcare_ppp[sg_owin]
+```
+
+The output object combined both the point and polygon feature in one ppp object class as shown below.
+
+```{r}
+summary(childcareSG_ppp)
+```
+
+```{r}
+plot(childcareSG_ppp)
+```
+
+## First-order Spatial Point Patterns Analysis
+
+In this section, you will learn how to perform first-order SPPA by using **spatstat** package. The hands-on exercise will focus on:
+
+-   deriving **kernel density estimation (KDE)** layer for visualising and exploring the intensity of point processes,
+-   performing **Confirmatory Spatial Point Patterns Analysis** by using **Nearest Neighbour** statistics.
+
+### Kernel Density Estimation
+
+In this section, you will learn how to compute the kernel density estimation (KDE) of childcare services in Singapore.
+
+#### Computing Kernel Density Estimation Using Automatic Bandwidth Selection Method
+
+-   [*bw.diggle()*](https://rdrr.io/cran/spatstat/man/bw.diggle.html) automatic bandwidth selection method. Other recommended methods are [*bw.CvL()*](https://rdrr.io/cran/spatstat/man/bw.CvL.html), [*bw.scott()*](https://rdrr.io/cran/spatstat/man/bw.scott.html) or [*bw.ppl()*](https://rdrr.io/cran/spatstat/man/bw.ppl.html).\
+-   The smoothing kernel used is *gaussian*, which is the default. Other smoothing methods are: "epanechnikov", "quartic" or "disc".\
+-   The intensity estimate is corrected for edge effect bias by using method described by Jones (1993) and Diggle (2010, equation 18.9). The default is *FALSE*.
+
+```{r}
+kde_childcareSG_bw <- density(childcareSG_ppp,
+                              sigma=bw.diggle,
+                              edge=TRUE,
+                            kernel="gaussian")
+```
+
+The *plot()* function of Base R is then used to display the kernel density derived.
+
+```{r}
+plot(kde_childcareSG_bw)
+```
+
+The density values of the output range from 0 to 0.000035 which is way too small to comprehend. This is because the default unit of measurement of SVY21 is in meter. As a result, the density values computed is in "number of points per square meter".
+
+Before we move on to next section, it is good to know that you can retrieve the bandwidth used to compute the kde layer by using the code block below.
+
+```{r}
+bw <- bw.diggle(childcareSG_ppp)
+bw
+```
+
+#### Rescaling KDE values
+
+`rescale.ppp()` is used below to convert the unit of measurement from meter to kilometer:
+
+```{r}
+childcareSG_ppp.km <- rescale.ppp(childcareSG_ppp, 1000, "km")
+```
+
+Now, we can re-run `density()` using the resale data set and plot the output kde map.
+
+```{r}
+kde_childcareSG.bw <- density(childcareSG_ppp.km, sigma=bw.diggle, edge=TRUE, kernel="gaussian")
+plot(kde_childcareSG.bw)
+```
+
+Since we just did a rescaling operation, the output image looks identical to the earlier version with the only changes in terms of data values.
+
+### Working with Different Automatic Bandwidth Methods
+
+Beside `bw.diggle()`, there are 3 other **spatstat** functions can be used to determine the bandwidth, they are: `bw.CvL()`, `bw.scott()`, and `bw.ppl()`.
+
+Let us take a look at the bandwidth return by these automatic bandwidth calculation methods by using:
+
+```{r}
+ bw.CvL(childcareSG_ppp.km)
+```
+
+```{r}
+bw.scott(childcareSG_ppp.km)
+```
+
+```{r}
+bw.ppl(childcareSG_ppp.km)
+```
+
+```{r}
+bw.diggle(childcareSG_ppp.km)
+```
+
+Baddeley et al. (2016) suggest using the `bw.ppl()` algorithm, as it tends to produce more appropriate values when the pattern consists predominantly of tight clusters. However, they also note that if the aim of a study is to detect a single tight cluster amidst random noise, the `bw.diggle()` method is likely to be more effective.
+
+To compare the output of using `bw.diggle` and `bw.ppl` methods:
+
+```{r}
+kde_childcareSG.ppl <- density(childcareSG_ppp.km,
+                               sigma=bw.ppl,
+                               edge=TRUE,
+                               kernel="gaussian")
+par(mfrow=c(1,2))
+
+plot(kde_childcareSG.bw, main = "bw.diggle")
+plot(kde_childcareSG.ppl, main = "bw.ppl")
+```
+
+## 6.3 Working with Different Kernel Methods
+
+By default, the kernel method used in `density.ppp()` is gaussian. But there are three other options, namely: *Epanechnikov*, *Quartic* and *Dics*. Let us take a look at what they look like:
+
+```{r fig.width=16, fig.height=10}
+par(mfrow=c(2,2))
+plot(density(childcareSG_ppp.km,
+             sigma=bw.ppl,
+             edge=TRUE,
+             kernel="gaussian"),
+     main="Gaussian")
+
+plot(density(childcareSG_ppp.km,
+             sigma=bw.ppl,
+             edge=TRUE,
+             kernel="epanechnikov"),
+     main="Epanechnikov")
+
+plot(density(childcareSG_ppp.km,
+             sigma=bw.ppl,
+             edge=TRUE,
+             kernel="quartic"),
+     main="Quartic")
+
+plot(density(childcareSG_ppp.km,
+             sigma=bw.ppl,
+             edge=TRUE,
+             kernel="disc"),
+     main="Disc")
+```
+
+**Observations:** In this dataset, the choice of kernel function has only a minor impact on the overall density plots. The Gaussian, Epanechnikov, and Quartic kernels produce smoother transitions and distribute the density over a broader area. In contrast, the Disc kernel provides a more localized density estimation with sharper boundaries and less smoothness.
+
+## Fixed and Adaptive KDE
+
+### Computing KDE by using Fixed Bandwidth
+
+Next, we will compute a KDE layer by defining a bandwidth of 600 meter. Notice that in the code block below, the sigma value used is 0.6. This is because the unit of measurement of ***childcareSG_ppp.km*** object is in kilometer, hence the 600m is 0.6km.
+
+In this section, we will learn how to derive adaptive kernel density estimation by using [`density.adaptive()`](https://rdrr.io/cran/spatstat/man/adaptive.density.html) of **spatstat**.
+
+```{r}
+kde_childcareSG_adaptive <- adaptive.density(childcareSG_ppp.km, method="kernel")
+plot(kde_childcareSG_adaptive)
+```
+
+We can compare the fixed and adaptive kernel density estimation outputs by using:
+
+```{r fig.width=16, fig.height=6}
+par(mfrow=c(1,2))
+
+plot(kde_childcareSG.bw, main = "Fixed bandwidth")
+plot(kde_childcareSG_adaptive, main = "Adaptive bandwidth")
+```
+
+### Converting KDE Output into Grid Object
+
+To achieve the same result, we convert the object to a format suitable for mapping:
+
+```{r}
+#| eval: false
+gridded_kde_childcareSG_bw <- as.SpatialGridDataFrame.im(kde_childcareSG.bw)
+spplot(gridded_kde_childcareSG_bw)
+```
+
+#### Converting Grided Output into Raster
+
+Next, we will convert the gridded kernel density objects into RasterLayer object by using *raster()* of **raster** package.
+
+```{r}
+kde_childcareSG_bw_raster <- raster(kde_childcareSG.bw)
+```
+
+Let us take a look at the properties of *kde_childcareSG_bw_raster* RasterLayer.
+
+```{r}
+kde_childcareSG_bw_raster
+```
+
+Note that the crs property is NA.
+
+#### Assigning Projection Systems
+
+To include the CRS information on kde_childcareSG_bw_raster RasterLayer, we will do the following:
+
+```{r}
+projection(kde_childcareSG_bw_raster) <- CRS("+init=EPSG:3414")
+kde_childcareSG_bw_raster
+```
+
+Now, the crs property is completed.
+
+### Visualising the output in **tmap**
+
+Finally, we will display the raster in cartographic quality map using `tmap` package.
+
+```{r}
+tm_shape(kde_childcareSG_bw_raster) +
+  tm_raster("layer", palette = "viridis") +
+  tm_layout(legend.position = c("right", "bottom"), frame = FALSE)
+```
+
+```{r}
+#| eval: false
+values(kde_childcareSG_bw_raster)
+```
+
+Note that the raster values are encoded explicitly onto the raster pixel using the values in "v" field.
+
+### Comparing Spatial Point Patterns using KDE
+
+In this section, we will learn how to compare KDE of childcare at Punggol, Tampines, Chua Chu Kang and Jurong West planning areas.
+
+#### Extracting Study Area
+
+The code block below will be used to extract the target planning areas.
+
+```{r}
+pg <- mpsz_sf %>%
+  filter(PLN_AREA_N == "PUNGGOL")
+tm <- mpsz_sf %>%
+  filter(PLN_AREA_N == "TAMPINES")
+ck <- mpsz_sf %>%
+  filter(PLN_AREA_N == "CHOA CHU KANG")
+jw <- mpsz_sf %>%
+  filter(PLN_AREA_N == "JURONG WEST")
+```
+
+Plotting the target planning areas:
+
+```{r fig.width=16, fig.height=10}
+par(mfrow=c(2,2))
+plot(pg, main = "Punggol")
+plot(tm, main = "Tampines")
+plot(ck, main = "Choa Chu Kang")
+plot(jw, main = "Jurong West")
+```
+
+#### Creating ***owin*** object
+
+Now, we will convert these sf objects into owin objects that is required by **spatstat**.
+
+```{r}
+pg_owin = as.owin(pg)
+tm_owin = as.owin(tm)
+ck_owin = as.owin(ck)
+jw_owin = as.owin(jw)
+```
+
+#### Combining Childcare Points and the Study Area
+
+To extract childcare that is within the specific region for analysis, we can use:
+
+```{r}
+childcare_pg_ppp = childcare_ppp_jit[pg_owin]
+childcare_tm_ppp = childcare_ppp_jit[tm_owin]
+childcare_ck_ppp = childcare_ppp_jit[ck_owin]
+childcare_jw_ppp = childcare_ppp_jit[jw_owin]
+```
+
+Next, `rescale.ppp()` function is used to transform the unit of measurement from meter to kilometer.
+
+```{r}
+childcare_pg_ppp.km = rescale.ppp(childcare_pg_ppp, 1000, "km")
+childcare_tm_ppp.km = rescale.ppp(childcare_tm_ppp, 1000, "km")
+childcare_ck_ppp.km = rescale.ppp(childcare_ck_ppp, 1000, "km")
+childcare_jw_ppp.km = rescale.ppp(childcare_jw_ppp, 1000, "km")
+```
+
+The code block below is used to plot the four study areas and the locations of the childcare centres.
+
+```{r fig.width=16, fig.height=10}
+par(mfrow=c(2,2))
+
+plot(childcare_pg_ppp.km, main="Punggol")
+plot(childcare_tm_ppp.km, main="Tampines")
+plot(childcare_ck_ppp.km, main="Choa Chu Kang")
+plot(childcare_jw_ppp.km, main="Jurong West")
+```
+
+#### Computing KDE
+
+The code chunk below will be used to compute the KDE of these four planning area. `bw.diggle` method is used to derive the bandwidth of each area.
+
+```{r fig.width=16, fig.height=10}
+par(mfrow=c(2,2))
+plot(density(childcare_pg_ppp.km,
+             sigma=bw.diggle,
+             edge=TRUE,
+             kernel="gaussian"),
+     main="Punggol")
+plot(density(childcare_tm_ppp.km,
+             sigma=bw.diggle,
+             edge=TRUE,
+             kernel="gaussian"),
+     main="Tampines")
+plot(density(childcare_ck_ppp.km,
+             sigma=bw.diggle,
+             edge=TRUE,
+             kernel="gaussian"),
+     main="Choa Chu Kang")
+plot(density(childcare_jw_ppp.km,
+             sigma=bw.diggle,
+             edge=TRUE,
+             kernel="gaussian"),
+     main="Jurong West")
+```
+
+#### Computing Fixed Bandwidth KDE
+
+We will set the bandwidth as 250m for comparison purposes.
+
+```{r fig.width=16, fig.height=10}
+par(mfrow=c(2,2))
+
+plot(density(childcare_ck_ppp.km,
+             sigma=0.25,
+             edge=TRUE,
+             kernel="gaussian"),
+     main="Chou Chu Kang")
+
+plot(density(childcare_jw_ppp.km,
+             sigma=0.25,
+             edge=TRUE,
+             kernel="gaussian"),
+     main="Jurong West")
+
+plot(density(childcare_pg_ppp.km,
+             sigma=0.25,
+             edge=TRUE,
+             kernel="gaussian"),
+     main="Punggol")
+
+plot(density(childcare_tm_ppp.km,
+             sigma=0.25,
+             edge=TRUE,
+             kernel="gaussian"),
+     main="Tampines")
+```
+
+## Nearest Neighbour Analysis
+
+In this section, we will perform the Clark-Evans test of aggregation for a spatial point pattern by using [*clarkevans.test()*](https://www.rdocumentation.org/packages/spatstat/versions/1.63-3/topics/clarkevans.test) of **statspat**.
+
+::: callout-note
+**Clarks-Evans Test**
+
+The Clark-Evans test is a statistical test used to determine whether points in a given space are randomly distributed, clustered, or regularly spaced.
+
+The **Clark-Evans test** is a statistical test used to determine whether points in a given space are randomly distributed, clustered, or regularly spaced. It is commonly used in spatial analysis, particularly in nearest neighbor analysis, to understand the pattern of points (such as locations of trees, animals, or buildings) in a study area.
+
+**How the Clark-Evans Test Works:**
+
+-   The test calculates the **average distance** from each point in the dataset to its nearest neighbor.
+-   This observed average distance is compared to the expected average distance for a random distribution of points in the same area.
+-   The result is a **Clark-Evans ratio (R)**:
+    -   **R = 1**: Points are randomly distributed.
+    -   **R \< 1**: Points are clustered together.
+    -   **R \> 1**: Points are more evenly spaced or regularly distributed.
+
+see [Tests for Spatial Randomness - The R Book \[Book\]](https://www.oreilly.com/library/view/the-r-book/9780470510247/ch024-sec003.html)
+:::
+
+The test hypotheses are:
+
+Ho = The distribution of childcare services are randomly distributed.
+
+H1= The distribution of childcare services are not randomly distributed.
+
+The 95% confident interval will be used.
+
+### Testing Spatial Point Patterns using Clark and Evans Test
+
+```{r}
+clarkevans.test(childcareSG_ppp,
+                correction="none",
+                clipregion="sg_owin",
+                alternative=c("clustered"),
+                nsim=99)
+```
+
+The test hypotheses are:
+
+$H_o$ = The distribution of childcare services are randomly distributed.
+
+$H_1$ = The distribution of childcare services are not randomly distributed.
+
+The 95% confident interval will be used.
+
+### Testing spatial point patterns using Clark and Evans Test
+
+```{r}
+clarkevans.test(childcareSG_ppp,
+                correction="none",
+                clipregion="sg_owin",
+                alternative=c("clustered"),
+                nsim=99)
+```
+
+::: callout-note
+**Result Interpretation**
+
+-   Given that **R**, the Clark-Evans ratio, is **0.55631**, it indicates that the childcare services are clustered rather than randomly distributed. The further R is from 1 (and closer to 0), the stronger the clustering.
+-   The **p-value** is extremely small (much less than the standard significance level of 0.05).
+-   At a 95% confidence level, we can **reject the null hypothesis** of random distribution and accept the alternative hypothesis that the services are clustered.
+:::
+
+### Clark and Evans Test: Choa Chu Kang Planning Area
+
+Now, we perform the similar test on individual subzone areas. We will analyse the Choa Chu Kang area first.
+
+```{r}
+clarkevans.test(childcare_ck_ppp,
+                correction="none",
+                clipregion=NULL,
+                alternative=c("two.sided"),
+                nsim=999)
+```
+
+::: callout-note
+**Result Interpretation**
+
+-   Given that **R**, the Clark-Evans ratio, is **0.94406**, it indicates that the distribution of childcare services is closer to random with minimal clustering. Since R is close to 1 and not significantly less, there is little evidence of clustering or regular spacing.
+
+The p-value is **0.4032**, which is much larger than the standard significance level of 0.05.
+
+At a 95% confidence level, we **fail to reject the null hypothesis of random distribution**. The two-sided alternative hypothesis suggests that the distribution could be either clustered or regularly spaced, but the data does not provide enough evidence to support significant clustering or regularity.
+:::
+
+### Clark and Evans Test: Tampines Planning Area
+
+Next, we will analyse the spatial point patterns of childcare centre in Tampines planning area using the Clark-Evans test
+
+```{r}
+clarkevans.test(childcare_tm_ppp,
+                correction="none",
+                clipregion=NULL,
+                alternative=c("two.sided"),
+                nsim=999)
+```
+
+::: callout-note
+**Result Interpretation**
+
+Given that **R**, the Clark-Evans ratio, is 0.79076, it indicates that the distribution of childcare services shows a significant level of clustering. Since R is notably less than 1, there is strong evidence of clustering.
+
+The **p-value** is 0.0001592, which is much smaller than the standard significance level of 0.05.
+
+At a 95% confidence level, we **reject the null hypothesis of random distribution** and accept the alternative hypothesis that the distribution is not random. The two-sided alternative hypothesis suggests that the distribution could be either clustered or regularly spaced, but in this case, the significantly lower R value supports the conclusion of clustering.
+:::

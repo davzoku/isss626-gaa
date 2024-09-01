@@ -28,6 +28,12 @@ website:
           href: "Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01a.html"
         - text: "1B: Choropleth Mapping with R"
           href: "Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01b.html"
+        - text: "2A: 1st Order Spatial Point Patterns Analysis"
+          href: "Hands-on_Ex/Hands-on_Ex02/Hands-on_Ex02a.html"
+        - text: "2B: 2nd Order Spatial Point Patterns Analysis"
+          href: "Hands-on_Ex/Hands-on_Ex02/Hands-on_Ex02b.html"          
+        - text: "3A: Network Constrained Spatial Point Patterns Analysis"
+          href: "Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03a.html"              
       - text: "In-class Exercises"
         menu: 
           - text: "In-class Exercises"

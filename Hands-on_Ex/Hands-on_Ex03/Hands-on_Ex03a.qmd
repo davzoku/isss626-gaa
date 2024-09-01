@@ -1,6 +1,6 @@
 ---
 title: "3A: Network Constrained Spatial Point Patterns Analysis"
-subtitle: ""
+subtitle: "In this exercise, we will learn to use R and the `spNetwork` package for analyzing network-constrained spatial point patterns, focusing on kernel density estimation and G- and K-function analysis."
 draft: true
 date: ""
 date-modified: "last-modified"
@@ -22,3 +22,49 @@ editor: visual
 ## Exercise 3A Reference
 
 [R for Geospatial Data Science and Analytics - 7  Network Constrained Spatial Point Patterns Analysis](https://r4gdsa.netlify.app/chap07)
+
+## Overview
+
+**Network constrained Spatial Point Patterns Analysis (NetSPAA)** is a collection of spatial point patterns analysis methods special developed for analysing spatial point event occurs on or alongside network. The spatial point event can be locations of traffic accident or childcare centre for example. The network, on the other hand can be a road network or river network.
+
+In this hands-on exercise, you are going to gain hands-on experience on using appropriate functions of **spNetwork** package:
+
+-   to derive **network kernel density estimation (NKDE)**, and
+-   to perform network G-function and k-function analysis
+
+## Learning Outcome
+
+-   Understand and perform Network Constrained Spatial Point Patterns Analysis (NetSPAA) for events on networks (e.g., traffic accidents, childcare centers).
+-   Use `spNetwork` to derive network kernel density estimation (NKDE) for spatial analysis.
+-   Conduct network G- and K-function analyses to test for complete spatial randomness (CSR).
+-   Visualize geospatial data using `tmap` for interactive and high-quality mapping.
+-   Prepare data by importing geospatial datasets using the `sf` package and managing CRS information.
+-   Use `lixelize_lines()` to cut lines into lixels for NKDE analysis.
+-   Apply NKDE methods (`simple`, `discontinuous`, `continuous`) to analyze point patterns on networks.
+-   Visualize NKDE results by rescaling densities for effective mapping.
+-   Perform CSR tests using the `kfunctions()` from `spNetwork` to analyze spatial interactions among events.
+
+## The Data
+
+This study will analyze the spatial distribution of childcare centers in the [Punggol planning area](https://en.wikipedia.org/wiki/Punggol) using the following geospatial datasets:
+
+| Dataset        | Description                                                                                     | Format         |
+|-------------|-----------------------------------------------|-------------|
+| **Punggol_St** | Line feature data representing the road network within Punggol Planning Area.                   | ESRI Shapefile |
+| **Punggol_CC** | Point feature data representing the location of childcare centers within Punggol Planning Area. | ESRI Shapefile |
+
+## Installing and Launching the R Packages
+
+The following R packages will be used in this exercise:
+
+| Package       | Purpose                                                                                                                                      | Use Case in Exercise                                                                               |
+|--------------|-----------------------------------|------------------------|
+| **spNetwork** | Provides functions for Spatial Point Patterns Analysis (e.g., KDE, K-function) on networks and spatial matrix building for spatial analysis. | Conducting spatial point pattern analysis and building spatial weights based on network distances. |
+| **sf**        | Offers functions to manage, process, and manipulate Simple Features for geospatial data handling.                                            | Handling and processing geospatial data in Simple Features format.                                 |
+| **tmap**      | Creates cartographic quality static and interactive maps using the Leaflet API.                                                              | Plotting high-quality static and interactive maps for spatial analysis.                            |
+
+To install and load these packages, use the following code:
+
+``` r
+pacman::p_load(sf, spNetwork, tmap, tidyverse)
+```

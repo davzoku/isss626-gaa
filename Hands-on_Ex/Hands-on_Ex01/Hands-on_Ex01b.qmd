@@ -1,13 +1,13 @@
 ---
 title: "1B: Thematic Mapping and GeoVisualisation with R"
-subtitle: "In this exercise, we will learn to create effective choropleth maps using the tmap package in R for visualizing geographic data properties."
+subtitle: "In this exercise, we will learn to create thematic maps and perform geovisualization in R using the tmap package, including data preparation, classification, color schemes, and advanced mapping techniques."
 date: "Aug 24, 2024"
 date-modified: "last-modified"
 author: Teng Kok Wai (Walter)
 execute:
   echo: true
   eval: true
-  freeze: true
+  freeze: auto  
   message: false
   warning: false
 format:
@@ -30,27 +30,47 @@ Meanwhile, geovisualization leverages graphical representation to make places, p
 
 ## Learning Outcome
 
-1.  create functional and accurate choropleth map using `tmap` in R
+-   Understanding thematic mapping and geovisualization concepts.
+-   Installing and using the `tmap` package for creating choropleth maps.
+-   Importing and preparing geospatial and attribute data using `sf` and `readr` packages.
+-   Wrangling data with `dplyr` and `tidyr` to prepare for mapping.
+-   Performing georelational joins between geospatial and attribute data.
+-   Creating quick and advanced thematic maps using `tmap` elements and functions.
+-   Customizing map layouts, color schemes, and data classification methods.
+-   Plotting small multiple maps and mapping spatial objects meeting specific criteria.
 
-## Import R Packages
+## The Data
 
-`pacman` is used to load required R packages, sf, tmap and tidyverse into R environment.
+The following data sources will be used in this exercise:
+
+| Dataset                                                                                                                                | Source                                                              | Description                                                                                                                        | Format         |
+|----------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------|----------------|
+| **Master Plan 2014 Subzone Boundary (Web) (`MP14_SUBZONE_WEB_PL`)**                                                                    | [data.gov.sg](https://www.data.gov.sg/)                             | Geospatial data representing the geographical boundaries of Singapore's planning subzones based on URA Master Plan 2014.           | ESRI Shapefile |
+| **Singapore Residents by Planning Area / Subzone, Age Group, Sex, and Type of Dwelling (2011-2020) (`respopagesextod2011to2020.csv`)** | [Department of Statistics, Singapore](https://www.singstat.gov.sg/) | Aspatial data containing demographic information; fields `PA` and `SZ` can be used to link to the `MP14_SUBZONE_WEB_PL` shapefile. | CSV            |
+
+This table summarizes the datasets required, including their descriptions, sources, and formats.
+
+## Installing and Loading the R Packages
+
+The following R packages will be used in this exercise:
+
+| Package   | Purpose                                                        | Use Case in Exercise                                 |
+|-----------|----------------------------------------------------------------|------------------------------------------------------|
+| **tmap**  | Thematic mapping for visualizing geospatial data.              | Creating and customizing thematic maps.              |
+| **sf**    | Handling geospatial data in simple features format.            | Importing, managing, and processing geospatial data. |
+| **readr** | Importing delimited text files (part of `tidyverse`).          | Loading CSV data files.                              |
+| **tidyr** | Tidying data into a usable format (part of `tidyverse`).       | Reshaping and organizing data.                       |
+| **dplyr** | Data wrangling and transformation tasks (part of `tidyverse`). | Manipulating and transforming datasets.              |
+
+To install and load these packages in R, use the following code:
 
 ```{r}
 pacman::p_load(sf, tmap, tidyverse)
 ```
 
-## Datasources
-
-2 dataset is required.
-
--   Master Plan 2014 Subzone Boundary (Web) (`MP14_SUBZONE_WEB_PL`) from <a href="https://www.data.gov.sg/" target="_blank">data.gov.sg</a>: this geospatial data is in ESRI shapefile format, which consists of the geographical boundary of Singapore at the planning subzone level. The data is based on the URA Master Plan 2014.
-
--   Singapore Residents by Planning Area / Subzone, Age Group, Sex and Type of Dwelling, June 2011-2020 (`respopagesextod2011to2020.csv`) from <a href="https://www.singstat.gov.sg/" target="_blank">Department of Statistics, Singapore</a>: this is aspatial data in csv format. Although it does not contain any coordinates values, its `PA` and `SZ` fields can be used as unique identifiers to geocode to MP14_SUBZONE_WEB_PL shapefile.
-
 ## Import Geospatial Data into R
 
-The code chunk below uses st_read() function of sf package to import the `MP14_SUBZONE_WEB_PL` shapefile into R as a polygon feature data frame.
+The code block below uses st_read() function of sf package to import the `MP14_SUBZONE_WEB_PL` shapefile into R as a polygon feature data frame.
 
 ```{r}
 mpsz = st_read(dsn = "data/geospatial",
@@ -67,7 +87,7 @@ mpsz
 
 Next, *respopagsex2011to2020.csv* file is imported into RStudio and save the file into an R dataframe called *popdata*.
 
-The task will be performed by using *read_csv()* function of **readr** package as shown in the code chunk below.
+The task will be performed by using *read_csv()* function of **readr** package as shown in the code block below.
 
 ```{r, echo=TRUE, message=FALSE}
 popdata <- read_csv("data/aspatial/respopagesextod2011to2020.csv")
@@ -91,24 +111,47 @@ The following data wrangling and transformation functions will be used:
 -   *mutate()*, *filter()*, *group_by()* and *select()* of **dplyr** package
 
 ```{r}
+# Step 1: Filter the data for the year 2020
 popdata2020 <- popdata %>%
-  filter(Time == 2020) %>%
-  group_by(PA, SZ, AG) %>%
-  summarise(`POP` = sum(`Pop`)) %>%
-  ungroup()%>%
-  pivot_wider(names_from=AG,
-              values_from=POP) %>%
-  mutate(YOUNG = rowSums(.[3:6])
-         +rowSums(.[14])) %>%
-mutate(`ECONOMY ACTIVE` = rowSums(.[7:11])+
-rowSums(.[13:15]))%>%
-mutate(`AGED`=rowSums(.[16:21])) %>%
-mutate(`TOTAL`=rowSums(.[3:21])) %>%
-mutate(`DEPENDENCY` = (`YOUNG` + `AGED`)
-/`ECONOMY ACTIVE`) %>%
-  select(`PA`, `SZ`, `YOUNG`,
-       `ECONOMY ACTIVE`, `AGED`,
-       `TOTAL`, `DEPENDENCY`)
+  filter(Time == 2020)
+
+# Step 2: Group the data by PA (Planning Area), SZ (Subzone), and AG (Age Group)
+popdata2020 <- popdata2020 %>%
+  group_by(PA, SZ, AG)
+
+# Step 3: Summarize the data by calculating the total population (POP) for each group
+popdata2020 <- popdata2020 %>%
+  summarise(POP = sum(Pop)) %>%
+  ungroup()
+
+# Step 4: Reshape the data from long to wide format, with age groups as column names
+popdata2020 <- popdata2020 %>%
+  pivot_wider(names_from = AG, values_from = POP)
+
+# Step 5: Calculate the YOUNG population (sum of selected age groups)
+popdata2020 <- popdata2020 %>%
+  mutate(YOUNG = rowSums(.[3:6]) + rowSums(.[14]))
+
+# Step 6: Calculate the ECONOMICALLY ACTIVE population (sum of selected age groups)
+popdata2020 <- popdata2020 %>%
+  mutate(`ECONOMY ACTIVE` = rowSums(.[7:11]) + rowSums(.[13:15]))
+
+# Step 7: Calculate the AGED population (sum of selected age groups)
+popdata2020 <- popdata2020 %>%
+  mutate(AGED = rowSums(.[16:21]))
+
+# Step 8: Calculate the TOTAL population (sum of all age groups)
+popdata2020 <- popdata2020 %>%
+  mutate(TOTAL = rowSums(.[3:21]))
+
+# Step 9: Calculate the DEPENDENCY ratio (ratio of YOUNG and AGED to ECONOMY ACTIVE)
+popdata2020 <- popdata2020 %>%
+  mutate(DEPENDENCY = (YOUNG + AGED) / `ECONOMY ACTIVE`)
+
+# Step 10: Select the relevant columns to be retained in the final dataset
+popdata2020 <- popdata2020 %>%
+  select(PA, SZ, YOUNG, `ECONOMY ACTIVE`, AGED, TOTAL, DEPENDENCY)
+
 ```
 
 #### Joining the attribute data and geospatial data
@@ -129,9 +172,11 @@ mpsz_pop2020 <- left_join(mpsz, popdata2020,
                           by = c("SUBZONE_N" = "SZ"))
 ```
 
-> **Key Takeaway:**
->
-> The left_join() function from the dplyr package is applied to ensure that the resulting output remains a simple features data frame, with mpsz as the left table.
+::: callout-note
+**Key Takeaway:**
+
+The left_join() function from the dplyr package is applied to ensure that the resulting output remains a simple features data frame, with mpsz as the left table.
+:::
 
 ```{r}
 dir.create("data/rds/", recursive = TRUE)
@@ -159,10 +204,12 @@ qtm(mpsz_pop2020,
     fill = "DEPENDENCY")
 ```
 
-> **Key Takeaway:**
->
-> -   tmap_mode("plot") is used to generate a static map. To enable interactive mode, use the "view" option.
-> -   The fill argument is used to map the attribute to be visualized (in this case, DEPENDENCY).
+::: callout-note
+**Key Takeaway:**
+
+-   tmap_mode("plot") is used to generate a static map. To enable interactive mode, use the "view" option.
+-   The fill argument is used to map the attribute to be visualized (in this case, DEPENDENCY).
+:::
 
 ### Creating a choropleth map by using *tmap*'s elements
 
@@ -194,7 +241,7 @@ In the following sub-section, more *tmap* functions will be used to plot these e
 
 The basic building block of **tmap** is *tm_shape()* followed by one or more layer elemments such as *tm_fill()* and *tm_polygons()*.
 
-In the code chunk below, *tm_shape()* is used to define the input data (i.e *mpsz_pop2020*) and *tm_polygons()* is used to draw the planning subzone polygons
+In the code block below, *tm_shape()* is used to define the input data (i.e *mpsz_pop2020*) and *tm_polygons()* is used to draw the planning subzone polygons
 
 ```{r}
 tm_shape(mpsz_pop2020) +
@@ -210,17 +257,19 @@ tm_shape(mpsz_pop2020)+
   tm_polygons("DEPENDENCY")
 ```
 
-> Key takeaways from *tm_polygons()*:
->
-> -   The default method for interval binning when creating a choropleth map is "pretty." A detailed explanation of the data classification methods available in **tmap** will be covered in sub-section 4.3.
-> -   The default color palette used is `YlOrRd` from ColorBrewer. More information on color schemes will be explored in sub-section 4.4.
-> -   Missing values are automatically represented with a grey shade by default.
+::: callout-note
+Key takeaways from *tm_polygons()*:
+
+-   The default method for interval binning when creating a choropleth map is "pretty." A detailed explanation of the data classification methods available in **tmap** will be covered in sub-section 4.3.
+-   The default color palette used is `YlOrRd` from ColorBrewer. More information on color schemes will be explored in sub-section 4.4.
+-   Missing values are automatically represented with a grey shade by default.
+:::
 
 #### Drawing a choropleth map using *tm_fill()* and \*tm_border()\*\*
 
 Actually, *tm_polygons()* is a wraper of *tm_fill()* and *tm_border()*. *tm_fill()* shades the polygons by using the default colour scheme and *tm_borders()* adds the borders of the shapefile onto the choropleth map.
 
-The code chunk below draws a choropleth map by using *tm_fill()* alone.
+The code block below draws a choropleth map by using *tm_fill()* alone.
 
 ```{r}
 tm_shape(mpsz_pop2020)+
@@ -229,7 +278,7 @@ tm_shape(mpsz_pop2020)+
 
 Notice that the planning subzones are shared according to the respective dependecy values
 
-To add the boundary of the planning subzones, tm_borders will be used as shown in the code chunk below.
+To add the boundary of the planning subzones, tm_borders will be used as shown in the code block below.
 
 ```{r}
 tm_shape(mpsz_pop2020)+
@@ -257,7 +306,7 @@ To define a data classification method, the *style* argument of *tm_fill()* or *
 
 #### Plotting choropleth maps with built-in classification methods
 
-The code chunk below shows a quantile data classification that used 5 classes.
+The code block below shows a quantile data classification that used 5 classes.
 
 ```{r}
 tm_shape(mpsz_pop2020)+
@@ -267,7 +316,7 @@ tm_shape(mpsz_pop2020)+
   tm_borders(alpha = 0.5)
 ```
 
-In the code chunk below, *equal* data classification method is used.
+In the code block below, *equal* data classification method is used.
 
 ```{r}
 tm_shape(mpsz_pop2020)+
@@ -277,9 +326,13 @@ tm_shape(mpsz_pop2020)+
   tm_borders(alpha = 0.5)
 ```
 
+::: callout-note
 **Observation:** The distribution of quantile data classification method are more evenly distributed then equal data classification method.
+:::
 
-> **Warning: Maps Lie!**
+::: callout-warning
+**Warning: Maps Lie!**
+:::
 
 **Exercise: Using what you had learned, prepare choropleth maps by using different classification methods supported by tmap and compare their differences.**
 
@@ -377,7 +430,9 @@ tm_shape(mpsz_pop2020)+
 ```
 :::
 
+::: callout-note
 **Observation:** Different data classification methods produce varying color patterns. Methods like *pretty*, *equal*, and *sd* are more sensitive to outliers, often resulting in fewer distinct areas on the map. In contrast, methods like *quantile*, *jenks*, and *kmeans* create more evenly distributed colors. Therefore, choosing the right classification method based on data distribution is crucial to avoid misleading representations in choropleth maps.
+:::
 
 **Exercise: Preparing choropleth maps by using similar classification method but with different numbers of classes (i.e. 2, 6, 10, 20). Compare the output maps, what observation can you draw?**
 
@@ -425,13 +480,15 @@ tm_shape(mpsz_pop2020)+
 ```
 :::
 
+::: callout-note
 **Observation:** Using different class numbers within the same classification method affects the map's coloring. With n=2, outliers dominate, resulting in only one distinct area. Increasing the class count distributes the data more evenly across the map.
+:::
 
 #### Plotting choropleth map with custom break
 
 For all the built-in styles, the category breaks are computed internally. In order to override these defaults, the breakpoints can be set explicitly by means of the *breaks* argument to the *tm_fill()*. It is important to note that, in **tmap** the breaks include a minimum and maximum. As a result, in order to end up with n categories, n+1 elements must be specified in the *breaks* option (the values must be in increasing order).
 
-Before we get started, it is always a good practice to get some descriptive statistics on the variable before setting the break points. Code chunk below will be used to compute and display the descriptive statistics of **DEPENDENCY** field.
+Before we get started, it is always a good practice to get some descriptive statistics on the variable before setting the break points. Code block below will be used to compute and display the descriptive statistics of **DEPENDENCY** field.
 
 ```{r}
 summary(mpsz_pop2020$DEPENDENCY)
