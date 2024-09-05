@@ -1,6 +1,6 @@
 ---
 title: "In-Class Exercise 2"
-subtitle: "#todo"
+subtitle: "In this exercise, we will learn to analyze spatial point patterns using `spatstat` methods, including installing necessary packages, creating spatial objects, performing kernel density estimation, and applying edge correction methods."
 date: "Sep 02, 2024"
 date-modified: "last-modified"
 author: Teng Kok Wai (Walter)
@@ -23,14 +23,6 @@ editor: visual
 [ISSS626 Geospatial Analytics and Applications - In-class Exercise 2: Spatial Point Patterns Analysis: spatstat methods](https://isss626-ay2024-25aug.netlify.app/in-class_ex/in-class_ex02/in-class_ex02-sppa)
 
 ## Learning Outcome
-
-### Short Sentence
-
-"In this exercise, we will learn to analyze spatial point patterns using `spatstat` methods, including installing necessary packages, creating spatial objects, performing kernel density estimation, and applying edge correction methods."
-
-### Point Form
-
-**Learning Outcomes:**
 
 - Understand how to handle the retired R package such as **maptools**
 - Understand the difference in usage of `st_combine()` and `st_union()` in the **sf** package.

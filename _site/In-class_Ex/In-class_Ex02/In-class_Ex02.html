@@ -120,11 +120,11 @@ gtag('config', 'G-4MGB7PXBSL', { 'anonymize_ip': true});
 
 <link rel="stylesheet" href="../../styles.css">
 <meta property="og:title" content="In-Class Exercise 2 – Walter Teng’s Coursework for SMU ISSS626: Geospatial Analytics and Applications">
-<meta property="og:description" content="#todo">
+<meta property="og:description" content="In this exercise, we will learn to analyze spatial point patterns using spatstat methods, including installing necessary packages, creating spatial objects, performing kernel density estimation, and applying edge correction methods.">
 <meta property="og:image" content="https://isss626-gaa.netlify.app/In-class_Ex/In-class_Ex02/og-img.png">
 <meta property="og:site_name" content="Walter Teng's Coursework for SMU ISSS626: Geospatial Analytics and Applications">
 <meta name="twitter:title" content="In-Class Exercise 2 – Walter Teng’s Coursework for SMU ISSS626: Geospatial Analytics and Applications">
-<meta name="twitter:description" content="#todo">
+<meta name="twitter:description" content="In this exercise, we will learn to analyze spatial point patterns using spatstat methods, including installing necessary packages, creating spatial objects, performing kernel density estimation, and applying edge correction methods.">
 <meta name="twitter:image" content="https://isss626-gaa.netlify.app/In-class_Ex/In-class_Ex02/og-img.png">
 <meta name="twitter:creator" content="@davzoku">
 <meta name="twitter:site" content="@davzoku">
@@ -283,11 +283,7 @@ gtag('config', 'G-4MGB7PXBSL', { 'anonymize_ip': true});
    
   <ul>
   <li><a href="#exercise-reference" id="toc-exercise-reference" class="nav-link active" data-scroll-target="#exercise-reference"><span class="header-section-number">1</span> Exercise Reference</a></li>
-  <li><a href="#learning-outcome" id="toc-learning-outcome" class="nav-link" data-scroll-target="#learning-outcome"><span class="header-section-number">2</span> Learning Outcome</a>
-  <ul class="collapse">
-  <li><a href="#short-sentence" id="toc-short-sentence" class="nav-link" data-scroll-target="#short-sentence"><span class="header-section-number">2.1</span> Short Sentence</a></li>
-  <li><a href="#point-form" id="toc-point-form" class="nav-link" data-scroll-target="#point-form"><span class="header-section-number">2.2</span> Point Form</a></li>
-  </ul></li>
+  <li><a href="#learning-outcome" id="toc-learning-outcome" class="nav-link" data-scroll-target="#learning-outcome"><span class="header-section-number">2</span> Learning Outcome</a></li>
   <li><a href="#how-to-handle-retired-r-packages" id="toc-how-to-handle-retired-r-packages" class="nav-link" data-scroll-target="#how-to-handle-retired-r-packages"><span class="header-section-number">3</span> How to Handle Retired R Packages</a></li>
   <li><a href="#understanding-the-salient-differences-between-st_combine-and-st_union" id="toc-understanding-the-salient-differences-between-st_combine-and-st_union" class="nav-link" data-scroll-target="#understanding-the-salient-differences-between-st_combine-and-st_union"><span class="header-section-number">4</span> Understanding the Salient Differences Between <code>st_combine()</code> and <code>st_union()</code></a></li>
   <li><a href="#understanding-the-spatstat-package" id="toc-understanding-the-spatstat-package" class="nav-link" data-scroll-target="#understanding-the-spatstat-package"><span class="header-section-number">5</span> Understanding the <code>spatstat</code> Package</a></li>
@@ -318,7 +314,7 @@ gtag('config', 'G-4MGB7PXBSL', { 'anonymize_ip': true});
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
 <h1 class="title">In-Class Exercise 2</h1>
-<p class="subtitle lead">#todo</p>
+<p class="subtitle lead">In this exercise, we will learn to analyze spatial point patterns using <code>spatstat</code> methods, including installing necessary packages, creating spatial objects, performing kernel density estimation, and applying edge correction methods.</p>
 </div>
 
 
@@ -359,13 +355,6 @@ gtag('config', 'G-4MGB7PXBSL', { 'anonymize_ip': true});
 </section>
 <section id="learning-outcome" class="level2" data-number="2">
 <h2 data-number="2" class="anchored" data-anchor-id="learning-outcome"><span class="header-section-number">2</span> Learning Outcome</h2>
-<section id="short-sentence" class="level3" data-number="2.1">
-<h3 data-number="2.1" class="anchored" data-anchor-id="short-sentence"><span class="header-section-number">2.1</span> Short Sentence</h3>
-<p>“In this exercise, we will learn to analyze spatial point patterns using <code>spatstat</code> methods, including installing necessary packages, creating spatial objects, performing kernel density estimation, and applying edge correction methods.”</p>
-</section>
-<section id="point-form" class="level3" data-number="2.2">
-<h3 data-number="2.2" class="anchored" data-anchor-id="point-form"><span class="header-section-number">2.2</span> Point Form</h3>
-<p><strong>Learning Outcomes:</strong></p>
 <ul>
 <li>Understand how to handle the retired R package such as <strong>maptools</strong></li>
 <li>Understand the difference in usage of <code>st_combine()</code> and <code>st_union()</code> in the <strong>sf</strong> package.</li>
@@ -375,7 +364,6 @@ gtag('config', 'G-4MGB7PXBSL', { 'anonymize_ip': true});
 <li>Understand importance of setting random seed for reproducible results when applying Monte Carlo simulations for spatial analysis.</li>
 <li>Practice importing and visualizing data from regional data sources in preparation for Take Home Assignment 1</li>
 </ul>
-</section>
 </section>
 <section id="how-to-handle-retired-r-packages" class="level2" data-number="3">
 <h2 data-number="3" class="anchored" data-anchor-id="how-to-handle-retired-r-packages"><span class="header-section-number">3</span> How to Handle Retired R Packages</h2>
