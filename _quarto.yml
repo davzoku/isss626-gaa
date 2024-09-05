@@ -6,43 +6,71 @@ website:
   image: "og-img.png"
   favicon: "favicon.ico"
   description: "A collection of projects, assignments and notes for the SMU ISSS626 Geospatial Analytics and Applications course"
-  page-navigation: true  
+  page-navigation: true
   open-graph: true
   site-url: "https://isss626-gaa.netlify.app/"
-  repo-url:  "https://github.com/davzoku/isss626-gaa"
-  google-analytics: "G-4MGB7PXBSL"    
+  repo-url: "https://github.com/davzoku/isss626-gaa"
+  google-analytics: "G-4MGB7PXBSL"
   twitter-card:
-     creator: "@davzoku"
-     site: "@davzoku"
-     card-style: summary_large_image  
+    creator: "@davzoku"
+    site: "@davzoku"
+    card-style: summary_large_image
   navbar:
     # logo: ""
     background: dark
     title: "ISSS626 Geospatial Analytics and Applications"
     collapse-below: lg
-    search: true  
+    search: true
     left:
       - text: "Hands-on Exercises"
-        menu: 
-        - text: "1A: Geospatial Data Wrangling with R"
-          href: "Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01a.html"
-        - text: "1B: Choropleth Mapping with R"
-          href: "Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01b.html"
-        - text: "2A: 1st Order Spatial Point Patterns Analysis"
-          href: "Hands-on_Ex/Hands-on_Ex02/Hands-on_Ex02a.html"
-        - text: "2B: 2nd Order Spatial Point Patterns Analysis"
-          href: "Hands-on_Ex/Hands-on_Ex02/Hands-on_Ex02b.html"          
-        - text: "3A: Network Constrained Spatial Point Patterns Analysis"
-          href: "Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03a.html"              
+        menu:
+          - text: "1A: Geospatial Data Wrangling with R"
+            href: "Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01a.html"
+          - text: "1B: Choropleth Mapping with R"
+            href: "Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01b.html"
+          - text: "2A: 1st Order Spatial Point Patterns Analysis"
+            href: "Hands-on_Ex/Hands-on_Ex02/Hands-on_Ex02a.html"
+          - text: "2B: 2nd Order Spatial Point Patterns Analysis"
+            href: "Hands-on_Ex/Hands-on_Ex02/Hands-on_Ex02b.html"
+          - text: "3A: Network Constrained Spatial Point Patterns Analysis"
+            href: "Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03a.html"
+          - text: "4A: Spatial Weights and Applications"
+            href: "Hands-on_Ex/Hands-on_Ex04/Hands-on_Ex04a.html"
       - text: "In-class Exercises"
-        menu: 
-          - text: "In-class Exercises"
-            href: In-class_Ex/In-class_Ex01/In-class_Ex01.html          
+        menu:
+          - text: "In-class Exercise 01"
+            href: In-class_Ex/In-class_Ex01/In-class_Ex01.html
+          - text: "In-class Exercise 02"
+            href: In-class_Ex/In-class_Ex02/In-class_Ex02.html
+          - text: "In-class Exercise 03"
+            href: In-class_Ex/In-class_Ex03/In-class_Ex03.html
+          - text: "In-class Exercise 04"
+            href: In-class_Ex/In-class_Ex04/In-class_Ex04.html
+          - text: "In-class Exercise 05"
+            href: In-class_Ex/In-class_Ex05/In-class_Ex05.html
+          - text: "In-class Exercise 06"
+            href: In-class_Ex/In-class_Ex06/In-class_Ex06.html
+          - text: "In-class Exercise 07"
+            href: In-class_Ex/In-class_Ex07/In-class_Ex07.html
+          - text: "In-class Exercise 08"
+            href: In-class_Ex/In-class_Ex08/In-class_Ex08.html
+          - text: "In-class Exercise 09"
+            href: In-class_Ex/In-class_Ex09/In-class_Ex09.html
+          - text: "In-class Exercise 10"
+            href: In-class_Ex/In-class_Ex10/In-class_Ex10.html
+      - text: "Take-home Exercises"
+        menu:
+          - text: "Take-home Exercise 01"
+            href: Take-home_Ex/Take-home_Ex01/Take-home_Ex01.html
+          - text: "Take-home Exercise 02"
+            href: Take-home_Ex/Take-home_Ex02/Take-home_Ex02.html
+          - text: "Take-home Exercise 03"
+            href: Take-home_Ex/Take-home_Ex03/Take-home_Ex03.html
     right:
       - href: index.qmd
         text: "{{< fa house size=md >}}"
       - href: https://www.walterteng.com
-        text: "{{< fa user size=md >}}"        
+        text: "{{< fa user size=md >}}"
       - href: https://www.linkedin.com/in/tengkokwai/
         # text: "{{< fa fa-linkedin size=md >}}"
         icon: linkedin
@@ -55,7 +83,7 @@ format:
     theme:
       dark: [darkly, custom.scss]
       light: [flatly, custom-light.scss]
-    css: styles.css      
+    css: styles.css
     # highlight-style: monokai
     toc: true
 

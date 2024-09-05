@@ -1,0 +1,15 @@
+{
+  "hash": "d4cb46ec98d869318904eda008d486e3",
+  "result": {
+    "engine": "knitr",
+    "markdown": "---\ntitle: \"In-Class Exercise 4\"\nsubtitle: \"#todo\"\ndraft: true\ndate: \"Sep 00, 2024\"\ndate-modified: \"last-modified\"\nauthor: Teng Kok Wai (Walter)\nexecute:\n  echo: true # Include the source code in output\n  eval: true\n  freeze: auto\n  message: false\n  warning: false # if false, don't include warnings in the output\nformat:\n  html:\n    toc: true\nnumber-sections: true\nnumber-offset: 1\neditor: visual\n---\n\n\n\n\n## Exercise Reference\n\n#todo\n\n## Learning Outcome\n\n#todo\n\n\n## Import the R Packages\n\n#todo\n\n\n\n\n\n::: {.cell}\n\n```{.r .cell-code}\npacman::p_load(sf)\n```\n:::\n\n\n\n\n\n## The Data\n",
+    "supporting": [],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {},
+    "engineDependencies": {},
+    "preserve": {},
+    "postProcess": true
+  }
+}

@@ -2,7 +2,7 @@
 title: "Take Home Exercise 1"
 subtitle: ""
 draft: true
-date: ""
+date: "Sep 05, 2024"
 date-modified: "last-modified"
 author: Teng Kok Wai (Walter)
 execute:

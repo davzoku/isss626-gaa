@@ -1,0 +1,40 @@
+---
+title: "In-Class Exercise 9"
+subtitle: "#todo"
+draft: true
+date: "Sep 00, 2024"
+date-modified: "last-modified"
+author: Teng Kok Wai (Walter)
+execute:
+  echo: true # Include the source code in output
+  eval: true
+  freeze: auto
+  message: false
+  warning: false # if false, don't include warnings in the output
+format:
+  html:
+    toc: true
+number-sections: true
+number-offset: 1
+editor: visual
+---
+
+## Exercise Reference
+
+#todo
+
+## Learning Outcome
+
+#todo
+
+
+## Import the R Packages
+
+#todo
+
+
+```{r}
+pacman::p_load(sf)
+```
+
+## The Data

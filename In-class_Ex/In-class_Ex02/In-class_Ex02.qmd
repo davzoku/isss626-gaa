@@ -1,0 +1,355 @@
+---
+title: "In-Class Exercise 2"
+subtitle: "#todo"
+date: "Sep 02, 2024"
+date-modified: "last-modified"
+author: Teng Kok Wai (Walter)
+execute:
+  echo: true # Include the source code in output
+  eval: true
+  freeze: auto
+  message: false
+  warning: false # if false, don't include warnings in the output
+format:
+  html:
+    toc: true
+number-sections: true
+number-offset: 1
+editor: visual
+---
+
+## Exercise Reference
+
+[ISSS626 Geospatial Analytics and Applications - In-class Exercise 2: Spatial Point Patterns Analysis: spatstat methods](https://isss626-ay2024-25aug.netlify.app/in-class_ex/in-class_ex02/in-class_ex02-sppa)
+
+## Learning Outcome
+
+### Short Sentence
+
+"In this exercise, we will learn to analyze spatial point patterns using `spatstat` methods, including installing necessary packages, creating spatial objects, performing kernel density estimation, and applying edge correction methods."
+
+### Point Form
+
+**Learning Outcomes:**
+
+- Understand how to handle the retired R package such as **maptools**
+- Understand the difference in usage of `st_combine()` and `st_union()` in the **sf** package.
+- Recap on usage of the **spatstat** package for analyzing two-dimensional spatial point patterns.
+- Recap on conversion steps of **sf** data frames to **ppp** and **owin** objects using `as.ppp()` and `as.owin()` functions for point pattern analysis.
+- Recap on Kernel Density Estimation (KDE) on spatial point events and visualize results using`spatstat.geom` methods.
+- Understand importance of setting random seed for reproducible results when applying Monte Carlo simulations for spatial analysis.
+- Practice importing and visualizing data from regional data sources in preparation for Take Home Assignment 1
+
+## How to Handle Retired R Packages
+
+In our work, we might need to use retired R packages. In this section, we will see how we can use a retired package such as **maptools**.
+
+Although **maptools** is retired and removed from CRAN, we can still download from [Posit Public Package Manager](https://packagemanager.posit.co/client/#/repos/cran/setup?snapshot=2023-10-13&distribution=windows&r_environment=ide) snapshots by using the code block below.
+
+::: callout-tip
+Include `#| eval: false` in the installation code block to avoid repetitively downloads of **maptools** whenever the Quarto document is rendered.
+:::
+
+```{r}
+#| eval: false
+install.packages("maptools",
+                 repos = "https://packagemanager.posit.co/cran/2023-10-13")
+```
+## Understanding the Salient Differences Between `st_combine()` and `st_union()`
+
+In **sf** package, there are two functions allow us to combine multiple simple features into one simple features. They are [`st_combine()`](https://r-spatial.github.io/sf/reference/geos_combine.html) and `st_union()`.
+
+::: callout-tip
+-   `st_combine()` returns a single, combined geometry, with no resolved boundaries; returned geometries may well be invalid.
+
+-   If y is missing, `st_union(x)` returns a single geometry with resolved boundaries, else the geometries for all unioned pairs of x\[i\] and y\[j\].
+
+see [Combine or union feature geometries — geos_combine • sf](https://r-spatial.github.io/sf/reference/geos_combine.html#:~:text=st_combine%20returns%20a%20single%2C%20combined,%5D%20and%20y%5Bj%5D%20.)
+:::
+
+```{r}
+#| echo: false
+#| output: false
+pacman::p_load(sf, raster, spatstat, tmap, tidyverse)
+childcare_sf <- st_read("data/child-care-services-geojson.geojson") %>%
+  st_transform(crs = 3414)
+
+mpsz_sf <- st_read(dsn = "data", layer="MP14_SUBZONE_WEB_PL")
+
+sg_sf <- mpsz_sf %>%
+  st_union()
+```
+
+## Understanding the `spatstat` Package
+
+[**spatstat**](https://spatstat.org/) R package is a comprehensive open-source toolbox for analysing Spatial Point Patterns. Focused mainly on two-dimensional point patterns, including multitype or marked points, in any spatial region.
+
+It comprises of many sub-packages for specific usage.
+
+| **Package**                                                                                       | **Description**                                                                                      |
+|---------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------|
+| [**spatstat**](https://cran.r-project.org/web/packages/spatstat/index.html)                       | Contains documentation and introductory material, including beginner’s guides, vignettes, and demos.  |
+| [**spatstat.data**](https://cran.r-project.org/web/packages/spatstat.data/index.html)              | Contains all datasets required for the `spatstat` package.                                            |
+| [**spatstat.utils**](https://cran.r-project.org/web/packages/spatstat.utils/index.html)            | Provides basic utility functions for use within `spatstat`.                                           |
+| [**spatstat.univar**](https://cran.r-project.org/web/packages/spatstat.univar/spatstat.univar.pdf) | Contains functions for estimating and manipulating probability distributions of 1-dimensional random variables. |
+| [**spatstat.sparse**](https://cran.r-project.org/web/packages/spatstat.sparse/spatstat.sparse.pdf) | Functions for handling sparse arrays and performing linear algebra operations.                       |
+| [**spatstat.geom**](https://cran.r-project.org/web/packages/spatstat.geom/index.html)             | Defines spatial objects (e.g., point patterns, windows, pixel images) and includes geometrical operations. |
+| [**spatstat.random**](https://cran.r-project.org/web/packages/spatstat.random/index.html)          | Functions for generating random spatial patterns and simulating models.                               |
+| [**spatstat.explore**](https://cran.r-project.org/web/packages/spatstat.explore/index.html)        | Code for exploratory data analysis and nonparametric spatial data analysis.                           |
+| [**spatstat.model**](https://cran.r-project.org/web/packages/spatstat.model/index.html)            | Code for model-fitting, diagnostics, and formal inference within spatial data analysis.               |
+| [**spatstat.linnet**](https://cran.r-project.org/web/packages/spatstat.linnet/index.html)          | Defines spatial data on linear networks and performs geometrical operations and statistical analysis. |
+
+## Creating `ppp` Objects from sf data.frame
+
+We can derive an `ppp` object layer directly from a sf tibble data.frame using [`as.ppp()`](https://search.r-project.org/CRAN/refmans/spatstat.geom/html/as.ppp.html) from [**spatstat.geom**](https://cran.r-project.org/web/packages/spatstat.geom/spatstat.geom.pdf).
+
+```{r}
+childcare_ppp <- as.ppp(childcare_sf)
+plot(childcare_ppp)
+```
+```{r}
+summary(childcare_ppp)
+```
+From the output above, we can observe the properties of the `ppp` objects.
+
+## Creating ***owin*** object from sf data.frame
+
+We can create **owin** object from polygon sf tibble data.frame using `as.owin()` of **spatstat.geom**.
+
+```{r}
+sg_owin <- as.owin(sg_sf)
+plot(sg_owin)
+```
+```{r}
+summary(sg_owin)
+```
+As shown above, we can display the summary information of the owin object class.
+
+## Combining point events object and owin object
+
+To combine point events object and owin object:
+
+```{r}
+childcareSG_ppp = childcare_ppp[sg_owin]
+plot(childcareSG_ppp)
+```
+## Kernel Density Estimation of Spatial Point Event
+
+In this section, we will show why we should re-scale to appropriate unit of measurement before performing KDE.
+
+```{r fig.width=16, fig.height=6}
+
+kde_childcareSG_adaptive_m <- adaptive.density(
+  childcareSG_ppp,
+  method="kernel")
+
+childcareSG_ppp.km <- rescale.ppp(childcareSG_ppp,
+                                  1000,
+                                  "km")
+
+kde_childcareSG_adaptive_km <- adaptive.density(
+  childcareSG_ppp.km,
+  method="kernel")
+
+
+par(mfrow=c(1,2))
+
+plot(kde_childcareSG_adaptive_m)
+plot(kde_childcareSG_adaptive_km)
+```
+
+From the output above, we can notice that the plot on the right has a more interpretable scale range from 0-40km range as compared to the left plot where rescaling was not performed.
+
+## Kernel Density Estimation
+
+There is 2 different ways to convert KDE output into grid object. `spatstat.geom` is preferred.
+
+::: panel-tabset
+### spatstat.geom method
+
+```{r}
+gridded_kde_childcareSG_ad <- as(
+  kde_childcareSG_adaptive_km,
+  "SpatialGridDataFrame")
+spplot(gridded_kde_childcareSG_ad)
+```
+
+### maptools method
+
+```{r}
+#| eval: false
+gridded_kde_childcareSG_ad <- maptools::as.SpatialGridDataFrame.im(
+  kde_childcareSG_adaptive_km)
+spplot(gridded_kde_childcareSG_ad)
+```
+:::
+
+## Kernel Density Estimation
+
+### Visualising KDE using `tmap`
+
+To visualize KDE in raster output using `tmap`:
+
+```{r}
+#| echo: false
+#| output: false
+kde_childcareSG_ad_raster <- raster(gridded_kde_childcareSG_ad)
+projection(kde_childcareSG_ad_raster) <- CRS("+init=EPSG:3414")
+kde_childcareSG_ad_raster
+```
+
+
+```{r}
+tm_shape(kde_childcareSG_ad_raster) +
+  tm_raster(palette = "viridis") +
+  tm_layout(legend.position = c("right", "bottom"),
+            frame = FALSE)
+```
+
+## Extracting Study Area Using `sf` Objects
+
+To extract and create an ppp object showing child care services and within Punggol Planning Area:
+
+::: callout-tip
+`filter()` of dplyr package should be used to extract the target planning areas.
+:::
+
+```{r}
+pg_owin <- mpsz_sf %>%
+  filter(PLN_AREA_N == "PUNGGOL") %>%
+  as.owin()
+
+childcare_pg = childcare_ppp[pg_owin]
+
+plot(childcare_pg)
+```
+
+## Monte Carlo Simulation
+
+::: callout-tip
+In order to ensure reproducibility, it is important to include the code block below before using spatstat functions involve Monte Carlo simulation
+:::
+
+```{r}
+set.seed(1234)
+```
+
+## Edge Correction Methods of `spatstat`
+
+In spatstat, edge correction methods are used to **handle biases that arise when estimating spatial statistics near the boundaries of a study region**. These corrections are **essential for ensuring accurate estimates in spatial point pattern analysis**, especially for summary statistics like the K-function, L-function, pair correlation function, etc.
+
+
+| Method       | Description                                                                                                                                               |
+|--------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **none**     | No edge correction is applied. Assumes no bias at the edges, which may lead to underestimation of statistics near the boundaries.                          |
+| **isotropic**| Corrects for edge effects by assuming the point pattern is isotropic (uniform in all directions) and compensates for missing neighbors outside the boundary.|
+| **translate**| (Translation Correction) Uses translation correction by translating the observation window so every point lies entirely within it, then averaging statistics over all translations.|
+| **Ripley**   | (Ripley’s Correction) Similar to isotropic correction, but specifically tailored for Ripley’s K-function and related functions. Adjusts the expected number of neighbors near edges based on the window's shape and size.|
+| **border**   | Border correction reduces bias by only considering points far enough from the boundary so that their neighborhood is fully contained within the window, minimizing edge effects. |
+
+
+## Geospatial Analytics for Social Good: Thailand Road Accident Case Study
+
+This section is in preparation of [Take-home Exercise 1: Geospatial Analytics for Public Good](https://isss626-ay2024-25aug.netlify.app/take-home_ex01)
+
+### Background
+
+For an overview of the road traffic accidents in Thailand, you may refer to:
+
+-   [Road traffic injuries](https://www.who.int/news-room/fact-sheets/detail/road-traffic-injuries), WHO.
+-   [Road traffic deaths and injuries in Thailand](https://cdn.who.int/media/docs/default-source/thailand/roadsafety/overview-en-final-25-7-19.pdf?sfvrsn=f9d7a862_2)
+
+### The Study Area
+
+The study area is [Bangkok Metropolitan Region](https://en.wikipedia.org/wiki/Bangkok_Metropolitan_Region).
+
+![](img/BMR.png)
+
+::: callout-note
+The projected coordinate system of Thailand is **WGS 84 / UTM zone 47N** and the EPSG code is [32647](https://epsg.io/32647).
+:::
+
+### The Data
+
+For the purpose of this exercise, three basic data sets are needed, they are:
+
+- [Thailand Road Accident \[2019-2022\]](https://www.kaggle.com/datasets/thaweewatboy/thailand-road-accident-2019-2022) on Kaggle
+
+- [Thailand Roads (OpenStreetMap Export)](https://data.humdata.org/dataset/hotosm_tha_roads) on HDX.
+
+- [Thailand - Subnational Administrative Boundaries](https://data.humdata.org/dataset/cod-ab-tha?) on HDX.
+
+#### Traffic Accident Data
+
+```{r}
+rdacc_sf <- read_csv("data/geospatial/thai_road_accident_2019_2022.csv") %>%
+  filter(!is.na(longitude) & longitude != "",
+         !is.na(latitude) & latitude != "") %>%
+  st_as_sf(coords = c(
+    "longitude", "latitude"),
+    crs=4326) %>%
+  st_transform(crs = 32647)
+```
+
+```{r}
+plot(rdacc_sf)
+```
+
+#### Administrative Boundary
+
+```{r}
+# country
+adminboundary0 <- st_read(dsn = "data/geospatial",
+                layer = "tha_admbnda_adm0_rtsd_20220121")
+
+# # province
+# adminboundary1 <- st_read(dsn = "data/geospatial",
+#                 layer = "tha_admbnda_adm1_rtsd_20220121")
+
+# # district
+# adminboundary2 <- st_read(dsn = "data/geospatial",
+#                 layer = "tha_admbnda_adm2_rtsd_20220121")
+
+# # sub-district
+# adminboundary3 <- st_read(dsn = "data/geospatial",
+#                 layer = "tha_admbnda_adm3_rtsd_20220121")
+
+```
+
+```{r}
+plot(adminboundary0, max.plot=1)
+# plot(adminboundary1)
+# plot(adminboundary2)
+# plot(adminboundary3)
+```
+
+
+#### Thai Roads
+
+```{r}
+roads <- st_read(dsn = "data/geospatial",
+                layer = "hotosm_tha_roads_lines_shp")
+```
+<!--
+Comment out as it is slow to render
+```r
+plot(roads, max.plot=1)
+```
+-->
+
+<!--
+## Visualising the Accident Data
+
+```r
+#| echo: false
+#| eval: false
+tmap_mode("plot")
+acled_sf %>%
+  filter(year == 2023 |
+           event_type == "Political violence") %>%
+  tm_shape()+
+  tm_dots()
+tmap_mode("plot")
+```
+
+-->

@@ -1,0 +1,42 @@
+---
+title: "9A: Processing and Visualising Flow Data"
+subtitle: "#todo"
+draft: true
+date: ""
+date-modified: "last-modified"
+author: Teng Kok Wai (Walter)
+execute:
+  echo: true
+  eval: true
+  freeze: true
+  message: false
+  warning: false
+format:
+  html:
+    toc: true
+number-sections: true
+number-offset: 1
+editor: visual
+---
+
+## Exercise 9A Reference
+
+[R for Geospatial Data Science and Analytics - 15  Processing and Visualising Flow Data](https://r4gdsa.netlify.app/chap15)
+
+## Overview
+
+## Learning Outcome
+
+
+## The Data
+
+
+## Installing and Launching the R Packages
+
+
+
+To install and load these packages, use the following code:
+
+``` r
+pacman::p_load(sf, spNetwork, tmap, tidyverse)
+```

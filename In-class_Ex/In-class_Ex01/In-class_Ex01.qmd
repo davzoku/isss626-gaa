@@ -24,7 +24,12 @@ editor: visual
 
 ## Learning Outcome
 
-In the exercise, we will learn to manage and visualize geospatial data in R by importing, transforming, and analyzing spatial datasets, creating choropleth and analytical maps, and performing statistical analysis using packages like `tidyverse`, `sf`, `tmap`, and `ggstatsplot`.
+- Import and transform geospatial data using `tidyverse` and `sf` packages.
+- Analyze spatial datasets and extract meaningful insights.
+- Create and customize choropleth maps using the `tmap` package.
+- Develop analytical maps to visualize spatial patterns and distributions.
+- Perform statistical analysis on spatial data using the `ggstatsplot` package.
+- Manage geospatial data workflows effectively in R.
 
 ## Import the R Packages
 
@@ -181,7 +186,7 @@ ggstatsplot::ggscatterstats(data = mpsz19_df,
 ```
 
 ::: {.callout-note}
-**Output Intepretation:** 
+**Output Intepretation:**
 
 The plot shows a moderately strong positive correlation between preschool density and the number of preschools in each subzone. As the preschool density increases, the number of preschools tends to increase as well.
 
@@ -196,13 +201,13 @@ popdata <- read_csv("data/respopagesextod2023.csv")
 To prepare a data.frame showing population by Planning Area and Planning subzone:
 
 ```{r}
-popdata2023 <- popdata %>% 
+popdata2023 <- popdata %>%
   # Group the data by Planning Area (PA), Subzone (SZ), and Age Group (AG)
-  group_by(PA, SZ, AG) %>% 
+  group_by(PA, SZ, AG) %>%
   # Summarize the population (POP) by calculating the sum of 'Pop' within each group
-  summarise(`POP` = sum(`Pop`)) %>%  
+  summarise(`POP` = sum(`Pop`)) %>%
   # Remove the grouping structure to avoid issues in further operations
-  ungroup() %>% 
+  ungroup() %>%
   # Reshape the data to a wider format: create separate columns for each Age Group (AG)
   # with their corresponding population values (POP)
   pivot_wider(names_from = AG, values_from = POP)
@@ -228,7 +233,7 @@ popdata2023 <- popdata2023 %>%
   # Calculate the 'TOTAL' population: sum of all age groups
   mutate(`TOTAL` = rowSums(.[3:21])) %>%
   # Calculate the 'DEPENDENCY' ratio: (YOUNG + AGED) / ECONOMY ACTIVE
-  mutate(`DEPENDENCY` = (`YOUNG` + `AGED`) / `ECONOMY ACTIVE`) %>% 
+  mutate(`DEPENDENCY` = (`YOUNG` + `AGED`) / `ECONOMY ACTIVE`) %>%
   # Select only the relevant columns to keep in the final data frame
   select(`PA`, `SZ`, `YOUNG`, `ECONOMY ACTIVE`, `AGED`, `TOTAL`, `DEPENDENCY`)
 
@@ -239,22 +244,22 @@ Next, we will joining aspatial and geospatial data. First, we use `toupper()` to
 
 ```{r}
 popdata2023 <- popdata2023 %>%
-  mutate_at(.vars = vars(PA, SZ), 
-          .funs = list(toupper)) 
+  mutate_at(.vars = vars(PA, SZ),
+          .funs = list(toupper))
 ```
 
 
 The code below demonstrates how to use `left_join()` to merge the geospatial data `mpsz19_shp` with the population data `popdata2023`. By keeping `mpsz19_shp` as the left table in the first join, we ensure that the geometry details of the spatial data are preserved:
 
 ```{r}
-mpsz_pop2023 <- left_join(mpsz19_shp, popdata2023, 
+mpsz_pop2023 <- left_join(mpsz19_shp, popdata2023,
                           by = c("SUBZONE_N" = "SZ"))
 ```
 
 In contrast, the second join keeps `popdata2023` as the left table, meaning the population data is retained, and geometry details from `mpsz19_shp` are added where they match:
 
 ```{r}
-pop2023_mpsz <- left_join(popdata2023, mpsz19_shp, 
+pop2023_mpsz <- left_join(popdata2023, mpsz19_shp,
                           by = c("SZ" = "SUBZONE_N"))
 ```
 
@@ -263,35 +268,35 @@ pop2023_mpsz <- left_join(popdata2023, mpsz19_shp,
 ```{r}
 # Set the base shape for the map using the merged geospatial and population data
 tm_shape(mpsz_pop2023) +
-  
+
   # Fill the map areas based on the "DEPENDENCY" variable, using a quantile classification and a blue color palette
-  tm_fill("DEPENDENCY", 
-          style = "quantile", 
+  tm_fill("DEPENDENCY",
+          style = "quantile",
           palette = "Blues",
           title = "Dependency ratio") +
-  
+
   # Customize the layout of the map with a title and legend adjustments
   tm_layout(main.title = "Distribution of Dependency Ratio by planning subzone",
             main.title.position = "center",
             main.title.size = 1,
             legend.title.size = 1,
-            legend.height = 0.45, 
+            legend.height = 0.45,
             legend.width = 0.35) + # Corrected: add "+" to continue chaining elements
-  
+
   # Add semi-transparent borders around the subzones
   tm_borders(alpha = 0.5) +
-  
+
   # Add compass with a star-shaped style
   tm_compass(type = "8star", size = 1.5) +
-  
+
   # Add scale bar
   tm_scale_bar() +
-  
+
   # Add grid to map
   tm_grid(alpha = 0.2) +
-  
+
   # Cite the data source
-  tm_credits("Source: Planning Sub-zone boundary from Urban Redevelopment Authority (URA)\n and Population data from Department of Statistics (DOS)", 
+  tm_credits("Source: Planning Sub-zone boundary from Urban Redevelopment Authority (URA)\n and Population data from Department of Statistics (DOS)",
              position = c("left", "bottom"))
 
 ```
@@ -319,7 +324,7 @@ Next, we defines a function to get the input data and field to be used for creat
 
 ```{r}
 get.var <- function(vname,df) {
-  v <- df[vname] %>% 
+  v <- df[vname] %>%
     st_set_geometry(NULL)
   v <- unname(v[,1])
   return(v)
@@ -334,17 +339,17 @@ Then, we creates a percentile mapping function for computing and plotting the pe
 percentmap <- function(vnam, df, legtitle = NA, mtitle = "Percentile Map") {
   # Define percentile breaks to be used for map legend
   percent <- c(0, .01, .1, .5, .9, .99, 1)
-  
+
   # Retrieve the variable from the data frame based on the variable name
   var <- get.var(vnam, df)
-  
+
   # Calculate the percentile values (break points) for the variable
   bperc <- quantile(var, percent)
-  
+
   # Create the base shape layer using the mpsz_pop2023 dataset
   tm_shape(mpsz_pop2023) +
   tm_polygons() + # Draw polygons for subzones
-  
+
   # Overlay the specified data frame 'df' on the map
   tm_shape(df) +
      tm_fill(vnam, # Fill polygons based on the variable 'vnam'
@@ -353,7 +358,7 @@ percentmap <- function(vnam, df, legtitle = NA, mtitle = "Percentile Map") {
              palette = "Blues", # Apply a blue color palette
              labels = c("< 1%", "1% - 10%", "10% - 50%", "50% - 90%", "90% - 99%", "> 99%"))  +
   tm_borders() + # Add borders to the map polygons
-  
+
   # Customize the layout and appearance of the map
   tm_layout(main.title = mtitle, # Set the main title of the map
             title.position = c("right", "bottom"))
@@ -379,25 +384,25 @@ The code block below is an R function that creating break points for a box map.
   - mult: multiplier for IQR (default 1.5)
 - returns:
   - bb: vector with 7 break points compute quartile and fences
-  
-  
+
+
 ```{r}
 
 # int a function 'boxbreaks' to calculate break points based on boxplot statistics
 boxbreaks <- function(v, mult = 1.5) {
   # Calculate the quartiles of the input vector 'v' and remove names
   qv <- unname(quantile(v))
-  
+
   # Calculate the interquartile range (IQR)
   iqr <- qv[4] - qv[2]
-  
+
   # Calculate the upper and lower fences for outlier detection
   upfence <- qv[4] + mult * iqr
   lofence <- qv[2] - mult * iqr
-  
+
   # Initialize a numeric vector 'bb' with 7 elements to store the break points
   bb <- vector(mode = "numeric", length = 7)
-  
+
   # Determine lower break points based on lower fence
   if (lofence < qv[1]) {  # No lower outliers
     bb[1] <- lofence      # Set lower fence as the first break point
@@ -406,7 +411,7 @@ boxbreaks <- function(v, mult = 1.5) {
     bb[2] <- lofence      # Set lower fence as the second break point
     bb[1] <- qv[1]        # Set the minimum value as the first break point
   }
-  
+
   # Determine upper break points based on upper fence
   if (upfence > qv[5]) {  # No upper outliers
     bb[7] <- upfence      # Set upper fence as the last break point
@@ -415,10 +420,10 @@ boxbreaks <- function(v, mult = 1.5) {
     bb[6] <- upfence      # Set upper fence as the sixth break point
     bb[7] <- qv[5]        # Set the maximum value as the last break point
   }
-  
+
   # Set the inner quartile values (Q1, Median, Q3) as middle break points
   bb[3:5] <- qv[2:4]
-  
+
   return(bb)
 }
 ```
@@ -432,17 +437,17 @@ The R function below extracts a variable as a vector out of an sf data frame.
   - df: name of sf data frame
 - returns:
   - v: vector with values (without a column name)
-  
+
 ```{r}
 # init  a function 'get.var' to extract a variable from a data frame without its spatial geometry
 get.var <- function(vname, df) {
   # Select the specified variable 'vname' from the data frame 'df' and remove the spatial geometry information
-  v <- df[vname] %>% 
+  v <- df[vname] %>%
     st_set_geometry(NULL) # Remove the geometry component from the sf object to get a plain data frame
-  
+
   # Remove the column name from the variable and convert it to a plain vector
   v <- unname(v[,1])
-  
+
   return(v)
 }
 
@@ -463,21 +468,21 @@ The code chunk below is an R function to create a box map.
 
 ```{r}
 # Define a function 'boxmap' to create a box map based on a variable
-boxmap <- function(vnam, df, 
+boxmap <- function(vnam, df,
                    legtitle = NA, # Set default value for legend title as NA
                    mtitle = "Box Map", # Set default value for main title
                    mult = 1.5) { # Set default multiplier for calculating fences in boxplot
-  
+
   # Extract the variable data from the data frame without geometry
   var <- get.var(vnam, df)
-  
+
   # Calculate the break points for the box map using the 'boxbreaks' function
   bb <- boxbreaks(var)
-  
+
   # Create the base shape layer using the specified data frame 'df'
   tm_shape(df) +
     tm_polygons() + # Draw polygons for spatial units
-  
+
   # Overlay the data frame again to apply fill color based on the variable
   tm_shape(df) +
      tm_fill(vnam, # Fill polygons based on the variable 'vnam'
@@ -491,7 +496,7 @@ boxmap <- function(vnam, df,
                         "> 75%",          # Label for upper quartile
                         "Upper outlier")) + # Label for upper outliers
   tm_borders() + # Add borders to the polygons on the map
-  
+
   # Customize the layout and appearance of the map
   tm_layout(main.title = mtitle, # Set the main title of the map
             title.position = c("left", "top"), # Position the title at the top left

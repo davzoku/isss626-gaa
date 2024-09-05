@@ -47,8 +47,6 @@ The specific questions we would like to answer are as follows:
 -   Handling duplicate spatial points and creating point patterns for analysis.
 -   Applying appropriate statistical methods for confirmatory spatial point pattern analysis.
 
-Here's the improved section with relevant information presented in a table format:
-
 ## The Data
 
 | Dataset                 | Description                                                         | Source                         | Format         |
@@ -57,9 +55,6 @@ Here's the improved section with relevant information presented in a table forma
 | **MP14_SUBZONE_WEB_PL** | Polygon data with URA 2014 Master Plan Planning Subzone boundaries. | Data.gov.sg                    | ESRI Shapefile |
 | **CoastalOutline**      | Polygon data representing Singapore's national boundary.            | Singapore Land Authority (SLA) | ESRI Shapefile |
 
-This table summarizes the datasets used for the analysis, including their descriptions, sources, and formats.
-
-Here's the improved section with relevant information presented in a table format:
 
 ## Installing and Loading the R Packages
 
@@ -77,6 +72,14 @@ To install and load these packages in R, use the following code:
 
 ```{r}
 pacman::p_load(sf, raster, spatstat, tmap, tidyverse)
+```
+
+## Reproducibility
+
+As this document involves Monte Carlo simulations, we will set the seed to ensure reproducibility
+
+```{r}
+set.seed(1234)
 ```
 
 ## Spatial Data Wrangling
@@ -496,7 +499,7 @@ Baddeley et al. (2016) suggest using the `bw.ppl()` algorithm, as it tends to pr
 
 To compare the output of using `bw.diggle` and `bw.ppl` methods:
 
-```{r}
+```{r fig.width=16, fig.height=6}
 kde_childcareSG.ppl <- density(childcareSG_ppp.km,
                                sigma=bw.ppl,
                                edge=TRUE,
@@ -767,26 +770,21 @@ The **Clark-Evans test** is a statistical test used to determine whether points 
     -   **R \< 1**: Points are clustered together.
     -   **R \> 1**: Points are more evenly spaced or regularly distributed.
 
+**The `alternative` argument:**
+The null hypothesis is Complete Spatial Randomness, i.e. a uniform Poisson process.
+The alternative hypothesis is specified by the argument alternative:
+
+- `alternative="less"` or `alternative="clustered"`: the alternative hypothesis is that
+ corresponding to a clustered point pattern;
+- `alternative="greater"` or `alternative="regular"`: the alternative hypothesis is that
+ corresponding to a regular or ordered point pattern;
+- `alternative="two.sided"`: the alternative hypothesis is that
+ corresponding to a clustered or regular pattern.
+
 see [Tests for Spatial Randomness - The R Book \[Book\]](https://www.oreilly.com/library/view/the-r-book/9780470510247/ch024-sec003.html)
 :::
 
-The test hypotheses are:
-
-Ho = The distribution of childcare services are randomly distributed.
-
-H1= The distribution of childcare services are not randomly distributed.
-
-The 95% confident interval will be used.
-
 ### Testing Spatial Point Patterns using Clark and Evans Test
-
-```{r}
-clarkevans.test(childcareSG_ppp,
-                correction="none",
-                clipregion="sg_owin",
-                alternative=c("clustered"),
-                nsim=99)
-```
 
 The test hypotheses are:
 
@@ -794,16 +792,16 @@ $H_o$ = The distribution of childcare services are randomly distributed.
 
 $H_1$ = The distribution of childcare services are not randomly distributed.
 
-The 95% confident interval will be used.
+The 95% confidence interval will be used.
 
-### Testing spatial point patterns using Clark and Evans Test
+
 
 ```{r}
 clarkevans.test(childcareSG_ppp,
                 correction="none",
                 clipregion="sg_owin",
                 alternative=c("clustered"),
-                nsim=99)
+                nsim=39)
 ```
 
 ::: callout-note
@@ -818,12 +816,32 @@ clarkevans.test(childcareSG_ppp,
 
 Now, we perform the similar test on individual subzone areas. We will analyse the Choa Chu Kang area first.
 
+::: callout-note
+**Choice of `nsim`:**
+The choice of 39 simulations (nsim = 39) in Monte Carlo techniques for spatial analysis is often a practical compromise between computational efficiency and statistical robustness.
+
+- **Computational Efficiency:** Running a large number of simulations can be computationally expensive, especially for complex spatial analyses. We can strike a balance between obtaining reliable results and keeping computational costs manageable by selecting *absolute minimum sample size*.
+
+The minimum number of simulations $m$ required for a Monte Carlo test at a particular significance level can be determined by:
+
+$\alpha = \frac{1}{m+1}$
+
+for a one-tailed test and
+
+$\alpha = \frac{2}{m+1}$
+
+Thus, a one-tailed test at a significance level of 5% would require **a minimum of 19 simulations**, a two-tailed test at a significance level of 5% would require **a minimum of** 39 simulations.
+
+see [Going beyond the required number of simulations required for a particular significance level when conducting a Monte Carlo test - Cross Validated](https://stats.stackexchange.com/questions/302428/going-beyond-the-required-number-of-simulations-required-for-a-particular-signif), [spatial statistics - Simulation envelopes and significance levels - Geographic Information Systems Stack Exchange](https://gis.stackexchange.com/questions/16754/simulation-envelopes-and-significance-levels)
+
+:::
+
 ```{r}
 clarkevans.test(childcare_ck_ppp,
                 correction="none",
                 clipregion=NULL,
                 alternative=c("two.sided"),
-                nsim=999)
+                nsim=39)
 ```
 
 ::: callout-note
@@ -845,7 +863,7 @@ clarkevans.test(childcare_tm_ppp,
                 correction="none",
                 clipregion=NULL,
                 alternative=c("two.sided"),
-                nsim=999)
+                nsim=39)
 ```
 
 ::: callout-note

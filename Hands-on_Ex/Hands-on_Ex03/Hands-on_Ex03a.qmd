@@ -2,7 +2,7 @@
 title: "3A: Network Constrained Spatial Point Patterns Analysis"
 subtitle: "In this exercise, we will learn to use R and the `spNetwork` package for analyzing network-constrained spatial point patterns, focusing on kernel density estimation and G- and K-function analysis."
 draft: true
-date: ""
+date: "Sep 01, 2024"
 date-modified: "last-modified"
 author: Teng Kok Wai (Walter)
 execute:
@@ -24,6 +24,13 @@ editor: visual
 [R for Geospatial Data Science and Analytics - 7  Network Constrained Spatial Point Patterns Analysis](https://r4gdsa.netlify.app/chap07)
 
 ## Overview
+
+::: {.callout-note}
+**What is NetKDE and Why is it important?**
+Network Constrained Kernel Density Estimation (NetKDE) is an advanced spatial analysis technique used to estimate the density of spatial events (such as crime incidents, traffic accidents, wildlife sightings, etc.) while accounting for the underlying network structure, such as roads, railways, or rivers. Unlike traditional Kernel Density Estimation (KDE), which assumes that events are distributed freely in a 2D plane, NetKDE restricts the analysis to a network, providing a more accurate representation when events are constrained to specific pathways or routes.
+
+NetKDE provides a more realistic density estimation for data constrained to a network, avoiding misleading results that might arise from traditional KDE. For example, traffic accidents or crime hotspots along a road network are better analyzed using NetKDE since it restricts the analysis to the roads themselves.
+:::
 
 **Network constrained Spatial Point Patterns Analysis (NetSPAA)** is a collection of spatial point patterns analysis methods special developed for analysing spatial point event occurs on or alongside network. The spatial point event can be locations of traffic accident or childcare centre for example. The network, on the other hand can be a road network or river network.
 
