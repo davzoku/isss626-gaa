@@ -1,0 +1,27 @@
+---
+title: "Exploration"
+listing:
+  - id: csds
+    contents: "CSDS/*/*.qmd"
+    type: grid
+    fields: [image, date, title, subtitle, reading-time]
+    sort:
+      - "date desc"
+      - "title desc"
+    sort-ui: true
+    filter-ui: true
+    page-size: 36
+page-layout: full
+title-block-banner: false
+comments: false
+toc: true
+---
+
+This page shows additional exploration using online resources as follows:
+
+-   [Tutorials - Learn Spatial Analysis \| Center for Spatial Data Science (CSDS)](https://spatialanalysis.github.io/tutorials/)
+
+## Introduction to Spatial Data Science
+
+::: {#csds}
+:::
