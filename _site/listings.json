@@ -7,8 +7,13 @@
     ]
   },
   {
+    "listing": "/Take-home_Ex/index.html",
+    "items": []
+  },
+  {
     "listing": "/index.html",
     "items": [
+      "/Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03a.html",
       "/Hands-on_Ex/Hands-on_Ex02/Hands-on_Ex02b.html",
       "/Hands-on_Ex/Hands-on_Ex02/Hands-on_Ex02a.html",
       "/Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01b.html",
@@ -20,6 +25,7 @@
   {
     "listing": "/Hands-on_Ex/index.html",
     "items": [
+      "/Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03a.html",
       "/Hands-on_Ex/Hands-on_Ex02/Hands-on_Ex02b.html",
       "/Hands-on_Ex/Hands-on_Ex02/Hands-on_Ex02a.html",
       "/Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01b.html",
@@ -27,7 +33,9 @@
     ]
   },
   {
-    "listing": "/Take-home_Ex/index.html",
-    "items": []
+    "listing": "/Exploration/index.html",
+    "items": [
+      "/Exploration/CSDS/01-spatial-data-handling/index.html"
+    ]
   }
 ]

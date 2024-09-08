@@ -24,17 +24,17 @@ editor: visual
 
 ## Learning Outcome
 
-- Import and transform geospatial data using `tidyverse` and `sf` packages.
-- Analyze spatial datasets and extract meaningful insights.
-- Create and customize choropleth maps using the `tmap` package.
-- Develop analytical maps to visualize spatial patterns and distributions.
-- Perform statistical analysis on spatial data using the `ggstatsplot` package.
-- Manage geospatial data workflows effectively in R.
+-   Import and transform geospatial data using `tidyverse` and `sf` packages.
+-   Analyze spatial datasets and extract meaningful insights.
+-   Create and customize choropleth maps using the `tmap` package.
+-   Develop analytical maps to visualize spatial patterns and distributions.
+-   Perform statistical analysis on spatial data using the `ggstatsplot` package.
+-   Manage geospatial data workflows effectively in R.
 
 ## Import the R Packages
 
 | Package         | Purpose                                              | Use Case in Exercise                                                          |
-|---------------|-----------------------|----------------------------------|
+|-----------------|----------------------|---------------------------------|
 | **sf**          | Importing, managing, and processing geospatial data. | Handling and processing geospatial data in R.                                 |
 | **tidyverse**   | Comprehensive set of tools for data science tasks.   | Importing, wrangling, and visualizing data.                                   |
 | **tmap**        | Creating thematic maps for visualizing spatial data. | Designing and displaying thematic maps to represent spatial patterns.         |
@@ -131,11 +131,9 @@ preschool <- st_read("data/PreSchoolsLocation.kml") %>%
 
 ### Point-in-Polygon count
 
-
 The code below counts the number of preschools within each planning subzone. It uses `st_intersects` to find intersections between the geometries of the subzones (`mpsz19_shp`) and the preschool locations, identifying where the two sets of geometries overlap or share common points.
 
 The `lengths()` function is then applied to count the number of intersecting preschools for each subzone, effectively returning the total number of preschools within each subzone in the `mpsz19_shp` shapefile.
-
 
 ```{r}
 mpsz19_shp <- mpsz19_shp %>%
@@ -149,7 +147,7 @@ The code below performs the following tasks:
 
 Derive the area of each planning sub-zone.
 
-Drop the unit of measurement of the area (i.e. m^2)
+Drop the unit of measurement of the area (i.e. m\^2)
 
 Calculate the density of pre-school at the planning sub-zone level.
 
@@ -185,11 +183,10 @@ ggstatsplot::ggscatterstats(data = mpsz19_df,
 
 ```
 
-::: {.callout-note}
+::: callout-note
 **Output Intepretation:**
 
 The plot shows a moderately strong positive correlation between preschool density and the number of preschools in each subzone. As the preschool density increases, the number of preschools tends to increase as well.
-
 :::
 
 ## Working with Population data
@@ -214,13 +211,14 @@ popdata2023 <- popdata %>%
 
 colnames(popdata2023)
 ```
+
 Now, we will perform data processing to derive a tibble data.framewith the following fields PA, SZ, YOUNG, ECONOMY ACTIVE, AGED, TOTAL, DEPENDENCY where by:
 
-- YOUNG: age group 0 to 4 until age groyup 20 to 24,
-- ECONOMY ACTIVE: age group 25-29 until age group 60-64,
-- AGED: age group 65 and above,
-- TOTAL: all age group, and
-- DEPENDENCY: the ratio between young and aged against economy active group.
+-   YOUNG: age group 0 to 4 until age groyup 20 to 24,
+-   ECONOMY ACTIVE: age group 25-29 until age group 60-64,
+-   AGED: age group 65 and above,
+-   TOTAL: all age group, and
+-   DEPENDENCY: the ratio between young and aged against economy active group.
 
 ```{r}
 popdata2023 <- popdata2023 %>%
@@ -239,7 +237,6 @@ popdata2023 <- popdata2023 %>%
 
 ```
 
-
 Next, we will joining aspatial and geospatial data. First, we use `toupper()` to convert elements of PA and SZ to upper case.
 
 ```{r}
@@ -247,7 +244,6 @@ popdata2023 <- popdata2023 %>%
   mutate_at(.vars = vars(PA, SZ),
           .funs = list(toupper))
 ```
-
 
 The code below demonstrates how to use `left_join()` to merge the geospatial data `mpsz19_shp` with the population data `popdata2023`. By keeping `mpsz19_shp` as the left table in the first join, we ensure that the geometry details of the spatial data are preserved:
 
@@ -301,12 +297,12 @@ tm_shape(mpsz_pop2023) +
 
 ```
 
-::: {.callout-note}
+::: callout-note
 The output is a choropleth map showing the distribution of the dependency ratio by planning subzone in Singapore.
 
-- The map clearly shows which areas have higher or lower dependency ratios. For instance, darker areas like certain central regions have higher dependency ratios, suggesting a higher number of dependents (both young and aged) compared to the working-age population.
+-   The map clearly shows which areas have higher or lower dependency ratios. For instance, darker areas like certain central regions have higher dependency ratios, suggesting a higher number of dependents (both young and aged) compared to the working-age population.
 
-- Lighter areas have lower ratios, indicating a balance or a larger working-age population compared to dependents.
+-   Lighter areas have lower ratios, indicating a balance or a larger working-age population compared to dependents.
 :::
 
 ## Analytical Map: Percentile Map
@@ -330,7 +326,6 @@ get.var <- function(vname,df) {
   return(v)
 }
 ```
-
 
 Then, we creates a percentile mapping function for computing and plotting the percentile map.
 
@@ -375,16 +370,15 @@ percentmap("DEPENDENCY", mpsz_pop2023)
 
 In essence, a box map is an augmented quartile map, with an additional lower and upper category. When there are lower outliers, then the starting point for the breaks is the minimum value, and the second break is the lower fence. In contrast, when there are no lower outliers, then the starting point for the breaks will be the lower fence, and the second break is the minimum value (there will be no observations that fall in the interval between the lower fence and the minimum value).
 
-1. Create the `boxbreaks` function
+1.  Create the `boxbreaks` function
 
 The code block below is an R function that creating break points for a box map.
 
-- arguments:
-  - v: vector with observations
-  - mult: multiplier for IQR (default 1.5)
-- returns:
-  - bb: vector with 7 break points compute quartile and fences
-
+-   arguments:
+    -   v: vector with observations
+    -   mult: multiplier for IQR (default 1.5)
+-   returns:
+    -   bb: vector with 7 break points compute quartile and fences
 
 ```{r}
 
@@ -428,15 +422,15 @@ boxbreaks <- function(v, mult = 1.5) {
 }
 ```
 
-2. Create the `get.var` function
+2.  Create the `get.var` function
 
 The R function below extracts a variable as a vector out of an sf data frame.
 
-- arguments:
-  - vname: variable name (as character, in quotes)
-  - df: name of sf data frame
-- returns:
-  - v: vector with values (without a column name)
+-   arguments:
+    -   vname: variable name (as character, in quotes)
+    -   df: name of sf data frame
+-   returns:
+    -   v: vector with values (without a column name)
 
 ```{r}
 # init  a function 'get.var' to extract a variable from a data frame without its spatial geometry
@@ -453,18 +447,18 @@ get.var <- function(vname, df) {
 
 ```
 
-3. Create the Boxmap function
+3.  Create the Boxmap function
 
 The code chunk below is an R function to create a box map.
 
-- arguments:
-  - vnam: variable name (as character, in quotes)
-  - df: simple features polygon layer
-  - legtitle: legend title
-  - mtitle: map title
-  - mult: multiplier for IQR
-- returns:
-  - a tmap-element (plots a map)
+-   arguments:
+    -   vnam: variable name (as character, in quotes)
+    -   df: simple features polygon layer
+    -   legtitle: legend title
+    -   mtitle: map title
+    -   mult: multiplier for IQR
+-   returns:
+    -   a tmap-element (plots a map)
 
 ```{r}
 # Define a function 'boxmap' to create a box map based on a variable
@@ -504,14 +498,16 @@ boxmap <- function(vnam, df,
 }
 ```
 
-4. Finally, plot the Box Map
+4.  Finally, plot the Box Map
 
 **Static Box Map**
+
 ```{r}
 boxmap("DEPENDENCY", mpsz_pop2023)
 ```
 
 **Interactive Box Map**
+
 ```{r}
 tmap_options(check.and.fix = TRUE)
 tmap_mode("view")
