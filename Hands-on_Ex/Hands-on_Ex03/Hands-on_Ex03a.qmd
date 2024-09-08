@@ -55,11 +55,11 @@ In this hands-on exercise, you are going to gain hands-on experience on using ap
 This study will analyze the spatial distribution of childcare centers in the [Punggol planning area](https://en.wikipedia.org/wiki/Punggol) using the following geospatial datasets:
 
 | Dataset        | Description                                                                                     | Format         |
-|------------------|------------------------------------|------------------|
+|------------------|-----------------------------------|------------------|
 | **Punggol_St** | Line feature data representing the road network within Punggol Planning Area.                   | ESRI Shapefile |
 | **Punggol_CC** | Point feature data representing the location of childcare centers within Punggol Planning Area. | ESRI Shapefile |
 
-## Installing and Launching the R Packages
+## Installing and Loading the R Packages
 
 The following R packages will be used in this exercise:
 
@@ -74,6 +74,7 @@ To install and load these packages, use the following code:
 ```{r}
 pacman::p_load(sf, spNetwork, tmap, tidyverse)
 ```
+
 ## Import Data and Preparation
 
 The code block below uses `st_read()` of **sf** package to important Punggol_St and Punggol_CC geospatial data sets into RStudio as sf data frames.
@@ -98,6 +99,7 @@ We can examine the structure of the output simple features data tables in RStudi
 ```{r}
 network
 ```
+
 ```{r}
 dim(network)
 ```
@@ -144,6 +146,7 @@ plot(childcare,
      col='red',
      pch = 19)
 ```
+
 ## Using Tmap
 
 ```{r}
@@ -180,11 +183,11 @@ lixels <- lixelize_lines(lines=network,
 ::: callout-note
 **Arguments**
 
-- lines: The sf object with linestring geometry type to modify
+-   lines: The sf object with linestring geometry type to modify
 
-- lx_length: The length of a lixel
+-   lx_length: The length of a lixel
 
-- mindist: The minimum length of a lixel. After cut, if the length of the final lixel is shorter than the minimum distance, then it is added to the previous lixel. if NULL, then mindist = maxdist/10. Note that the segments that are already shorter than the minimum distance are not modified
+-   mindist: The minimum length of a lixel. After cut, if the length of the final lixel is shorter than the minimum distance, then it is added to the previous lixel. if NULL, then mindist = maxdist/10. Note that the segments that are already shorter than the minimum distance are not modified
 
 There is another function called `lixelize_lines.mc()` which provide multicore support.
 :::
@@ -222,10 +225,10 @@ densities <- nkde(network,
 ```
 
 ::: callout-note
-
-- spNetwork supports various kernel methods, including `quartic, triangle, gaussian, scaled gaussian, tricube, cosine, triweight, epanechnikov, or uniform`. In this case, `quartic` kernel is used.
+-   spNetwork supports various kernel methods, including `quartic, triangle, gaussian, scaled gaussian, tricube, cosine, triweight, epanechnikov, or uniform`. In this case, `quartic` kernel is used.
 
 -   *method* argument indicates that `simple` method is used to calculate the NKDE. Currently, spNetwork support three popular methods, they are:
+
     -   method="simple". This first method was presented by Xie et al. (2008) and proposes an intuitive solution. The distances between events and sampling points are replaced by network distances, and the formula of the kernel is adapted to calculate the density over a linear unit instead of an areal unit.
     -   method="discontinuous". The method is proposed by Okabe et al (2008), which equally "divides" the mass density of an event at intersections of lixels.
     -   method="continuous". If the discontinuous method is unbiased, it leads to a discontinuous kernel function which is a bit counter-intuitive. Okabe et al (2008) proposed another version of the kernel, that divide the mass of the density at intersection but adjusts the density before the intersection to make the function continuous.
@@ -233,19 +236,18 @@ densities <- nkde(network,
 For more info, refer to the user guide of **spNetwork** package.
 :::
 
-
 ### Visualising NKDE
 
 To visualise the NKDE values, we have to perform a few preparation steps.
 
-1. Insert the computed density values (i.e. densities) into samples and lixels objects as density field.
+1.  Insert the computed density values (i.e. densities) into samples and lixels objects as density field.
 
 ```{r}
 samples$density <- densities
 lixels$density <- densities
 ```
 
-2. rescale the density values if required. 
+2.  rescale the density values if required.
 
 Since svy21 projection system is in meter, the computed density values are very small i.e. 0.0000005. We should rescale the density values from number of events per meter to number of events per kilometer.
 
@@ -254,7 +256,7 @@ samples$density <- samples$density*1000
 lixels$density <- lixels$density*1000
 ```
 
-3. Use **tmap** to plot interactive map
+3.  Use **tmap** to plot interactive map
 
 ```{r}
 tmap_mode('view')
@@ -265,17 +267,14 @@ tm_shape(childcare)+
 ```
 
 ::: callout-note
-
 Road segments with relatively higher density of childcare centres is shown in darker color (refer to legend). Road segments with relatively lower density of childcare centre is shown in lighter color.
-
 :::
 
 ## Network Constrained G- and K-Function Analysis
 
-In this section, we are going to perform Complete Spatial Randomness (CSR) test by using *kfunctions()* of **spNetwork** package. 
+In this section, we are going to perform Complete Spatial Randomness (CSR) test by using *kfunctions()* of **spNetwork** package.
 
 The CSR test is based on the assumption of the binomial point process which implies the hypothesis that the childcare centres are randomly and independently distributed over the street network.
-
 
 **Null Hypothesis** ($H_0$): The observed spatial point events (i.e., distribution of childcare centres) exhibit a uniform distribution over a street network in Punggol Planning Area.
 
@@ -309,34 +308,30 @@ kfun_childcare <- kfunctions(network,
 -   `resolution`: Resolution for simulating random points on the network.
 -   `conf_int`: Width of the confidence interval (default = 0.05).
 -   For additional arguments, refer to the user guide of the spNetwork package.
-
 :::
 
 We can visualise the ggplot2 object of k-function by using the code chunk below.
 
 ```{r}
 kfun_childcare$plotk + 
-  labs(title ="K-Function")
+  labs(title ="K-Function") +
+  theme(plot.title = element_text(face = "bold", size = 12, hjust = 0.5))
 ```
 
 ::: callout-note
 **Intepretation of `kfunctions()` outputs**
 
+-   `plotk`: A ggplot2 object representing the values of the k-function
 
-- `plotk`: A ggplot2 object representing the values of the k-function
+-   `plotg`: A ggplot2 object representing the values of the g-function
 
-- `plotg`: A ggplot2 object representing the values of the g-function
-
-- `values`: A DataFrame with the values used to build the plots
+-   `values`: A DataFrame with the values used to build the plots
 
 see [kfunctions function - RDocumentation](https://www.rdocumentation.org/packages/spNetwork/versions/0.4.3.8/topics/kfunctions)
 
 **Intepretation of the graph output**
 
-The blue line is the empirical network K-function of the childcare centres in Punggol planning area. The gray envelope represents the results of the 39 simulations in the interval 2.5% - 97.5%. 
+The blue line is the empirical network K-function of the childcare centres in Punggol planning area. The gray envelope represents the results of the 39 simulations in the interval 2.5% - 97.5%.
 
 Since the blue line between the distance of 250m-400m are below the gray area, we can infer that the childcare centres in Punggol planning area resemble regular pattern at the distance of 250m-400m.
 :::
-
-
-

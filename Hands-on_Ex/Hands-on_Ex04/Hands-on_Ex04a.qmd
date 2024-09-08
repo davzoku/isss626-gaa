@@ -1,8 +1,8 @@
 ---
 title: "4A: Spatial Weights and Applications"
-subtitle: "#todo"
-draft: true
-date: ""
+subtitle: "In this exercise, we will learn to compute spatial weights, visualize spatial distributions, and create spatially lagged variables using various functions from R packages such as sf,spdep, and tmap."
+# draft: true
+date: "Sep 08, 2024"
 date-modified: "last-modified"
 author: Teng Kok Wai (Walter)
 execute:
@@ -25,18 +25,196 @@ editor: visual
 
 ## Overview
 
+In this exercise, we will learn to compute spatial weights, visualize spatial distributions, and create spatially lagged variables using various functions from R packages such as **sf**, **spdep**, and **tmap**.
+
 ## Learning Outcome
 
+- Import geospatial data using functions from the **sf** package.
+- Import CSV data using functions from the **readr** package.
+- Perform relational joins using functions from the **dplyr** package.
+- Compute spatial weights with functions from the **spdep** package.
+- Calculate spatially lagged variables using functions from the **spdep** package.
 
 ## The Data
 
+The following 2 datasets will be used in this exercise.
 
-## Installing and Launching the R Packages
+| **Data Set**              | **Description**                                                  | **Format**           |
+|---------------------------|------------------------------------------------------------------|----------------------|
+| Hunan county boundary layer | Geospatial data set representing the county boundaries of Hunan | ESRI Shapefile       |
+| Hunan_2012.csv            | Contains selected local development indicators for Hunan in 2012 | CSV                  |
 
+## Installing and Loading the R Packages
+
+The following R packages will be used in this exercise:
+
+
+| **Package**  | **Purpose**                                                                       | **Use Case in Exercise**                                                                                     |
+|--------------|-----------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------|
+| **sf**       | Imports, manages, and processes vector-based geospatial data.                     | Handling vector geospatial data such as the Hunan county boundary layer in shapefile format.                   |
+| **spdep**    | Provides functions for spatial dependence analysis, including spatial weights and spatial autocorrelation. | Computing spatial weights and creating spatially lagged variables.                                             |
+| **tmap**     | Creates static and interactive thematic maps using cartographic quality elements.  | Visualizing regional development indicators and plotting maps showing spatial relationships and patterns.      |
+| **tidyverse**| A collection of packages for data science tasks such as data manipulation, visualization, and modeling.   | Importing CSV files, wrangling data, and performing relational joins.                                          |
+| **knitr**    | Enables dynamic report generation and integration of R code with documents.        | Formatting output, creating tables, and generating reports for the exercise.                                   |
 
 
 To install and load these packages, use the following code:
 
-``` r
-pacman::p_load(sf, spNetwork, tmap, tidyverse)
+```{r}
+pacman::p_load(sf, spdep, tmap, tidyverse, knitr)
 ```
+
+## Import Data and Preparation
+
+In this section, we will perform 3 necessary steps to prepare the data for analysis.
+
+### Import Geospatial Shapefile
+
+Firstly, we will use [`st_read()`](https://r-spatial.github.io/sf/reference/st_read.html) of **sf** package to import Hunan shapefile into R. The imported shapefile will be **simple features** Object of **sf**.
+
+```{r}
+hunan <- st_read(dsn = "data/geospatial", 
+                 layer = "Hunan")
+```
+```{r}
+dim(hunan)
+```
+
+### Import Aspatial csv File
+
+Next, we will import *Hunan_2012.csv* into R by using `read_csv()` of **readr** package. The output is R dataframe class.
+
+```{r}
+hunan2012 <- read_csv("data/aspatial/Hunan_2012.csv")
+```
+```{r}
+dim(hunan2012)
+```
+
+### Perform Relational Join
+
+Before we perform relational join, let's observe the columns in each dataset and only select the columns that we need.
+
+```{r}
+print("hunan columns:")
+print(colnames(hunan))
+cat("\n-----------------------------\n")
+
+print("hunan2012 columns:")
+print(colnames(hunan2012))
+
+```
+
+```{r}
+hunan_joined <- left_join(hunan,hunan2012)
+
+print("hunan_joined columns:")
+print(colnames(hunan_joined))
+cat("\n-----------------------------\n")
+
+hunan <- hunan_joined %>%
+  select(1:4, 7, 15)
+
+print("hunan columns:")
+print(colnames(hunan))
+```
+In the code above, we use the `left_join()` function to merge the `hunan` `SpatialPolygonsDataFrame` with the `hunan2012` dataframe. The join is based on the column named `County`, which is common to both datasets. This allows us to match rows by their corresponding counties.
+
+After the join, the `select()` function is used to retain a subset of columns from the merged dataset. We can briefly observe the joined output below.
+
+```{r}
+head(hunan)
+```
+
+## Visualising Regional Development Indicator
+
+To visualize the regional development indicator, we can prepare a base map and a choropleth map to show the distribution of GDPPC 2012 (GDP per capita) by using `qtm()` of **tmap** package.
+
+```{r}
+basemap <- tm_shape(hunan) +
+  tm_polygons() +
+  tm_text("NAME_3", size=0.5)
+
+gdppc <- qtm(hunan, "GDPPC")
+tmap_arrange(basemap, gdppc, asp=1, ncol=2)
+```
+
+::: callout-note
+**Intepretation**
+The choropleth map on the right visualizes the distribution of GDP per capita (GDPPC) for the year 2012 across the different counties in Hunan. 
+
+The counties are shaded in varying colors, ranging from light to dark, to represent different GDP per capita ranges. Darker shades indicate higher GDP per capita values, while lighter shades represent lower values. This visualization helps to identify regional economic disparities and highlights areas with higher or lower economic activity within Hunan province.
+
+For example, we can observe that Changsha has the highest GDP per capital values in the Hunan region.
+:::
+
+## Computing Contiguity Spatial Weights
+
+In this section, we will use [*poly2nb()*](https://r-spatial.github.io/spdep/reference/poly2nb.html) of **spdep** package to compute contiguity weight matrices for the study area. This function builds a neighbours list based on regions with contiguous boundaries. 
+
+::: callout-note
+Contiguity means that two spatial units share a common border of non-zero length.
+
+Operationally, we can further distinguish between a **rook** and a **queen** criterion of contiguity, in analogy to the moves allowed for the such-named pieces on a chess board.
+
+The rook criterion defines neighbors by the existence of a common edge between two spatial units. The queen criterion is somewhat more encompassing and defines neighbors as spatial units sharing a common edge or a common vertex.
+
+Using `poly2nb()` we can use the `queen` flag to toggle between queen and rook criteria.
+
+For more info, see [Chapter 6 Contiguity-Based Spatial Weights | Hands-On Spatial Data Science with R](https://spatialanalysis.github.io/handsonspatialdata/contiguity-based-spatial-weights.html)
+
+:::
+
+> The number of neighbors according to the queen criterion will always be at least as large as for the rook criterion.
+
+
+First, we will compute the Queen contiguity weight matrix.
+
+```{r}
+wm_q <- poly2nb(hunan, queen=TRUE)
+summary(wm_q)
+
+cat("\n-----------------------------\n")
+
+wm_r <- poly2nb(hunan, queen=FALSE)
+summary(wm_r)
+```
+
+::: callout-note
+**Intepretation of Summary Reports**
+
+1. Both reports shows that there are 88 area units in Hunan.
+
+2. As expected, the total number of links (neighbor relationships) is slightly higher for the queen criterion (448) than for the rook criterion (440).
+
+3. Based on both criteria, the most connected region is **Region 85** with 11 links (using Queen criteria) and 10 links (using Rook criteria)
+
+4.  Similarly, based on both criteria, the least connected region is **Region 30 and 65** with 1 links (using Queen and Rook criteria)
+:::
+
+For each polygon in the polygon object, `wm_q` and `wm_r` lists all neighboring polygons. 
+For example, we can identify the most connected region.
+
+```{r}
+cat("The most connected county is", hunan$County[85])
+```
+
+To reveal the county names of the neighboring polygons, we can do the following:
+
+```{r}
+neighbour_counties <- wm_q[[85]]
+print(neighbour_counties)
+
+cat("Using Queen's method, the neighbours of ", hunan$County[85]," is", hunan$NAME_3[neighbour_counties])
+
+```
+
+We can also retrieve the GDPPC of these counties:
+
+```{r}
+hunan$GDPPC[neighbour_counties]
+```
+
+The printed output above shows that the GDPPC of Taoyuan's neighbouring counties.
+
+
