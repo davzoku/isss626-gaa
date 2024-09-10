@@ -41,29 +41,28 @@ This hands-on exercise continues from [Hands-on Exercise 2A](/hands-on_ex/hands-
 
 ## Learning Outcome
 
-- Importing and managing geospatial data using `sf` and `spatstat` packages.
-- Converting spatial data formats from `sf` to `spatstat`'s `ppp` format.
-- Handling and correcting duplicate spatial points in datasets.
-- Defining and applying spatial windows (`owin` objects) for focused analysis.
-- Conducting 2nd-order spatial point pattern analyses using G, F, K, and L functions.
-- Performing Monte Carlo simulations and hypothesis testing to assess spatial randomness.
-- Visualizing spatial patterns and statistical results using appropriate plotting functions.
+-   Importing and managing geospatial data using `sf` and `spatstat` packages.
+-   Converting spatial data formats from `sf` to `spatstat`'s `ppp` format.
+-   Handling and correcting duplicate spatial points in datasets.
+-   Defining and applying spatial windows (`owin` objects) for focused analysis.
+-   Conducting 2nd-order spatial point pattern analyses using G, F, K, and L functions.
+-   Performing Monte Carlo simulations and hypothesis testing to assess spatial randomness.
+-   Visualizing spatial patterns and statistical results using appropriate plotting functions.
 
 ## The Data
 
 | Dataset                 | Description                                                         | Source                         | Format         |
-|-------------------------|---------------------------------------------------------------------|--------------------------------|----------------|
+|--------------|-------------------------------|--------------|--------------|
 | **CHILDCARE**           | Point data containing location and attributes of childcare centers. | Data.gov.sg                    | GeoJSON        |
 | **MP14_SUBZONE_WEB_PL** | Polygon data with URA 2014 Master Plan Planning Subzone boundaries. | Data.gov.sg                    | ESRI Shapefile |
 | **CoastalOutline**      | Polygon data representing Singapore's national boundary.            | Singapore Land Authority (SLA) | ESRI Shapefile |
-
 
 ## Installing and Loading the R Packages
 
 The following R packages will be used in this exercise:
 
 | Package      | Purpose                                                                           | Use Case in Exercise                                                                                       |
-|--------------|-----------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------|
+|--------------|-------------------------|---------------------------------|
 | **sf**       | Imports, manages, and processes vector-based geospatial data.                     | Handling vector geospatial data in R.                                                                      |
 | **spatstat** | Provides tools for point pattern analysis.                                        | Performing 1st- and 2nd-order spatial point pattern analysis and deriving kernel density estimation (KDE). |
 | **raster**   | Reads, writes, and manipulates gridded spatial data (raster).                     | Converting image outputs from `spatstat` into raster format.                                               |
@@ -296,9 +295,23 @@ Be aware of the warning message regarding duplicates. In spatial point pattern a
 We can check the duplication in a **ppp** object by using the `duplicated` function with different configurations.
 
 ::: callout-tip
-**Tips on using `duplicated`**
+The `duplicated` function has an argument `rule`:
 
-If rule="spatstat" (the default), two points are deemed identical if their coordinates are equal according to ==, and their marks are equal according to ==. This is the most stringent possible test. If rule="unmark", duplicated points are determined by testing equality of their coordinates only, using ==. If rule="deldir", duplicated points are determined by testing equality of their coordinates only, using the function duplicatedxy in the package deldir, which currently uses duplicated.data.frame. Setting rule="deldir" will ensure consistency with functions in the deldir package.
+1.  **Default Behavior (`rule = "spatstat"`)**:
+    -   Points are considered identical if both their **coordinates** (like x and y positions) and their **marks** (additional data or labels attached to the points) are exactly the same.
+    -   This is the strictest check, requiring everything about the points to match.
+2.  **Only Checking Coordinates (`rule = "unmark"`)**:
+    -   Points are considered duplicates if their **coordinates** are the same, regardless of their marks.
+    -   Marks are ignored, so only the positions are compared.
+3.  **Using `deldir` Package (`rule = "deldir"`)**:
+    -   Points are considered duplicates based on their coordinates, but the comparison is done using a specific method (`duplicatedxy`) from the `deldir` package.
+    -   This approach ensures the check is consistent with other functions in the `deldir` package, which is often used for spatial data analysis (like creating Delaunay triangulations).
+
+In other words,
+
+-   **`rule = "spatstat"`**: Strict check (coordinates and marks).
+-   **`rule = "unmark"`**: Less strict (coordinates only).
+-   **`rule = "deldir"`**: Coordinate check, consistent with the `deldir` package methods.
 
 see [R: Determine Duplicated Points in a Spatial Point Pattern](https://search.r-project.org/CRAN/refmans/spatstat.geom/html/duplicated.ppp.html)
 :::
@@ -318,13 +331,13 @@ for (rule in rules) {
 print(duplicate_counts)
 ```
 
-Using `unmark`, we can find 74 duplicates.
+::: callout-note
+Note that this behavior happens because the data contains marked points with the same coordinates but different properties.
 
-We can also use [anyDuplicated(x)](https://rdrr.io/cran/spatstat.geom/man/duplicated.ppp.html#:~:text=anyDuplicated(x)%20is%20a%20faster%20version%20of%20any(duplicated(x)).) as it is a faster version of `any(duplicated(x))`.
+Upon manual inspection, a set of example is "39, WOODLANDS CLOSE, #01 - 62, MEGA\@WOODLANDS, SINGAPORE 737856" and "39, WOODLANDS CLOSE, #01 - 59, MEGA\@WOODLANDS, SINGAPORE 737856".
 
-```{r}
-sum(anyDuplicated(childcare_ppp, rule="unmark"))
-```
+These are 2 childcare centres that resides in the same building. Thus, it can only be picked up using the "unmark" rule which only examine for exact match of the point coordinate only.
+:::
 
 To count the number of [coincident points](https://www.quora.com/What-is-exactly-coincident-points-and-lines-as-per-SMSG-postulates-1-According-to-this-points-and-lines-are-different-objects-or-same-say-line-is-made-of-set-of-points-What-about-coincident-lines-in-this-context#:~:text=Coincident%20points%20and%20lines%20are,that%20share%20the%20same%20points.), we will use the `multiplicity()` function as shown in the code block below. see [R: Multiplicity](https://search.r-project.org/CRAN/refmans/mlr3pipelines/html/Multiplicity.html) for more info.
 
@@ -340,21 +353,12 @@ sum(multiplicity(childcare_ppp) > 1)
 
 ```{r}
 # double check
-coincident_points <- duplicated(childcare_ppp,  rule="deldir")
+coincident_points <- duplicated(childcare_ppp,  rule="unmark")
 coincident_coordinates <- childcare_ppp[coincident_points]
 print(coincident_coordinates)
 ```
 
-The output shows that there are ~~128~~(???) 0 duplicated point events.
-
-```{r}
-tmap_mode('view')
-tm_basemap("Esri.WorldTopoMap") +
-tm_shape(childcare) +
-  tm_dots(alpha=0.4,
-          size=0.05)
-tmap_mode('plot')
-```
+The output shows that there are 74 duplicated point events.
 
 ### How to Spot Duplicate Points on the Map
 
@@ -373,6 +377,8 @@ childcare_ppp_jit <- rjitter(childcare_ppp,
                              retry=TRUE,
                              nsim=1,
                              drop=TRUE)
+
+plot(childcare_ppp_jit, pch = 16, cex = 0.5, main = "Jittered Points")
 ```
 
 ```{r}
@@ -405,8 +411,12 @@ summary(sg_owin)
 
 For the last step of geospatial data wrangling, we will extract childcare events that are located within Singapore by using the code block below.
 
+::: callout-important
+Since the dataset contains duplicated points, we will use the jittered ppp object for downstream analysis.
+:::
+
 ```{r}
-childcareSG_ppp = childcare_ppp[sg_owin]
+childcareSG_ppp <- childcare_ppp_jit[sg_owin]
 ```
 
 The output object combined both the point and polygon feature in one ppp object class as shown below.
@@ -692,7 +702,6 @@ plot(childcare_ck_ppp.km, main="Choa Chu Kang")
 plot(childcare_jw_ppp.km, main="Jurong West")
 ```
 
-
 ## Second-Order Spatial Point Pattern Analysis
 
 In this section, we will analyze spatial point patterns using various functions: G-Function, F-Function, K-Function, and L-Function.
@@ -752,12 +761,11 @@ In other words, It helps you determine if your observed spatial pattern (e.g., l
 
 1.  Test if the observed spatial pattern deviates significantly from a random pattern or other theoretical patterns.
 2.  Assess the statistical significance of spatial features or clustering in your data.
-3.
+3.  
 
-**Choice of `nsim`:**
-The choice of 39 simulations (nsim = 39) in Monte Carlo techniques for spatial analysis is often a practical compromise between computational efficiency and statistical robustness.
+**Choice of `nsim`:** The choice of 39 simulations (nsim = 39) in Monte Carlo techniques for spatial analysis is often a practical compromise between computational efficiency and statistical robustness.
 
-- **Computational Efficiency:** Running a large number of simulations can be computationally expensive, especially for complex spatial analyses. We can strike a balance between obtaining reliable results and keeping computational costs manageable by selecting *absolute minimum sample size*.
+-   **Computational Efficiency:** Running a large number of simulations can be computationally expensive, especially for complex spatial analyses. We can strike a balance between obtaining reliable results and keeping computational costs manageable by selecting *absolute minimum sample size*.
 
 The minimum number of simulations $m$ required for a Monte Carlo test at a particular significance level can be determined by:
 

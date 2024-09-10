@@ -50,18 +50,17 @@ The specific questions we would like to answer are as follows:
 ## The Data
 
 | Dataset                 | Description                                                         | Source                         | Format         |
-|-------------------------|---------------------------------------------------------------------|--------------------------------|----------------|
+|--------------|-------------------------------|--------------|--------------|
 | **CHILDCARE**           | Point data containing location and attributes of childcare centers. | Data.gov.sg                    | GeoJSON        |
 | **MP14_SUBZONE_WEB_PL** | Polygon data with URA 2014 Master Plan Planning Subzone boundaries. | Data.gov.sg                    | ESRI Shapefile |
 | **CoastalOutline**      | Polygon data representing Singapore's national boundary.            | Singapore Land Authority (SLA) | ESRI Shapefile |
-
 
 ## Installing and Loading the R Packages
 
 The following R packages will be used in this exercise:
 
 | Package      | Purpose                                                                           | Use Case in Exercise                                                                                       |
-|--------------|-----------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------|
+|--------------|-------------------------|---------------------------------|
 | **sf**       | Imports, manages, and processes vector-based geospatial data.                     | Handling vector geospatial data in R.                                                                      |
 | **spatstat** | Provides tools for point pattern analysis.                                        | Performing 1st- and 2nd-order spatial point pattern analysis and deriving kernel density estimation (KDE). |
 | **raster**   | Reads, writes, and manipulates gridded spatial data (raster).                     | Converting image outputs from `spatstat` into raster format.                                               |
@@ -153,6 +152,7 @@ After checking the referencing system of each geospatial data data frame, it is 
 ### Static Map
 
 ```{r}
+tmap_options(check.and.fix = TRUE)
 # add polygon layer of the coastal outline of sg island
 tm_shape(sg_sf)+ tm_polygons() +
 # add polygon layer of the subzone based on sg masterplan
@@ -294,9 +294,23 @@ Be aware of the warning message regarding duplicates. In spatial point pattern a
 We can check the duplication in a **ppp** object by using the `duplicated` function with different configurations.
 
 ::: callout-tip
-**Tips on using `duplicated`**
+The `duplicated` function has an argument `rule`:
 
-If rule="spatstat" (the default), two points are deemed identical if their coordinates are equal according to ==, and their marks are equal according to ==. This is the most stringent possible test. If rule="unmark", duplicated points are determined by testing equality of their coordinates only, using ==. If rule="deldir", duplicated points are determined by testing equality of their coordinates only, using the function duplicatedxy in the package deldir, which currently uses duplicated.data.frame. Setting rule="deldir" will ensure consistency with functions in the deldir package.
+1.  **Default Behavior (`rule = "spatstat"`)**:
+    -   Points are considered identical if both their **coordinates** (like x and y positions) and their **marks** (additional data or labels attached to the points) are exactly the same.
+    -   This is the strictest check, requiring everything about the points to match.
+2.  **Only Checking Coordinates (`rule = "unmark"`)**:
+    -   Points are considered duplicates if their **coordinates** are the same, regardless of their marks.
+    -   Marks are ignored, so only the positions are compared.
+3.  **Using `deldir` Package (`rule = "deldir"`)**:
+    -   Points are considered duplicates based on their coordinates, but the comparison is done using a specific method (`duplicatedxy`) from the `deldir` package.
+    -   This approach ensures the check is consistent with other functions in the `deldir` package, which is often used for spatial data analysis (like creating Delaunay triangulations).
+
+In other words,
+
+-   **`rule = "spatstat"`**: Strict check (coordinates and marks).
+-   **`rule = "unmark"`**: Less strict (coordinates only).
+-   **`rule = "deldir"`**: Coordinate check, consistent with the `deldir` package methods.
 
 see [R: Determine Duplicated Points in a Spatial Point Pattern](https://search.r-project.org/CRAN/refmans/spatstat.geom/html/duplicated.ppp.html)
 :::
@@ -316,13 +330,13 @@ for (rule in rules) {
 print(duplicate_counts)
 ```
 
-Using `unmark`, we can find 74 duplicates.
+::: callout-note
+Note that this behavior happens because the data contains marked points with the same coordinates but different properties.
 
-We can also use [anyDuplicated(x)](https://rdrr.io/cran/spatstat.geom/man/duplicated.ppp.html#:~:text=anyDuplicated(x)%20is%20a%20faster%20version%20of%20any(duplicated(x)).) as it is a faster version of `any(duplicated(x))`.
+Upon manual inspection, a set of example is "39, WOODLANDS CLOSE, #01 - 62, MEGA\@WOODLANDS, SINGAPORE 737856" and "39, WOODLANDS CLOSE, #01 - 59, MEGA\@WOODLANDS, SINGAPORE 737856".
 
-```{r}
-sum(anyDuplicated(childcare_ppp, rule="unmark"))
-```
+These are 2 childcare centres that resides in the same building. Thus, it can only be picked up using the "unmark" rule which only examine for exact match of the point coordinate only.
+:::
 
 To count the number of [coincident points](https://www.quora.com/What-is-exactly-coincident-points-and-lines-as-per-SMSG-postulates-1-According-to-this-points-and-lines-are-different-objects-or-same-say-line-is-made-of-set-of-points-What-about-coincident-lines-in-this-context#:~:text=Coincident%20points%20and%20lines%20are,that%20share%20the%20same%20points.), we will use the `multiplicity()` function as shown in the code block below. see [R: Multiplicity](https://search.r-project.org/CRAN/refmans/mlr3pipelines/html/Multiplicity.html) for more info.
 
@@ -338,21 +352,12 @@ sum(multiplicity(childcare_ppp) > 1)
 
 ```{r}
 # double check
-coincident_points <- duplicated(childcare_ppp,  rule="deldir")
+coincident_points <- duplicated(childcare_ppp,  rule="unmark")
 coincident_coordinates <- childcare_ppp[coincident_points]
 print(coincident_coordinates)
 ```
 
-The output shows that there are ~~128~~(???) 0 duplicated point events.
-
-```{r}
-tmap_mode('view')
-tm_basemap("Esri.WorldTopoMap") +
-tm_shape(childcare) +
-  tm_dots(alpha=0.4,
-          size=0.05)
-tmap_mode('plot')
-```
+The output shows that there are 74 duplicated point events.
 
 ### How to Spot Duplicate Points on the Map
 
@@ -371,6 +376,8 @@ childcare_ppp_jit <- rjitter(childcare_ppp,
                              retry=TRUE,
                              nsim=1,
                              drop=TRUE)
+
+plot(childcare_ppp_jit, pch = 16, cex = 0.5, main = "Jittered Points")
 ```
 
 ```{r}
@@ -403,8 +410,12 @@ summary(sg_owin)
 
 For the last step of geospatial data wrangling, we will extract childcare events that are located within Singapore by using the code block below.
 
+::: callout-important
+Since the dataset contains duplicated points, we will use the jittered ppp object for downstream analysis.
+:::
+
 ```{r}
-childcareSG_ppp = childcare_ppp[sg_owin]
+childcareSG_ppp <- childcare_ppp_jit[sg_owin]
 ```
 
 The output object combined both the point and polygon feature in one ppp object class as shown below.
@@ -770,16 +781,11 @@ The **Clark-Evans test** is a statistical test used to determine whether points 
     -   **R \< 1**: Points are clustered together.
     -   **R \> 1**: Points are more evenly spaced or regularly distributed.
 
-**The `alternative` argument:**
-The null hypothesis is Complete Spatial Randomness, i.e. a uniform Poisson process.
-The alternative hypothesis is specified by the argument alternative:
+**The `alternative` argument:** The null hypothesis is Complete Spatial Randomness, i.e. a uniform Poisson process. The alternative hypothesis is specified by the argument alternative:
 
-- `alternative="less"` or `alternative="clustered"`: the alternative hypothesis is that
- corresponding to a clustered point pattern;
-- `alternative="greater"` or `alternative="regular"`: the alternative hypothesis is that
- corresponding to a regular or ordered point pattern;
-- `alternative="two.sided"`: the alternative hypothesis is that
- corresponding to a clustered or regular pattern.
+-   `alternative="less"` or `alternative="clustered"`: the alternative hypothesis is that corresponding to a clustered point pattern;
+-   `alternative="greater"` or `alternative="regular"`: the alternative hypothesis is that corresponding to a regular or ordered point pattern;
+-   `alternative="two.sided"`: the alternative hypothesis is that corresponding to a clustered or regular pattern.
 
 see [Tests for Spatial Randomness - The R Book \[Book\]](https://www.oreilly.com/library/view/the-r-book/9780470510247/ch024-sec003.html)
 :::
@@ -794,8 +800,6 @@ $H_1$ = The distribution of childcare services are not randomly distributed.
 
 The 95% confidence interval will be used.
 
-
-
 ```{r}
 clarkevans.test(childcareSG_ppp,
                 correction="none",
@@ -804,12 +808,12 @@ clarkevans.test(childcareSG_ppp,
                 nsim=39)
 ```
 
-::: callout-note
+::: callout-note 
 **Result Interpretation**
 
--   Given that **R**, the Clark-Evans ratio, is **0.55631**, it indicates that the childcare services are clustered rather than randomly distributed. The further R is from 1 (and closer to 0), the stronger the clustering.
+-   Given that **R**, the Clark-Evans ratio, is **0.56703**, it indicates that the childcare services are clustered rather than randomly distributed. The further R is from 1 (and closer to 0), the stronger the clustering.
 -   The **p-value** is extremely small (much less than the standard significance level of 0.05).
--   At a 95% confidence level, we can **reject the null hypothesis** of random distribution and accept the alternative hypothesis that the services are clustered.
+-   At a 95% confidence level, we can **reject the null hypothesis** of random distribution and accept the alternative hypothesis that the services are clustered. 
 :::
 
 ### Clark and Evans Test: Choa Chu Kang Planning Area
@@ -817,10 +821,9 @@ clarkevans.test(childcareSG_ppp,
 Now, we perform the similar test on individual subzone areas. We will analyse the Choa Chu Kang area first.
 
 ::: callout-note
-**Choice of `nsim`:**
-The choice of 39 simulations (nsim = 39) in Monte Carlo techniques for spatial analysis is often a practical compromise between computational efficiency and statistical robustness.
+**Choice of `nsim`:** The choice of 39 simulations (nsim = 39) in Monte Carlo techniques for spatial analysis is often a practical compromise between computational efficiency and statistical robustness.
 
-- **Computational Efficiency:** Running a large number of simulations can be computationally expensive, especially for complex spatial analyses. We can strike a balance between obtaining reliable results and keeping computational costs manageable by selecting *absolute minimum sample size*.
+-   **Computational Efficiency:** Running a large number of simulations can be computationally expensive, especially for complex spatial analyses. We can strike a balance between obtaining reliable results and keeping computational costs manageable by selecting *absolute minimum sample size*.
 
 The minimum number of simulations $m$ required for a Monte Carlo test at a particular significance level can be determined by:
 
@@ -833,7 +836,6 @@ $\alpha = \frac{2}{m+1}$
 Thus, a one-tailed test at a significance level of 5% would require **a minimum of 19 simulations**, a two-tailed test at a significance level of 5% would require **a minimum of** 39 simulations.
 
 see [Going beyond the required number of simulations required for a particular significance level when conducting a Monte Carlo test - Cross Validated](https://stats.stackexchange.com/questions/302428/going-beyond-the-required-number-of-simulations-required-for-a-particular-signif), [spatial statistics - Simulation envelopes and significance levels - Geographic Information Systems Stack Exchange](https://gis.stackexchange.com/questions/16754/simulation-envelopes-and-significance-levels)
-
 :::
 
 ```{r}
@@ -847,9 +849,9 @@ clarkevans.test(childcare_ck_ppp,
 ::: callout-note
 **Result Interpretation**
 
--   Given that **R**, the Clark-Evans ratio, is **0.94406**, it indicates that the distribution of childcare services is closer to random with minimal clustering. Since R is close to 1 and not significantly less, there is little evidence of clustering or regular spacing.
+-   Given that **R**, the Clark-Evans ratio, is **0.95041**, it indicates that the distribution of childcare services is closer to random with minimal clustering. Since R is close to 1 and not significantly less, there is little evidence of clustering or regular spacing.
 
-The p-value is **0.4032**, which is much larger than the standard significance level of 0.05.
+The p-value is **0.4587**, which is much larger than the standard significance level of 0.05.
 
 At a 95% confidence level, we **fail to reject the null hypothesis of random distribution**. The two-sided alternative hypothesis suggests that the distribution could be either clustered or regularly spaced, but the data does not provide enough evidence to support significant clustering or regularity.
 :::
@@ -869,9 +871,9 @@ clarkevans.test(childcare_tm_ppp,
 ::: callout-note
 **Result Interpretation**
 
-Given that **R**, the Clark-Evans ratio, is 0.79076, it indicates that the distribution of childcare services shows a significant level of clustering. Since R is notably less than 1, there is strong evidence of clustering.
+Given that **R**, the Clark-Evans ratio, is 0.80393, it indicates that the distribution of childcare services shows a significant level of clustering. Since R is notably less than 1, there is strong evidence of clustering.
 
-The **p-value** is 0.0001592, which is much smaller than the standard significance level of 0.05.
+The **p-value** is 0.0004022, which is much smaller than the standard significance level of 0.05.
 
 At a 95% confidence level, we **reject the null hypothesis of random distribution** and accept the alternative hypothesis that the distribution is not random. The two-sided alternative hypothesis suggests that the distribution could be either clustered or regularly spaced, but in this case, the significantly lower R value supports the conclusion of clustering.
 :::
