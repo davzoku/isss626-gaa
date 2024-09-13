@@ -19,22 +19,143 @@ number-offset: 1
 editor: visual
 ---
 
-## Exercise Reference
+## Overview
 
-#todo
-
-## Learning Outcome
-
-#todo
-
+This session reviews past Hands-on exercises and address questions from classmates on Piazza. We will use a combination of R packages and datasets introduced up to Hands-on Exercise 03. **Prior knowledge of content covered up to this exercise is required.**
 
 ## Import the R Packages
 
-#todo
-
-
 ```{r}
-pacman::p_load(sf)
+pacman::p_load(sf, spNetwork, tmap, tidyverse)
 ```
 
-## The Data
+## Tip 1: Observe data dimension carefully
+
+Relevant Links: [ISSS 626 \| Piazza QA](https://piazza.com/class/lz27gf1qw412m5/post/37), [Details about NKDE • spNetwork](https://jeremygelb.github.io/spNetwork/articles/web_vignettes/NKDEdetailed.html)
+
+When computing NKDE, we may encounter error if the event contains 3D coordinates (XYZ). Typically, publicly accessible geospatial data from Singapore data portals are 2D. During data conversion from kml or other formats, XY coordinates may be unknowingly converted into a XYZ coordinates.
+
+```{r}
+network <- st_read(dsn="data/geospatial", 
+                   layer="Punggol_St")
+
+childcare <- st_read(dsn="data/geospatial",
+                     layer="Punggol_CC")
+```
+
+::: callout-note
+Observe the output carefully. This dataset contains XYZ coordinates in where the z coordinate value is always 0. It is redundant.
+:::
+
+### Solution: Use `st_zm()` to drop the Z dimension
+
+```{r}
+childcare <- st_zm(childcare, drop=TRUE, what = "ZM")
+childcare
+```
+
+Observe that Z dimension is dropped for all points.
+
+## Tip 2: Usage of `st_geometry()`
+
+1.  Notice that `network` has 2 non-spatial columns and a `geometry` column
+
+```{r}
+names(network)
+```
+2. `plot(network)`: Plots the entire network object, which might include non-spatial data. Each non-spatial column will create a separate plot. (This is typically not what we want to viz.)
+
+```{r fig.width=12, fig.height=6}
+plot(network)
+plot(childcare,
+     add=T, # overlay: true
+     col='red',pch=19)
+```
+3. `plot(st_geometry(network))`: Specifically plots only the geometric component of the network object if it is an sf object, which can be useful if you want to focus solely on spatial features. (This is usually what we want.)
+
+```{r fig.width=12, fig.height=6}
+plot(st_geometry(network))
+plot(childcare,add=T,col='red',pch=19)
+```
+
+## Tip 3: Use `tmap` to create more advanced, complex maps
+
+In Tip 2, we discussed map plotting using `plot()` from base R. It is fast for quick viz, but lacks customization as compared to libraries such as `tmap`
+
+::: panel-tabset
+## Using `plot`
+
+```{r fig.width=12, fig.height=6}
+plot(st_geometry(network))
+plot(childcare,add=T,col='red',pch = 18)
+```
+
+## Using `tmap`
+
+We have more mapping options / control and ability to create interactive maps etc.
+
+```{r fig.width=12, fig.height=6}
+tmap_mode('view')
+tm_shape(childcare) + 
+  tm_dots(col = 'red') + 
+  tm_shape(network) +
+  tm_lines()
+tmap_mode('plot')
+```
+
+:::
+
+
+## Tip 4: Preparing Lixel Objects
+
+```{r}
+lixels <- lixelize_lines(network,700,mindist=350)
+```
+
+The choice of 700m is based on NTU research on people's willingness to walk. The values of lixel length and mindist varies, depending on your research area, eg. walking commuters, cars, etc.
+
+## Tip 5: Difference between K-Function and G-Function
+
+Reference Link: [Network k Functions](https://cran.r-project.org/web/packages/spNetwork/vignettes/KNetworkFunctions.html#:~:text=The%20regular%20K%2Dfunction%20is,concentrations%20at%20different%20geographical%20scales.)
+
+- **K-Function (Disc-like)**: The K-function calculates the proportion of points within a distance r from a typical point. It tells us the "average number of neighbors" around each point within that radius. This measure is cumulative, meaning it looks at all points within growing circles (disks) around a point.
+
+- **G-Function (Pair Correlation Function, Ring-like)**: *The G-function is a variation of the K-function* that focuses on specific distances rather than cumulative distances. Instead of looking at all points within a growing circle, it examines points within a narrow ring at a specific distance. This allows it to analyze point concentrations at different geographic scales more precisely.
+
+![](img/k-g-func.png)
+
+### When to Use K-Function vs. G-Function
+
+- **Use the K-Function**:
+  - When you want to understand the overall pattern of clustering or dispersion of points across various distances.
+  - Useful for identifying general trends in the spatial arrangement, such as whether points tend to cluster together or spread out over a broad area.
+  - Example: Analyzing the general distribution of trees in a forest to see if they are randomly spaced, clustered, or regularly spaced.
+
+- **Use the G-Function**:
+  - When you are interested in the point concentration at specific distances or scales.
+  - Useful for detecting specific scales of clustering or dispersion that might be hidden in the cumulative analysis of the K-function.
+  - Example: Studying the distribution of retail stores to understand if there is clustering at a specific distance (e.g., stores tend to cluster within 500 meters of each other but not at larger scales).
+
+```{r}
+kfun_childcare <- kfunctions(network, 
+                             childcare,
+                             start = 0, 
+                             end = 1000, 
+                             step = 50, 
+                             width = 50, 
+                             nsim = 50, 
+                             resolution = 50,
+                             verbose = FALSE, 
+                             conf_int = 0.05)
+```
+
+```{r}
+kfun_childcare$plotk
+```
+
+```{r}
+kfun_childcare$plotg
+```
+
+
+

@@ -55,7 +55,7 @@ In this hands-on exercise, you are going to gain hands-on experience on using ap
 This study will analyze the spatial distribution of childcare centers in the [Punggol planning area](https://en.wikipedia.org/wiki/Punggol) using the following geospatial datasets:
 
 | Dataset        | Description                                                                                     | Format         |
-|------------------|-----------------------------------|------------------|
+|-------------------|-----------------------------------|-------------------|
 | **Punggol_St** | Line feature data representing the road network within Punggol Planning Area.                   | ESRI Shapefile |
 | **Punggol_CC** | Point feature data representing the location of childcare centers within Punggol Planning Area. | ESRI Shapefile |
 
@@ -64,7 +64,7 @@ This study will analyze the spatial distribution of childcare centers in the [Pu
 The following R packages will be used in this exercise:
 
 | Package       | Purpose                                                                                                                                      | Use Case in Exercise                                                                               |
-|------------------|--------------------------------|----------------------|
+|-------------------|--------------------------------|----------------------|
 | **spNetwork** | Provides functions for Spatial Point Patterns Analysis (e.g., KDE, K-function) on networks and spatial matrix building for spatial analysis. | Conducting spatial point pattern analysis and building spatial weights based on network distances. |
 | **sf**        | Offers functions to manage, process, and manipulate Simple Features for geospatial data handling.                                            | Handling and processing geospatial data in Simple Features format.                                 |
 | **tmap**      | Creates cartographic quality static and interactive maps using the Leaflet API.                                                              | Plotting high-quality static and interactive maps for spatial analysis.                            |
@@ -139,12 +139,13 @@ To visualise geospatial data, we can use `plot()` from base R. Alternatively, we
 ## Using Plot
 
 ```{r}
+# to plot road network only without using its column attributes
 plot(st_geometry(network))
 
 plot(childcare,
-     add=T,
+     add=T, # add to the existing plot (overlay) instead of creating a new one.
      col='red',
-     pch = 19)
+     pch = 19)  # 'pch' (plotting character) http://www.sthda.com/english/wiki/r-plot-pch-symbols-the-different-point-shapes-available-in-r
 ```
 
 ## Using Tmap
@@ -153,6 +154,7 @@ plot(childcare,
 tmap_mode('view')
 
 tm_shape(childcare) + 
+  # uniform red dots to represent childcare center
   tm_dots(col = 'red') + 
   tm_shape(network) +
   tm_lines()
