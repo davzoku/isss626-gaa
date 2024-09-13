@@ -38,6 +38,16 @@ In this exercise, we will learn to compute Global Measures of Spatial Autocorrel
 -   Plot Moran scatterplot and spatial correlograms
 -   Interpret GSA statistics correctly
 
+## The Analytical Question
+
+In spatial policy planning, one of the main development objective of the local government and planners is to ensure equal distribution of development in the province. In this study, we will apply spatial statistical methods to examine the distribution of development in Hunan Province, China, using a selected indicator (e.g., GDP per capita).
+
+> Our key questions are:
+> 
+> 1. Is development evenly distributed geographically?
+> 2. If not, is there evidence of spatial clustering?
+> 3. If clustering exists, where are these clusters located?
+
 ## The Data
 
 The following 2 datasets will be used in this exercise.
