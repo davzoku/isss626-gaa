@@ -1,7 +1,7 @@
 ---
 title: "Take Home Exercise 1"
-subtitle: ""
-draft: true
+subtitle: "In this exercise, we will apply spatial and spatio-temporal point pattern analysis methods to identify factors affecting road traffic accidents in the Bangkok Metropolitan Region (BMR), including visualizing spatio-temporal dynamics, conducting spatial analysis using Network Spatial Point Patterns, and analyzing spatio-temporal patterns using Temporal Network Spatial Point Patterns."
+# draft: true
 date: "Sep 05, 2024"
 date-modified: "last-modified"
 author: Teng Kok Wai (Walter)
@@ -19,4 +19,361 @@ number-offset: 1
 editor: visual
 ---
 
-# WIP
+## Assignment Task
+
+Refer to: [ISSS626 Geospatial Analytics and Applications - Take-home Exercise 1: Geospatial Analytics for Public Good](https://isss626-ay2024-25aug.netlify.app/take-home_ex01)
+
+
+## Overview
+
+In this exercise, we will apply spatial and spatio-temporal point pattern analysis methods to identify factors affecting road traffic accidents in the Bangkok Metropolitan Region (BMR), including visualizing spatio-temporal dynamics, conducting spatial analysis using Network Spatial Point Patterns, and analyzing spatio-temporal patterns using Temporal Network Spatial Point Patterns.
+
+## The Analytical Question
+
+#todo
+
+## The Data
+
+#todo
+
+## Installing and Launching the R Packages
+
+#todo
+
+```{r pacman}
+pacman::p_load(tidyverse, sf, tmap, spNetwork, spatstat, plotly)
+```
+
+## Import Data and Preparation
+
+In this section, we will perform sanity checks on the raw data from from the official data sources and identify useful data for our case study area.
+
+### Thai Road Accident Data
+
+#todo
+
+First, we import the Thai Road Accident dataset from 2019-2022 using `read_csv()`.
+
+```{r}
+#| eval: false
+rdacc_sf <- read_csv("data/raw_data/thai_road_accident_2019_2022.csv")
+rdacc_sf
+```
+From the output above, we can that there are 18 columns in this dataset and there are 81,735 recorded accidents in Thailand. Next, we check for null values.
+
+```{r}
+#| eval: false
+null_counts <- sapply(rdacc_sf, function(x) sum(is.na(x)))
+null_counts
+data.frame(Column = names(null_counts), Null_Count = null_counts)
+```
+
+From the output above, we can notice that are 359 missing data in the `latitude` *(lat)* and `longitude` *(lon)* columns. We will remove these rows as they make up <5% of the total records.
+
+Next, we check for duplicate values.
+
+```{r}
+#| eval: false
+duplicate_count <- sum(duplicated(rdacc_sf))
+duplicate_count
+```
+
+There are no exact duplicates in this dataset.
+
+
+```{r check_province_keys}
+#| eval: false
+# Display unique values in the "ST" column sorted in ascending order
+sort(unique(rdacc_sf$province_en))
+```
+From the output above, we can notice that the data contains data from across 78 provinces in Thailand. Since our study area is only in [Bangkok Metropolitan Region (BMR)](https://en.wikipedia.org/wiki/Bangkok_Metropolitan_Region), we will filter the data for records in  "Bangkok", "Nonthaburi", "Nakhon Pathom", "Pathum Thani", "Samut Prakan", "Samut Sakhon" only.
+
+In the following step, we will consolidate the data preprocessing steps as follows:
+
+- filter data for 6 provinces in BMR by `province_en`
+- remove null lat, lon rows
+- convert filtered data into a sf spatial object, using the lat, lon columns and setting the coordinate reference system (CRS) to EPSG [4326](https://epsg.io/4326)
+- reproject spatial data to EPSG [32647](https://epsg.io/32647) used in Thailand. This format is in metres.
+
+```{r}
+#| eval: false
+bmr_regions <- c("Bangkok", "Nonthaburi", "Nakhon Pathom", "Pathum Thani", "Samut Prakan", "Samut Sakhon")
+```
+
+```{r}
+#| eval: false
+accidents_bmr <- rdacc_sf %>%
+  filter(province_en %in% bmr_regions) %>%
+  filter (!is.na(longitude) & longitude != "",
+          !is.na(latitude ) & latitude != "") %>%  
+  st_as_sf(coords = c(
+    "longitude", "latitude"),
+    crs=4326) %>%
+  st_transform(crs=32647)
+```
+
+### Thai Admin Boundary
+
+#todo
+
+```{r}
+#| eval: false
+admin_boundary <- st_read(dsn = "data/raw_data", 
+                # try different layer
+                # 0 country
+                # layer = "tha_admbnda_adm0_rtsd_20220121") %>%      
+                # 1 province
+                #layer = "tha_admbnda_adm1_rtsd_20220121") %>% 
+                # 2 district
+                layer = "tha_admbnda_adm2_rtsd_20220121") %>% 
+  st_transform(crs = 32647)
+```
+
+```{r}
+#| eval: false
+st_crs(admin_boundary)
+```
+
+```{r}
+#| eval: false
+glimpse(admin_boundary)
+```
+Similar to the road accident csv file, we can filter for the BMR region using `ADM1_EN`.
+
+```{r}
+#| eval: false
+admin_boundary_bmr <- admin_boundary %>% 
+  select("ADM1_EN") %>% 
+  filter(ADM1_EN %in% bmr_regions)
+```
+
+```{r}
+#| eval: false
+write_rds(admin_boundary_bmr, file = "data/rds/admin_boundary_bmr.rds")
+```
+
+```{r}
+admin_boundary_bmr <-read_rds("data/rds/admin_boundary_bmr.rds")
+```
+
+```{r}
+tmap_mode('plot')
+
+tm_shape(admin_boundary_bmr) +
+  tm_fill(col = "ADM1_EN", title = "Region") +
+  tm_borders() +
+  tm_layout(main.title = "BMR Administrative Boundaries",
+            main.title.position = "center")
+
+```
+
+### Road Lines
+
+#todo
+
+```{r read_roads}
+#| eval: false
+roads <- st_read(dsn = "data/raw_data", 
+                layer = "hotosm_tha_roads_lines_shp")
+```
+
+```{r transform_roads_32647}
+#| eval: false
+roads_sf <- st_set_crs(roads, 4326) %>% 
+  st_transform(crs = 32647)
+```
+
+```{r}
+#| eval: false
+st_crs(roads_sf)
+```
+
+
+
+
+
+there is some highway types..
+
+```{r check_highway_keys}
+#| eval: false
+# Display unique values in the "highway" column sorted in ascending order
+sort(unique(roads_sf$highway))
+```
+<!-- 
+
+intend to check distribution but this takes forever.
+
+```
+highway_distribution <- roads_sf %>%
+  count(highway)
+
+highway_distribution
+```
+
+-->
+
+We will focus on relevant highway classifications:
+see  [WikiProject Thailand - OpenStreetMap Wiki](https://wiki.openstreetmap.org/wiki/WikiProject_Thailand#Highway_classification)
+
+
+```{r}
+#| eval: false
+highway_types <- c("motorway", # controlled-access
+                  "trunk", # uncontrolled-access
+                  "primary", # 3-digit national highway
+                  "secondary", # 4-digit national highway
+                  "tertiary", # all rural roads
+                  "unclassified" # lowest rank of usable public roads
+                  ) 
+
+roads_sf_filtered <- roads_sf %>%
+  select("highway") %>% 
+  filter(highway %in% highway_types)
+```
+
+
+use `st_intersection()` to find roads within BMR region
+
+```{r}
+#| eval: false
+roads_bmr <- st_intersection(roads_sf_filtered,
+                            admin_boundary_bmr)
+```
+
+
+```{r}
+#| eval: false
+# raw roads rows
+raw_size <- dim(roads_sf)[1]
+# roads rows after filter for 6 intercity types
+filtered_size <- dim(roads_sf_filtered)[1]
+# roads size after filter for bmr region only
+bmr_size <- dim(roads_bmr)[1]   
+
+reduction_filtered <- raw_size - filtered_size
+reduction_bmr <- raw_size - bmr_size 
+
+reduction_filtered_percent <- (reduction_filtered / raw_size) * 100
+reduction_bmr_percent <- (reduction_bmr / raw_size) * 100
+
+cat("Raw Size:", raw_size, "\n")
+cat("Filtered Size:", filtered_size, "\n")
+cat("BMR Size:", bmr_size, "\n\n")
+
+cat("Reduction from roads_sf to roads_sf_filtered:\n")
+cat("Percentage reduction:", round(reduction_filtered_percent, 2), "%\n\n")
+
+cat("Reduction from roads_sf to roads_bmr:\n")
+cat("Percentage reduction:", round(reduction_bmr_percent, 2), "%\n")
+
+```
+
+::: callout-note
+For the purpose of this study, we are focusing only on the 5 Intercity highway types in BMR.
+
+We first filter for relevant highway types then isolate to the BMR region.
+
+Alternatively, we could have isolated for BMR region first, then study the highway type distribution before narrowing down the highway types options. However, this approach is not adopted as the `st_intersection()` step is much more time-consuming.
+:::
+
+```{r}
+#| eval: false
+write_rds(roads_bmr, "data/rds/roads_bmr.rds")
+```
+
+```{r}
+roads_bmr <- read_rds("data/rds/roads_bmr.rds")
+```
+
+## Feature Engineering
+
+After going through all the 3 datasets, we have a better sense of the dataset that we are working with. In this section, we will transform certain columns to more usable formats and feature engineer new columns to aid our analysis.
+
+- 3 seasons: [Bangkok - Wikipedia](https://en.wikipedia.org/wiki/Bangkok#Climate)
+
+- peak hour time: [How Do You Beat Bangkok Traffic?](https://www.drivecarrental.com/blog/2023/10/05/how-do-you-beat-bangkok-traffic/#:~:text=Like%20most%20cities%2C%207%3A00,00%20to%207%3A00%20PM.) 7-9 am and 4 to 7.
+
+
+- 7 deadly days of songkran from [25 deaths in 234 road accidents recorded on 1st of Songkran’s ‘7 dangerous days’](https://www.nationthailand.com/thailand/general/40037198), 11-17 apr each year
+
+
+
+```{r}
+#| eval: false
+accidents_bmr_ft <- accidents_bmr %>%
+  # extract month number (1 = January, 12 = December)
+  mutate(month_number = month(incident_datetime)) %>%
+  
+  # extract month as factor ("Jan", "Feb")
+  mutate(month_factor = month(incident_datetime, label = TRUE, abbr = TRUE)) %>%
+  
+  # extract day of month
+  mutate(day_of_month = day(incident_datetime)) %>%
+  
+  # extract the day of the week (1 = Mon)
+  mutate(day_of_week = wday(incident_datetime, week_start = 1)) %>%
+  
+  # extract year
+  mutate(year = year(incident_datetime)) %>%
+  
+  # extract time (HH:MM:SS)
+  mutate(time = format(incident_datetime, format = "%H:%M:%S")) %>%
+  
+  # add season col
+  mutate(season = case_when(
+    month_number %in% c(3, 4, 5) ~ "Hot",          # March to May
+    month_number %in% c(6, 7, 8, 9, 10) ~ "Rainy", # June to October
+    month_number %in% c(11, 12, 1, 2) ~ "Cool"     # November to February
+  )) %>%
+  
+  # add peak period col (7-9 am or 4-7 pm)
+  mutate(peak_period = case_when(
+    format(incident_datetime, "%H:%M:%S") >= "07:00:00" & format(incident_datetime, "%H:%M:%S") <= "09:00:00" ~ "Morning Peak",
+    format(incident_datetime, "%H:%M:%S") >= "16:00:00" & format(incident_datetime, "%H:%M:%S") <= "19:00:00" ~ "Evening Peak",
+    TRUE ~ "Off-Peak"
+  )) %>%
+  
+  # Add column to identify Songkran's "7 Deadly Days"
+  mutate(songkran_7_dead_days = month_number == 4 & day_of_month >= 11 & day_of_month <= 17)
+
+
+accidents_bmr_ft
+```
+#todo: cleanup unused col like province_th
+
+```{r}
+#| eval: false
+write_rds(accidents_bmr_ft, "data/rds/accidents_bmr_ft.rds")
+```
+
+```{r}
+accidents_bmr_ft <- read_rds("data/rds/accidents_bmr_ft.rds")
+```
+
+## Exploratory Data Analysis (EDA)
+
+```{r overall_tmap, fig.width=12, fig.height=8}
+tmap_mode('plot')
+
+tm_shape(admin_boundary_bmr) + 
+  tm_polygons(col = "ADM1_EN", alpha = 0.6, border.col = "black", lwd = 0.7, title = "Region") +
+  tm_shape(roads_bmr) +
+  tm_lines(col = "darkgreen", lwd = 1.5, alpha = 0.8) +                                       
+  tm_shape(accidents_bmr_ft) + 
+  tm_dots(col = "red", size = 0.05, alpha = 0.5) +                                                
+  tm_layout(
+    main.title = "Road Traffic Accidents in Bangkok Metropolitan Region (2019-2022)",
+    main.title.position = c("center", "top"), 
+    frame = FALSE,
+    legend.outside = TRUE,               
+    legend.position = c("right", "bottom"), 
+    title.size = 0.8,     
+    legend.text.size = 1, 
+    legend.title.size = 1 
+  )
+
+```
+
+
+
+
