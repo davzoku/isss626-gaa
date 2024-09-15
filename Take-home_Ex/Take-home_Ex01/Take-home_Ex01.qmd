@@ -41,7 +41,7 @@ In this exercise, we will apply spatial and spatio-temporal point pattern analys
 #todo
 
 ```{r pacman}
-pacman::p_load(tidyverse, sf, tmap, spNetwork, spatstat, plotly, gtsummary)
+pacman::p_load(tidyverse, sf, tmap, spNetwork, spatstat, plotly, gtsummary, sparr)
 ```
 
 ## Import Data and Preparation
@@ -419,7 +419,7 @@ total_accidents_by_year <- accidents_by_province_year %>%
   summarize(total_accidents = sum(total_accidents))
 
 # create stacked bar chart with trendline
-accidents_by_year_province <- plot_ly() %>%
+fig_accidents_by_year_province <- plot_ly() %>%
   # add stack bar chart
   add_trace(
     data = accidents_by_province_year,
@@ -450,7 +450,7 @@ accidents_by_year_province <- plot_ly() %>%
     legend = list(title = list(text = "Province")) 
   )
 
-accidents_by_year_province
+fig_accidents_by_year_province
 
 ```
 
@@ -761,6 +761,83 @@ selected_data %>%
 fill up top causes, road_desc
 
 :::
+
+## Spatial Point Analysis
+
+1. are the road accidents in BMR randomly distributed throughout the region?
+if the answer is not, then the next logical question is where are the locations with higher concentration of accidents?
+
+
+## Spatial Temporal Point Pattern Analysis
+
+are the locations of accidents in BMR spatial and spatio-temporally independent?
+if the answer is NO, where and when the observed accident locations tend to cluster?
+
+For this analysis, we will focus on 2022 as it has the highest accident rate.
+
+
+```{r}
+accidents_month_2022  <- accidents_bmr_ft %>%
+  filter(year == 2022) %>%
+  select(month_number)
+```
+
+```{r}
+accidents_month_2022_ppp <- as.ppp(accidents_month_2022)
+# rescale from m to km
+accidents_month_2022_ppp.km <- rescale(accidents_month_2022_ppp, 1000, "km")
+```
+
+```{r}
+summary(accidents_month_2022_ppp.km)
+```
+
+```{r}
+any(duplicated(accidents_month_2022_ppp.km))
+```
+
+```{r}
+set.seed(1234)
+accidents_month_2022_ppp_jit.km <- rjitter(accidents_month_2022_ppp.km, 
+                                        retry=TRUE, 
+                                        nsim=1, 
+                                        drop=TRUE)
+
+summary(accidents_month_2022_ppp_jit)
+```
+
+```{r create_owin}
+owin_bmr <- as.owin(admin_boundary_bmr)
+owin_bmr.km <- rescale(owin_bmr, 1000)
+owin_bmr.km
+```
+
+
+```{r}
+accidents_month_2022_owin.km <- accidents_month_2022_ppp_jit.km[owin_bmr.km]
+summary(accidents_month_2022_owin.km)
+```
+
+```{r}
+plot(accidents_month_2022_owin.km)
+```
+
+```{r}
+st_kde <- spattemp.density(accidents_month_2022_owin.km)
+summary(st_kde)
+```
+
+```{r st_kde_2022, fig.width=12, fig.height=12}
+par(mfrow = c(4,3), mar = c(2, 2, 2, 2))
+
+for(i in seq(1, 12)){ 
+  plot(st_kde, i, 
+       override.par=FALSE, 
+       fix.range=TRUE, 
+       main=paste("KDE at month", i))
+}
+
+```
 
 
 
