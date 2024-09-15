@@ -41,7 +41,7 @@ In this exercise, we will apply spatial and spatio-temporal point pattern analys
 #todo
 
 ```{r pacman}
-pacman::p_load(tidyverse, sf, tmap, spNetwork, spatstat, plotly)
+pacman::p_load(tidyverse, sf, tmap, spNetwork, spatstat, plotly, gtsummary)
 ```
 
 ## Import Data and Preparation
@@ -352,6 +352,8 @@ accidents_bmr_ft <- read_rds("data/rds/accidents_bmr_ft.rds")
 
 ## Exploratory Data Analysis (EDA)
 
+### Overall Plot
+
 ```{r overall_tmap, fig.width=12, fig.height=8}
 tmap_mode('plot')
 
@@ -373,6 +375,392 @@ tm_shape(admin_boundary_bmr) +
   )
 
 ```
+### Visualize Geographic Distribution of Accidents by Year
+
+```{r tmap_by_years, fig.width=12, fig.height=8}
+tmap_mode('plot')
+
+tm_shape(admin_boundary_bmr) + 
+  tm_polygons(border.col = "darkgray", alpha = 0.5) +
+tm_shape(roads_bmr) + 
+  tm_lines(col = "darkgreen", lwd = 0.7) +
+tm_shape(accidents_bmr_ft) + 
+  tm_dots(size = 0.2, col = "red", alpha = 0.6) +
+# facet by year
+tm_facets(by = "year") +
+tm_layout(
+  main.title = "Accident Trends by Year in Bangkok Metropolitan Region (2019-2022)",
+  main.title.size = 1.5, 
+  main.title.position = c("center", "top"), 
+  frame = FALSE
+)
+```
+
+```{r stacked_bar_year_province}
+#| code-fold: true
+#| code-summary: "Show the code"
+
+# Calculate total accidents by year
+accidents_by_year <- accidents_bmr_ft %>%
+  st_drop_geometry() %>%                  
+  group_by(year) %>%
+  summarize(total_accidents = n())
+
+# Calculate total accidents by province and year
+accidents_by_province_year <- accidents_bmr_ft %>%
+  st_drop_geometry() %>%                  
+  group_by(year, province_en) %>%
+  summarize(total_accidents = n()) %>%
+  ungroup()
+
+# Summarize total accidents for each year (for trendline)
+total_accidents_by_year <- accidents_by_province_year %>%
+  group_by(year) %>%
+  summarize(total_accidents = sum(total_accidents))
+
+# create stacked bar chart with trendline
+accidents_by_year_province <- plot_ly() %>%
+  # add stack bar chart
+  add_trace(
+    data = accidents_by_province_year,
+    x = ~year,
+    y = ~total_accidents,
+    color = ~province_en,
+    type = 'bar',
+    text = ~paste(province_en, ": ", total_accidents), 
+    hoverinfo = 'text', 
+    name = ~province_en 
+  ) %>%
+  # add trendline
+  add_trace(
+    data = total_accidents_by_year,
+    x = ~year,
+    y = ~total_accidents,
+    type = 'scatter',
+    mode = 'lines+markers',
+    line = list(color = 'black', dash = 'dash'),
+    marker = list(color = 'black', size = 6), 
+    name = 'Total Accidents Trend'
+  ) %>%
+  layout(
+    barmode = 'stack',
+    title = "Total Accidents by Year and Province with Trendline",
+    xaxis = list(title = "Year"),
+    yaxis = list(title = "Total Accidents"),
+    legend = list(title = list(text = "Province")) 
+  )
+
+accidents_by_year_province
+
+```
+
+::: callout-note
+#todo
+:::
+
+### Visualize Geographic Distribution of Accidents by Month
+
+
+```{r tmap_by_month, fig.width=12, fig.height=8}
+tmap_mode('plot')
+
+tm_shape(admin_boundary_bmr) + 
+  tm_polygons(border.col = "darkgray", alpha = 0.5) +
+tm_shape(roads_bmr) + 
+  tm_lines(col = "darkgreen", lwd = 0.7) +
+tm_shape(accidents_bmr_ft) + 
+  tm_dots(size = 0.2, col = "red", alpha = 0.6) +
+# facet by month_factor
+tm_facets(by = "month_factor") +
+tm_layout(
+  main.title = "Accident Trends by Month in Bangkok Metropolitan Region (2019-2022)",
+  main.title.size = 1.5, 
+  main.title.position = c("center", "top"), 
+  frame = FALSE
+)
+```
+
+```{r}
+# compute accidents by month, season
+accidents_by_month <- accidents_bmr_ft %>%
+  st_drop_geometry() %>%                  
+  group_by(month_factor, season) %>%
+  summarize(total_accidents = n()) %>%
+  ungroup()
+
+
+fig_accidents_by_month_bar <- plot_ly() %>%
+  # add bar chart
+  add_trace(
+    data = accidents_by_month,
+    x = ~month_factor,                   
+    y = ~total_accidents,                
+    color = ~season,                     
+    # Assign colors to each season
+    colors = c('Cool' = 'lightblue', 'Hot' = 'red3', 'Rainy' = 'royalblue3'), 
+    type = 'bar',                        
+    name = ~season                       
+  ) %>%
+  # Add  trendline
+  add_trace(
+    data = accidents_by_month,
+    x = ~month_factor,
+    y = ~total_accidents,
+    type = 'scatter',
+    mode = 'lines+markers',              
+    line = list(color = 'black', dash = 'dash'), 
+    marker = list(color = 'black', size = 6), 
+    name = 'Trendline'                  
+  ) %>%
+  layout(
+    title = "Accidents by Month in Bangkok Metropolitan Region (2019-2022)",
+    xaxis = list(title = "Month"),
+    yaxis = list(title = "Total Accidents"),
+    barmode = 'group',                 
+    legend = list(title = list(text = "Season"))
+  )
+fig_accidents_by_month_bar
+
+```
+
+::: callout-note
+#todo
+:::
+
+#### Special Mention: Songkran
+
+```{r}
+compute_average_daily_accident_rate <- function(data) {
+  # filter data for April
+  april_data <- data %>%
+    st_drop_geometry() %>%
+    filter(month_factor == "Apr") %>%
+    group_by(year, songkran_7_dead_days) %>%
+    summarize(total_accidents = n(), .groups = 'drop') %>%
+    mutate(
+      days_count = ifelse(songkran_7_dead_days, 7, 30 - 7),
+      # Compute the average daily accident rate
+      average_daily_accidents = total_accidents / days_count,  
+      songkran_label = ifelse(songkran_7_dead_days, "Songkran", "Non-Songkran Days")
+    ) %>%
+    select(year, songkran_label, average_daily_accidents) 
+
+  return(april_data)
+}
+
+average_daily_accident_rate <- compute_average_daily_accident_rate(accidents_bmr_ft)
+
+fig_accidents_songkran <- plot_ly(
+  data = average_daily_accident_rate,
+  x = ~year,                          
+  y = ~average_daily_accidents,       
+  color = ~songkran_label,         
+  # Color by Songkran label (During Songkran vs. Non-Songkran Days)
+  colors = c('Songkran' = 'tomato1', 'Non-Songkran Days' = 'royalblue3'), 
+  type = 'bar',                        
+  name = ~songkran_label              
+) %>%
+  layout(
+    title = "Average Daily Accident Rate in April During Songkran vs. Non-Songkran Days (2019-2022)",
+    xaxis = list(title = "Year"),
+    yaxis = list(title = "Average Daily Accidents"),
+    barmode = 'group',              
+    legend = list(title = list(text = "Day Type"))
+  )
+
+fig_accidents_songkran
+```
+
+::: callout-note
+#todo
+:::
+
+### Visualize Geographic Distribution of Accidents by Day of Week
+
+```{r tmap_by_day, fig.width=12, fig.height=8}
+tmap_mode('plot')
+
+tm_shape(admin_boundary_bmr) + 
+  tm_polygons(border.col = "darkgray", alpha = 0.5) +
+tm_shape(roads_bmr) + 
+  tm_lines(col = "darkgreen", lwd = 0.7) +
+tm_shape(accidents_bmr_ft) + 
+  tm_dots(size = 0.2, col = "red", alpha = 0.6) +
+# facet by day of week
+tm_facets(by = "day_of_week") +
+tm_layout(
+  main.title = "Accident Trends by Days of Week in BMR (2019-2022)",
+  main.title.size = 1.5, 
+  main.title.position = c("center", "top"), 
+  frame = FALSE
+)
+```
+
+```{r}
+# Compute accidents by day of the week and group by weekday or weekend
+accidents_by_day <- accidents_bmr_ft %>%
+  st_drop_geometry() %>%
+  mutate(
+    day_type = case_when(
+      day_of_week %in% c(6, 7) ~ "Weekend",
+      TRUE ~ "Weekday"
+    )
+  ) %>%
+  group_by(day_of_week, day_type) %>%
+  summarize(total_accidents = n()) %>%
+  ungroup()
+
+fig_accidents_by_day_bar <- plot_ly() %>%
+  # Add the bar chart
+  add_trace(
+    data = accidents_by_day,
+    x = ~day_of_week,                    
+    y = ~total_accidents,               
+    color = ~day_type,                   
+    # assign color by weekday, weekend
+    colors = c('Weekday' = 'orange', 'Weekend' = 'seagreen'), 
+    type = 'bar',                        
+    name = ~day_type                     
+  ) %>%
+  # Add a trendline
+  add_trace(
+    data = accidents_by_day,
+    x = ~day_of_week,
+    y = ~total_accidents,
+    type = 'scatter',
+    mode = 'lines+markers',              
+    line = list(color = 'black', dash = 'dash'), 
+    marker = list(color = 'black', size = 6), 
+    name = 'Trendline'                  
+  ) %>%
+  layout(
+    title = "Accidents by Day of the Week in Bangkok Metropolitan Region (2019-2022)",
+    xaxis = list(title = "Day of the Week", tickvals = 1:7, ticktext = c("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")),
+    yaxis = list(title = "Total Accidents"),
+    barmode = 'group',                 
+    legend = list(title = list(text = "Day Type"))
+  )
+
+fig_accidents_by_day_bar
+
+```
+
+
+::: callout-note
+#todo
+:::
+
+### Visualize Geographic Distribution of Accidents by Peak Period
+
+```{r tmap_by_peak_period, fig.width=12, fig.height=8}
+tmap_mode('plot')
+
+tm_shape(admin_boundary_bmr) + 
+  tm_polygons(border.col = "darkgray", alpha = 0.5) +
+tm_shape(roads_bmr) + 
+  tm_lines(col = "darkgreen", lwd = 0.7) +
+tm_shape(accidents_bmr_ft) + 
+  tm_dots(size = 0.2, col = "red", alpha = 0.6) +
+# facet by peak_period
+tm_facets(by = "peak_period") +
+tm_layout(
+  main.title = "Accident Trends by Peak Period in BMR (2019-2022)",
+  main.title.size = 1.5, 
+  main.title.position = c("center", "top"), 
+  frame = FALSE
+)
+```
+
+
+```{r tmap_by_hour, fig.width=12, fig.height=8}
+
+# Group data by year and peak period type
+accidents_by_year_peak_period <- accidents_bmr_ft %>%
+  st_drop_geometry() %>%
+  group_by(year, peak_period) %>%
+  summarize(total_accidents = n(), .groups = 'drop') %>%
+  mutate(
+    # Calculate the number of hours for each peak period type
+    hours_count = case_when(
+      peak_period == "Morning Peak" ~ 2,  # 7-9 AM (2 hours)
+      peak_period == "Evening Peak" ~ 3,  # 4-7 PM (3 hours)
+      peak_period == "Off-Peak" ~ 19      # Remaining hours in a day
+    ),
+    average_accidents_per_hour = total_accidents / hours_count  # Compute average accident rate per hour
+  )
+
+
+fig_accidents_trend <- plot_ly(
+  data = accidents_by_year_peak_period,
+  x = ~year,                              
+  y = ~average_accidents_per_hour,        
+  color = ~peak_period,                    
+  colors = c('Morning Peak' = 'tomato1', 'Evening Peak' = 'orange', 'Off-Peak' = 'lightblue'),
+  type = 'bar',                       
+  mode = 'lines+markers',                 
+  name = ~peak_period                      
+) %>%
+  layout(
+    title = "Average Accident Rate per Hour by Peak Period Type Over the Years",
+    xaxis = list(title = "Year"),
+    yaxis = list(title = "Average Accidents per Hour"),
+    legend = list(title = list(text = "Peak Period"))
+  )
+
+# Display the plot
+fig_accidents_trend
+
+```
+
+
+::: callout-note
+#todo
+:::
+
+### Visualize Geographic Distribution of Accidents by Weather Conditions
+
+```{r tmap_by_weather, fig.width=12, fig.height=8}
+tmap_mode('plot')
+
+tm_shape(admin_boundary_bmr) + 
+  tm_polygons(border.col = "darkgray", alpha = 0.5) +
+tm_shape(roads_bmr) + 
+  tm_lines(col = "darkgreen", lwd = 0.7) +
+tm_shape(accidents_bmr_ft) + 
+  tm_dots(size = 0.2, col = "red", alpha = 0.6) +
+# facet by weather
+tm_facets(by = "weather_condition") +
+tm_layout(
+  main.title = "Accident Trends by Weather in BMR (2019-2022)",
+  main.title.size = 1.5, 
+  main.title.position = c("center", "top"), 
+  frame = FALSE
+)
+```
+
+### Visualize Other Factors
+
+#### Top Causes
+
+
+```{r}
+selected_data <- accidents_bmr_ft %>%
+  st_drop_geometry() %>%
+  select(presumed_cause, accident_type, road_description, weather_condition)
+
+theme_gtsummary_compact()
+
+selected_data %>% 
+  tbl_summary(missing_text = "NA", sort=all_categorical(FALSE) ~ "frequency") %>% 
+  add_n() %>% 
+  modify_caption("**Table of Variable Summary**") %>%
+  bold_labels()
+```
+
+::: callout-note
+fill up top causes, road_desc
+
+:::
 
 
 
