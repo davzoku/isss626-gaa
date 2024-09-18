@@ -40,7 +40,7 @@ In this exercise, we will learn to compute spatial weights, visualize spatial di
 The following 2 datasets will be used in this exercise.
 
 | **Data Set**                | **Description**                                                  | **Format**     |
-|-----------------|---------------------------------------|-----------------|
+|-----------------|---------------------------------------|----------------|
 | Hunan county boundary layer | Geospatial data set representing the county boundaries of Hunan  | ESRI Shapefile |
 | Hunan_2012.csv              | Contains selected local development indicators for Hunan in 2012 | CSV            |
 
@@ -49,7 +49,7 @@ The following 2 datasets will be used in this exercise.
 The following R packages will be used in this exercise:
 
 | **Package**   | **Purpose**                                                                                                | **Use Case in Exercise**                                                                                  |
-|--------------|------------------------|----------------------------------|
+|--------------|-----------------------------|-----------------------------|
 | **sf**        | Imports, manages, and processes vector-based geospatial data.                                              | Handling vector geospatial data such as the Hunan county boundary layer in shapefile format.              |
 | **spdep**     | Provides functions for spatial dependence analysis, including spatial weights and spatial autocorrelation. | Computing spatial weights and creating spatially lagged variables.                                        |
 | **tmap**      | Creates static and interactive thematic maps using cartographic quality elements.                          | Visualizing regional development indicators and plotting maps showing spatial relationships and patterns. |
@@ -145,7 +145,7 @@ tmap_arrange(basemap, gdppc, asp=1, ncol=2)
 ```
 
 ::: callout-note
-**Intepretation** 
+**Intepretation**
 
 The choropleth map on the right visualizes the distribution of GDP per capita (GDPPC) for the year 2012 across the different counties in Hunan.
 
@@ -161,9 +161,7 @@ In this section, we will use [*poly2nb()*](https://r-spatial.github.io/spdep/ref
 ::: callout-note
 Contiguity means that two spatial units share a common border of non-zero length.
 
-
-![Geographic adjacency based neighbors](img/queen-vs-rook-contiguity.png) 
-From [Lab 7: Spatial Autocorrelation](https://crd230.github.io/lab7.html)
+![Geographic adjacency based neighbors](img/queen-vs-rook-contiguity.png) From [Lab 7: Spatial Autocorrelation](https://crd230.github.io/lab7.html)
 
 Operationally, we can further distinguish between a **rook** and a **queen** criterion of contiguity, in analogy to the moves allowed for the such-named pieces on a chess board.
 
@@ -285,11 +283,11 @@ plot(wm_r,
      col = "red")
 ```
 
-![](img/queen-vs-rook.png) 
+![](img/queen-vs-rook.png)
 
-::: callout-note 
+::: callout-note
 
-As observed from the previous sections, we understand that more links will be formed with the Queen's method. This is evident in the plot above.Some of these differences has been marked with blue boxes for better visualization. 
+As observed from the previous sections, we understand that more links will be formed with the Queen's method. This is evident in the plot above.Some of these differences has been marked with blue boxes for better visualization.
 
 :::
 
