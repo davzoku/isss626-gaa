@@ -27,45 +27,45 @@ Refer to: [ISSS626 Geospatial Analytics and Applications - Take-home Exercise 1:
 
 In this exercise, we will apply spatial and spatio-temporal point pattern analysis methods to identify factors affecting road traffic accidents in the Bangkok Metropolitan Region (BMR), including:
 
-1. visualizing spatio-temporal dynamics, 
-2. conducting spatial analysis using Network Spatial Point Patterns, and 
-3. analyzing spatio-temporal patterns using Temporal Network Spatial Point Patterns.
+1.  visualizing spatio-temporal dynamics,
+2.  conducting spatial analysis using Network Spatial Point Patterns, and
+3.  analyzing spatio-temporal patterns using Temporal Network Spatial Point Patterns.
 
 ## The Analytical Questions
 
 This study seeks to uncover the factors influencing road traffic accidents in the Bangkok Metropolitan Region (BMR) by utilizing both spatial and spatio-temporal point patterns analysis methods.
 
 > Our key questions are:
-> 
-> 1. What behavioral, environmental, and temporal factors contribute to these accidents?
-> 2. What are the spatial and temporal patterns of road traffic accidents in BMR?
-> 3. Are traffic accidents in the BMR randomly distributed throughout the region?
-> 4. If the distribution is not random, where are the areas with higher concentrations of accidents?
+>
+> 1.  What behavioral, environmental, and temporal factors contribute to these accidents?
+> 2.  What are the spatial and temporal patterns of road traffic accidents in BMR?
+> 3.  Are traffic accidents in the BMR randomly distributed throughout the region?
+> 4.  If the distribution is not random, where are the areas with higher concentrations of accidents?
 
 ## The Data
 
 The following 3 datasets will be used in this exercise.
 
-| **Dataset Name**                                 | **Description**                                                              | **Format**     | **Source**                                                                              |
-|--------------------------------------------------|------------------------------------------------------------------------------|----------------|-----------------------------------------------------------------------------------------|
-| Thailand Road Accident [2019-2022]               | Data on road accidents in Thailand, including details on location, severity, and date of incidents. | CSV            | [Kaggle](https://www.kaggle.com/datasets/thaweewatboy/thailand-road-accident-2019-2022) |
-| Thailand Roads (OpenStreetMap Export)            | Geospatial data showing the complete road network of Thailand, extracted from OpenStreetMap.                        | ESRI Shapefile | [Humanitarian Data Exchange (HDX)](https://data.humdata.org/dataset/hotosm_tha_roads)   |
-| Thailand - Subnational Administrative Boundaries | Geospatial dataset detailing the administrative boundaries of Thailand's provinces and districts.                   | ESRI Shapefile | [Humanitarian Data Exchange (HDX)](https://data.humdata.org/dataset/cod-ab-tha?)        |
+| **Dataset Name**                                 | **Description**                                                                                     | **Format**     | **Source**                                                                              |
+|---------------|--------------------|---------------|-----------------------|
+| Thailand Road Accident \[2019-2022\]             | Data on road accidents in Thailand, including details on location, severity, and date of incidents. | CSV            | [Kaggle](https://www.kaggle.com/datasets/thaweewatboy/thailand-road-accident-2019-2022) |
+| Thailand Roads (OpenStreetMap Export)            | Geospatial data showing the complete road network of Thailand, extracted from OpenStreetMap.        | ESRI Shapefile | [Humanitarian Data Exchange (HDX)](https://data.humdata.org/dataset/hotosm_tha_roads)   |
+| Thailand - Subnational Administrative Boundaries | Geospatial dataset detailing the administrative boundaries of Thailand's provinces and districts.   | ESRI Shapefile | [Humanitarian Data Exchange (HDX)](https://data.humdata.org/dataset/cod-ab-tha?)        |
 
 ## Installing and Launching the R Packages
 
 The following R packages will be used in this exercise:
 
-| **Package**   | **Purpose**                                                                                                | **Use Case in Exercise**                                                                                  |
-|--------------|------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------|
-| **tidyverse** | A collection of packages for data manipulation, visualization, and data analysis.                          | Importing, cleaning, and transforming data for analysis.                                                    |
-| **sf**        | Imports, manages, and processes vector-based geospatial data.                                              | Handling and analyzing geospatial data such as road networks and administrative boundaries.                 |
-| **tmap**      | Creates both static and interactive thematic maps with high cartographic quality.                          | Visualizing road traffic accident locations and spatial patterns in Thailand.                               |
-| **spNetwork** | Provides tools for network-constrained spatial data analysis, such as point pattern analysis on road networks. | Conducting network spatial point pattern analysis to study traffic accident patterns along road networks.    |
-| **spatstat**  | A toolkit for spatial point pattern analysis.                                                              | Performing advanced spatial analysis, such as identifying hotspots of road traffic accidents.               |
-| **plotly**    | Creates interactive and web-ready visualizations.                                                          | Building interactive charts and maps to explore the spatio-temporal dynamics of traffic accidents.          |
-| **gtsummary** | Generates publication-ready summary tables of statistical results.                                         | Summarizing descriptive statistics and results from the analysis of road traffic accidents.                 |
-| **sparr**     | Provides tools for spatio-temporal analysis of point patterns, including kernel density estimation.        | Performing spatio-temporal analysis to assess the spread and dynamics of road traffic accidents over time.  |
+| **Package**   | **Purpose**                                                                                                    | **Use Case in Exercise**                                                                                   |
+|--------------|-----------------------------|-----------------------------|
+| **tidyverse** | A collection of packages for data manipulation, visualization, and data analysis.                              | Importing, cleaning, and transforming data for analysis.                                                   |
+| **sf**        | Imports, manages, and processes vector-based geospatial data.                                                  | Handling and analyzing geospatial data such as road networks and administrative boundaries.                |
+| **tmap**      | Creates both static and interactive thematic maps with high cartographic quality.                              | Visualizing road traffic accident locations and spatial patterns in Thailand.                              |
+| **spNetwork** | Provides tools for network-constrained spatial data analysis, such as point pattern analysis on road networks. | Conducting network spatial point pattern analysis to study traffic accident patterns along road networks.  |
+| **spatstat**  | A toolkit for spatial point pattern analysis.                                                                  | Performing advanced spatial analysis, such as identifying hotspots of road traffic accidents.              |
+| **plotly**    | Creates interactive and web-ready visualizations.                                                              | Building interactive charts and maps to explore the spatio-temporal dynamics of traffic accidents.         |
+| **gtsummary** | Generates publication-ready summary tables of statistical results.                                             | Summarizing descriptive statistics and results from the analysis of road traffic accidents.                |
+| **sparr**     | Provides tools for spatio-temporal analysis of point patterns, including kernel density estimation.            | Performing spatio-temporal analysis to assess the spread and dynamics of road traffic accidents over time. |
 
 To install and load these packages, use the following code:
 
@@ -94,14 +94,13 @@ rdacc_sf <- read_csv("data/raw_data/thai_road_accident_2019_2022.csv")
 rdacc_sf
 ```
 
-From the output above, we can observe that **there are 18 columns in this dataset and there are 81,735 accidents recorded in this dataset**. 
+From the output above, we can observe that **there are 18 columns in this dataset and there are 81,735 accidents recorded in this dataset**.
 
 ::: {.callout-note collapse="true"}
-
 ### We can check data dictionary from [Kaggle](https://www.kaggle.com/datasets/thaweewatboy/thailand-road-accident-2019-2022) to understand this dataset.
 
 | **Column**                  | **Description**                                                                |
-|-----------------------------|--------------------------------------------------------------------------------|
+|--------------------|----------------------------------------------------|
 | acc_code                    | The accident code or identifier.                                               |
 | incident_datetime           | The date and time of the accident occurrence.                                  |
 | report_datetime             | The date and time when the accident was reported.                              |
@@ -156,14 +155,12 @@ bmr_regions <- c("Bangkok", "Nonthaburi", "Nakhon Pathom", "Pathum Thani", "Samu
 ```
 
 ::: callout-note
-
 We will perform the data preprocessing steps as follows:
 
 -   filter data for 6 provinces in BMR by `province_en`
 -   remove null lat, lon rows
 -   convert filtered data into a sf spatial object, using the lat, lon columns and setting the coordinate reference system (CRS) to EPSG [4326](https://epsg.io/4326)
 -   reproject spatial data to EPSG [32647](https://epsg.io/32647) used in Thailand. This format is in metres.
-
 :::
 
 ```{r}
@@ -179,11 +176,7 @@ accidents_bmr <- rdacc_sf %>%
 
 ### Thailand Subnational Administration Boundary
 
-The Thailand subnational administrative boundaries dataset includes four levels:
-- country (level 0), 
-- province (level 1), 
-- district (level 2), and 
-- sub-district (level 3). 
+The Thailand subnational administrative boundaries dataset includes four levels: - country (level 0), - province (level 1), - district (level 2), and - sub-district (level 3).
 
 For this analysis, we will focus on the 6 provinces in the Bangkok Metropolitan Region (BMR) using level 2 boundaries as it provides a finer level of detail and allows for a more granular understanding of spatial patterns and accident hotspots within the Bangkok Metropolitan Region (BMR).
 
@@ -204,6 +197,7 @@ admin_boundary <- st_read(dsn = "data/raw_data",
 ```{r}
 st_crs(admin_boundary)
 ```
+
 Let's observe this dataset for useful attributes to filter for BMR region from the national boundary data.
 
 ```{r}
@@ -253,13 +247,11 @@ roads <- st_read(dsn = "data/raw_data",
 ```
 
 ::: callout-note
+We observed that **this dataset has over 2 million features**.
 
-We observed that **this dataset has over 2 million features**. 
-
-The geospatial data is in the form of `MULTILINESTRING`, representing multiple connected line segments. Using `st_cast("LINESTRING")` simplifies the geometry by converting these into single line segments (`LINESTRING`), making spatial operations, such as length calculations and spatial joins, easier for analysis. 
+The geospatial data is in the form of `MULTILINESTRING`, representing multiple connected line segments. Using `st_cast("LINESTRING")` simplifies the geometry by converting these into single line segments (`LINESTRING`), making spatial operations, such as length calculations and spatial joins, easier for analysis.
 
 We also assigned the correct CRS with `st_set_crs()` before transforming the data to the desired EPSG:32647 projection.
-
 :::
 
 ```{r transform_roads_32647}
@@ -351,7 +343,8 @@ cat("Reduction from roads_sf to roads_bmr:\n")
 cat("Percentage reduction:", round(reduction_bmr_percent, 2), "%\n")
 
 ```
-````{=html}
+
+```{=html}
 <!-- 
 
 > Raw Size: 2792362 
@@ -365,17 +358,13 @@ cat("Percentage reduction:", round(reduction_bmr_percent, 2), "%\n")
 > Percentage reduction: 99.01 %
 
 --!>
-````
-
-
+```
 ::: callout-note
 In this study, we focus on the 6 intercity highway types within the Bangkok Metropolitan Region (BMR).
 
-First, we filter the data by highway types and then narrow it down to the BMR region. 
-**This method results in a 99.01% reduction in data size, from 2,792,362 road features to 27,760.**
+First, we filter the data by highway types and then narrow it down to the BMR region. **This method results in a 99.01% reduction in data size, from 2,792,362 road features to 27,760.**
 
 Alternatively, we could have first isolated the BMR region and then analyzed the distribution of highway types before filtering. However, we chose not to use this approach, as the `st_intersection()` step would be significantly more time-consuming.
-
 :::
 
 ```{r}
@@ -391,21 +380,24 @@ roads_bmr <- read_rds("data/rds/roads_bmr.rds")
 
 After going through all the 3 datasets, we have a better sense of the dataset that we are working with. In this section, we will transform certain columns to more usable formats and feature engineer new columns to aid our analysis:
 
-- break down `incident_datetime` to various *factors*
+-   break down `incident_datetime` to various *factors*
 
-- add `season` column to capture 3 seasons: Refer to [Bangkok - Wikipedia](https://en.wikipedia.org/wiki/Bangkok#Climate)
-  - March to May: Hot
-  - Jun to Oct: Rainy
-  - Nov to Feb: Cool
+-   add `season` column to capture 3 seasons: Refer to [Bangkok - Wikipedia](https://en.wikipedia.org/wiki/Bangkok#Climate)
 
-- add `peak_period` to capture peak hour patterns: Refer to [How Do You Beat Bangkok Traffic?](https://www.drivecarrental.com/blog/2023/10/05/how-do-you-beat-bangkok-traffic/#:~:text=Like%20most%20cities%2C%207%3A00,00%20to%207%3A00%20PM.) 
-  - Morning Peak: 7-9 am 
-  - Evening Peak: 4-7 pm
+    -   March to May: Hot
+    -   Jun to Oct: Rainy
+    -   Nov to Feb: Cool
 
-- add `songkran_7_dead_days` columns to capture 7 deadly days of songkran period: Refer to: [25 deaths in 234 road accidents recorded on 1st of Songkran’s ‘7 dangerous days’](https://www.nationthailand.com/thailand/general/40037198), 
-  - 7 Deadly Days of Songkran: 11-17 Apr each year
+-   add `peak_period` to capture peak hour patterns: Refer to [How Do You Beat Bangkok Traffic?](https://www.drivecarrental.com/blog/2023/10/05/how-do-you-beat-bangkok-traffic/#:~:text=Like%20most%20cities%2C%207%3A00,00%20to%207%3A00%20PM.)
 
-- Remove unused columns such as `province_th` and so on.
+    -   Morning Peak: 7-9 am
+    -   Evening Peak: 4-7 pm
+
+-   add `songkran_7_dead_days` columns to capture 7 deadly days of songkran period: Refer to: [25 deaths in 234 road accidents recorded on 1st of Songkran’s ‘7 dangerous days’](https://www.nationthailand.com/thailand/general/40037198),
+
+    -   7 Deadly Days of Songkran: 11-17 Apr each year
+
+-   Remove unused columns such as `province_th` and so on.
 
 ```{r}
 #| eval: false
@@ -456,6 +448,7 @@ accidents_bmr_ft <- accidents_bmr %>%
 
 accidents_bmr_ft
 ```
+
 Then, we save this processed accident data in RDS data format for future analysis.
 
 ```{r}
@@ -501,13 +494,11 @@ tm_shape(admin_boundary_bmr) +
 ```
 
 ::: callout-note
-
 **Observations:**
 
-- The majority of accidents are concentrated along the Intercity road network.
+-   The majority of accidents are concentrated along the Intercity road network.
 
-- This suggests that the 6 existing Intercity highway types provide sufficient coverage, and we don't require to add more highway types from the original roads dataset for this study.
-
+-   This suggests that the 6 existing Intercity highway types provide sufficient coverage, and we don't require to add more highway types from the original roads dataset for this study.
 :::
 
 ### Visualize Geographic Distribution of Accidents by Year
@@ -595,15 +586,13 @@ fig_accidents_by_year_province
 ```
 
 ::: callout-note
-
 **Observations:**
 
-- Overall, accident trends indicate a general upward trajectory over the years.
-- The total number of accidents increased from 2019 to 2022, with a slight dip in 2021.
-- Bangkok consistently recorded the highest number of accidents each year.
-- Pathum Thani and Samut Prakan also contributed significantly to the accident counts.
-- The number of accidents in 2022 saw a noticeable rise, particularly in Bangkok and Samut Sakhon.
-
+-   Overall, accident trends indicate a general upward trajectory over the years.
+-   The total number of accidents increased from 2019 to 2022, with a slight dip in 2021.
+-   Bangkok consistently recorded the highest number of accidents each year.
+-   Pathum Thani and Samut Prakan also contributed significantly to the accident counts.
+-   The number of accidents in 2022 saw a noticeable rise, particularly in Bangkok and Samut Sakhon.
 :::
 
 ### Visualize Geographic Distribution of Accidents by Month
@@ -679,19 +668,16 @@ fig_accidents_by_month_bar
 ```
 
 ::: callout-note
-
 **Observations:**
 
-- The cool season (January, November, and December) also shows relatively high accident counts, particularly in December, which concide with the holidays season.
-- The rainy season (June to October) has a relatively steady trend of accidents, with no significant peaks or drops.
-- April stands out with the highest number of accidents, potentially influenced by the Songkran festival.
-
+-   The cool season (January, November, and December) also shows relatively high accident counts, particularly in December, which concide with the holidays season.
+-   The rainy season (June to October) has a relatively steady trend of accidents, with no significant peaks or drops.
+-   April stands out with the highest number of accidents, potentially influenced by the Songkran festival.
 :::
 
 #### Special Mention: Songkran
 
-In this special section, we highlight the impact of the **Songkran festival** on road accidents in April, a period that is known for increased travel and, consequently, heightened risk on the roads. For meaningful comparison, we compute the **average daily accident rate** during the **7 "deadly days" of Songkran** versus the rest of April (non-Songkran days) from 2019 to 2022. 
-
+In this special section, we highlight the impact of the **Songkran festival** on road accidents in April, a period that is known for increased travel and, consequently, heightened risk on the roads. For meaningful comparison, we compute the **average daily accident rate** during the **7 "deadly days" of Songkran** versus the rest of April (non-Songkran days) from 2019 to 2022.
 
 ```{r}
 #| code-fold: true
@@ -739,13 +725,11 @@ fig_accidents_songkran
 ```
 
 ::: callout-note
-
 **Observations:**
 
-- Songkran days (in red) consistently show a higher average daily accident rate compared to non-Songkran days (in blue) across all years (2019-2022).
-- Non-Songkran days have a relatively steady accident rate across all years, remaining below 10 accidents per day.
-- In 2020, due to the COVID-19 pandemic restrictions, Songkran celebrations were suspended. This likely explains the significantly lower accident rates for both day types in 2020.
-
+-   Songkran days (in red) consistently show a higher average daily accident rate compared to non-Songkran days (in blue) across all years (2019-2022).
+-   Non-Songkran days have a relatively steady accident rate across all years, remaining below 10 accidents per day.
+-   In 2020, due to the COVID-19 pandemic restrictions, Songkran celebrations were suspended. This likely explains the significantly lower accident rates for both day types in 2020.
 :::
 
 ### Visualize Geographic Distribution of Accidents by Day of Week
@@ -827,13 +811,11 @@ fig_accidents_by_day_bar
 ```
 
 ::: callout-note
-
 **Observations:**
 
-- Weekdays (in orange) show a relatively consistent number of total accidents across Monday to Thursday, with a slight increase towards Friday.
-- Both Fridays and Saturdays show high accident numbers suggesting a potential rise in traffic volume or risky driving behavior leading into the weekend.
-- The trendline reflects an upward trend from Monday, peaking on Friday, and then declining over the weekend, particularly on Sunday.
-
+-   Weekdays (in orange) show a relatively consistent number of total accidents across Monday to Thursday, with a slight increase towards Friday.
+-   Both Fridays and Saturdays show high accident numbers suggesting a potential rise in traffic volume or risky driving behavior leading into the weekend.
+-   The trendline reflects an upward trend from Monday, peaking on Friday, and then declining over the weekend, particularly on Sunday.
 :::
 
 ### Visualize Geographic Distribution of Accidents by Peak Period
@@ -905,15 +887,13 @@ fig_accidents_trend
 ```
 
 ::: callout-note
-
 **Observations:**
 
-- The Morning Peak consistently shows the highest average accident rate per hour across all years, peaking sharply in 2020.
-- Evening Peak follows closely, with slightly lower accident rates compared to the Morning Peak but remaining higher than Off-Peak periods.
-- Off-Peak accident rates are consistently lower across all years.
-- The year 2020 stands out with the highest accident rates across all peak periods, especially in the Morning Peak.
-- Overall, both Morning and Evening Peak periods exhibit higher accident rates compared to Off-Peak periods, highlighting rush hours as critical times for road accidents.
-
+-   The Morning Peak consistently shows the highest average accident rate per hour across all years, peaking sharply in 2020.
+-   Evening Peak follows closely, with slightly lower accident rates compared to the Morning Peak but remaining higher than Off-Peak periods.
+-   Off-Peak accident rates are consistently lower across all years.
+-   The year 2020 stands out with the highest accident rates across all peak periods, especially in the Morning Peak.
+-   Overall, both Morning and Evening Peak periods exhibit higher accident rates compared to Off-Peak periods, highlighting rush hours as critical times for road accidents.
 :::
 
 ### Visualize Geographic Distribution of Accidents by Weather Conditions
@@ -966,38 +946,30 @@ selected_data %>%
 ```
 
 ::: callout-note
-
 **Observations:**
 
-- **Top Causes of Accidents: Behavioral Factors**
-  - **Speeding** is the leading presumed cause, responsible for **78%** of accidents (10,143 cases). This is a clear indication that driver behavior is the primary factor.
-  - Other behavioral causes include **cutting in closely** (4.8%), **driving under the influence of alcohol** (0.9%), and **tailgating** (0.6%).
-
-- **Minor Contribution from Road Conditions**
-  - Road conditions such as **slippery roads**, **debris**, and **road in poor condition** account for a very small portion of the accidents (<1%).
-
-- **Weather Conditions**
-  - **Clear weather** dominates in **90%** of cases (as visualized in earlier section), while **rainy conditions** account for only **9%** of accidents. Adverse weather such as **foggy** or **dark conditions** plays a negligible role.
-
-- **Accident Types**
-  - Most accidents are **rear-end collisions** (53%) and **rollovers on straight roads** (30%), again pointing towards driver behavior on straightforward road networks.
-
-- **Road Types**
-  - **Straight roads** are where the vast majority (85%) of accidents occur.
-  
-- **Vehicle Types**
-  - The majority of accidents involve private/passenger cars (35%) and 4-wheel pickup trucks (27%), followed by Motorcycles (13%)
+-   **Top Causes of Accidents: Behavioral Factors**
+    -   **Speeding** is the leading presumed cause, responsible for **78%** of accidents (10,143 cases). This is a clear indication that driver behavior is the primary factor.
+    -   Other behavioral causes include **cutting in closely** (4.8%), **driving under the influence of alcohol** (0.9%), and **tailgating** (0.6%).
+-   **Minor Contribution from Road Conditions**
+    -   Road conditions such as **slippery roads**, **debris**, and **road in poor condition** account for a very small portion of the accidents (\<1%).
+-   **Weather Conditions**
+    -   **Clear weather** dominates in **90%** of cases (as visualized in earlier section), while **rainy conditions** account for only **9%** of accidents. Adverse weather such as **foggy** or **dark conditions** plays a negligible role.
+-   **Accident Types**
+    -   Most accidents are **rear-end collisions** (53%) and **rollovers on straight roads** (30%), again pointing towards driver behavior on straightforward road networks.
+-   **Road Types**
+    -   **Straight roads** are where the vast majority (85%) of accidents occur.
+-   **Vehicle Types**
+    -   The majority of accidents involve private/passenger cars (35%) and 4-wheel pickup trucks (27%), followed by Motorcycles (13%)
 
 In summary, based on this dataset, we can observe that **behavioral factors** like speeding are overwhelmingly the top causes of accidents, while road conditions and weather play a much smaller role.
-
 :::
 
 ## Spatial Measures of Central Tendency
 
- In this section, we are interested in identifying the centrality of road traffic accidents within the Bangkok Metropolitan Region (BMR) by computing two key spatial measures: the **mean center** and the **median center**. 
- 
+In this section, we are interested in identifying the centrality of road traffic accidents within the Bangkok Metropolitan Region (BMR) by computing two key spatial measures: the **mean center** and the **median center**.
+
 The mean centre represents the average location of all accident points in the region while the median center which is less influenced by outliers, provides a more robust indication of where accidents tend to cluster, unaffected by unusually high or low values in specific areas.
- 
 
 ```{r}
 # Extract coordinates
@@ -1017,11 +989,9 @@ median_center
 ```
 
 ::: callout-note
-
 **Observations:**
 
 The similarity between the mean center and median center suggests that the distribution of road accidents in the Bangkok Metropolitan Region is relatively balanced, with no significant outliers skewing the spatial patterns.
-
 :::
 
 ### Spatial Measures of Central Tendency Over the Years
@@ -1058,35 +1028,32 @@ legend("topright", legend = paste0("Year: ", years), col = colors, pch = '*',
 ```
 
 ::: callout-note
-
 **Observations:**
 
-- The mean centers of accidents in BMR over the years from 2019 to 2022 are relatively close to each other within the Bangkok province, indicating that the central tendency of accidents has not shifted dramatically during this period.
-- The points show a slight progression towards the southeast over time. This may suggest a gradual shift in the concentration of accidents towards a different district of the Bangkok province.
-
+-   The mean centers of accidents in BMR over the years from 2019 to 2022 are relatively close to each other within the Bangkok province, indicating that the central tendency of accidents has not shifted dramatically during this period.
+-   The points show a slight progression towards the southeast over time. This may suggest a gradual shift in the concentration of accidents towards a different district of the Bangkok province.
 :::
 
 ## Spatial Point Pattern Analysis (SPPA)
 
-In this section, we will conduct Spatial Point Pattern Analysis (SPPA) using the `spatstat` package to quantify the spatial distribution of road traffic accidents in the Bangkok Metropolitan Region (BMR). This method determines whether accidents are randomly distributed, clustered, or follow a regular pattern. 
+In this section, we will conduct Spatial Point Pattern Analysis (SPPA) using the `spatstat` package to quantify the spatial distribution of road traffic accidents in the Bangkok Metropolitan Region (BMR). This method determines whether accidents are randomly distributed, clustered, or follow a regular pattern.
 
 To explore this, we will test the **Complete Spatial Randomness (CSR) hypothesis**, which assumes accidents occur independently and uniformly across the region.
 
 We will apply three SPPA methods:
 
-1. **First-Order SPPA**: This examines broader trends in accident intensity using techniques like Kernel Density Estimation (KDE) to identify "hot spots" and assess clustering or regularity.
+1.  **First-Order SPPA**: This examines broader trends in accident intensity using techniques like Kernel Density Estimation (KDE) to identify "hot spots" and assess clustering or regularity.
 
-2. **Second-Order SPPA**: Tools like Ripley’s K-function, G, F, and L functions will be applied to assess spatial dependence at varying distances, helping to detect clustering or dispersion.
+2.  **Second-Order SPPA**: Tools like Ripley’s K-function, G, F, and L functions will be applied to assess spatial dependence at varying distances, helping to detect clustering or dispersion.
 
-3. **Network-Constrained SPPA**: This method analyzes accident patterns along road networks, recognizing that accidents are restricted to roads. It offers a more realistic view of clustering based on the actual network structure.
-
+3.  **Network-Constrained SPPA**: This method analyzes accident patterns along road networks, recognizing that accidents are restricted to roads. It offers a more realistic view of clustering based on the actual network structure.
 
 > The key questions in this section are:
 >
-> 1. Are the road accidents in BMR randomly distributed throughout the region?
-> 2. If not, where are the areas with higher accident concentrations?
+> 1.  Are the road accidents in BMR randomly distributed throughout the region?
+> 2.  If not, where are the areas with higher accident concentrations?
 
-## Converting sf Format into ppp format
+### Converting sf Format into ppp format
 
 Before we can perform spatial point analysis with **spatstat**, we will convert the sf objects into ppp object using `as.ppp()`.
 
@@ -1111,6 +1078,7 @@ accidents_ppp_jit.km <- rjitter(accidents_ppp.km,
 
 summary(accidents_ppp_jit.km)
 ```
+
 Next we create the **owin** object which is the administrative boundary of the Bangkok Metropolitan Region (BMR). We also rescale the boundary to match the units used in the point pattern (kilometers).
 
 ```{r create_owin_1}
@@ -1118,7 +1086,7 @@ owin_bmr.km <- rescale(as.owin(admin_boundary_bmr), 1000)
 owin_bmr.km
 ```
 
-After defining the observation window, we subset the jittered point pattern to include only the accident points that fall within the boundary of the BMR. 
+After defining the observation window, we subset the jittered point pattern to include only the accident points that fall within the boundary of the BMR.
 
 We then summarize the resulting point pattern to ensure that the filtering was successful.
 
@@ -1133,14 +1101,14 @@ Next, we generate the plot of the spatial distribution of road accidents within 
 plot(accidents_owin.km)
 ```
 
-## First Order Spatial Point Pattern Analysis 
+### First Order Spatial Point Pattern Analysis
 
 In this section, we conduct first-order Spatial Point Pattern Analysis (SPPA) using the **spatstat** package to explore the intensity of traffic accidents. The analysis will include:
 
-- **Kernel Density Estimation (KDE):** Estimating accident intensity for visualizing and understanding spatial concentration of accident points.
-- **Nearest Neighbour Analysis:** To confirm spatial patterns by calculating nearest-neighbour statistics.
+-   **Kernel Density Estimation (KDE):** Estimating accident intensity for visualizing and understanding spatial concentration of accident points.
+-   **Nearest Neighbour Analysis:** To confirm spatial patterns by calculating nearest-neighbour statistics.
 
-### Kernel Density Estimation (KDE)
+#### Kernel Density Estimation (KDE)
 
 Kernel Density Estimation (KDE) provides a smooth estimate of the intensity of point processes, allowing us to visualize accident density hotspots. In this step, we experiment with different automatic bandwidth selection methods to determine the most suitable one for our analysis.
 
@@ -1185,19 +1153,16 @@ plot(kde_accidents_ppl_km)
 ```
 
 ::: callout-note
-
 **Observations:**
 
-- The Diggle algorithm give the narrower bandwidth, making it ideal for identifying precise accident clusters in this study, as it captures spatial details without excessive smoothing.
-
+-   The Diggle algorithm give the narrower bandwidth, making it ideal for identifying precise accident clusters in this study, as it captures spatial details without excessive smoothing.
 :::
 
-### Comparing Spatial Point Patterns using KDE
+#### Comparing Spatial Point Patterns using KDE
 
 In this section, we will compare KDE of road accidents across provinces in BMR. This comparison allows us to visually explore the variation in accident intensity across the provinces using KDE.
 
-We first create a list of owin objects for each province, rescaling the spatial windows to kilometers. Then we subset the jittered point pattern of road accidents for each province and compute the KDE for each region using `bw.diggle`. 
-
+We first create a list of owin objects for each province, rescaling the spatial windows to kilometers. Then we subset the jittered point pattern of road accidents for each province and compute the KDE for each region using `bw.diggle`.
 
 ```{r}
 #| code-fold: true
@@ -1225,7 +1190,6 @@ densities <- lapply(seq_along(bmr_regions), function(i) {
 names(densities) <- bmr_regions
 ```
 
-
 ```{r kde_accidents_province_compare, fig.width=12, fig.height=12}
 #| code-fold: true
 #| code-summary: "Show the code"
@@ -1240,29 +1204,26 @@ invisible(lapply(seq_along(densities), function(i) {
 ```
 
 ::: callout-note
-
 **Observations:**
 
-- Accidents appears to cluster along the major highways of each province.
+-   Accidents appears to cluster along the major highways of each province.
 
-- **Bangkok** and **Samut Prakan** have the highest KDE values for accidents, with densities reaching up to 500 and 600, respectively, primarily along major highways; while **Nakhon Pathom** and **Nonthaburi** have lower KDE values among the 6 provinces.
-
+-   **Bangkok** and **Samut Prakan** have the highest KDE values for accidents, with densities reaching up to 500 and 600, respectively, primarily along major highways; while **Nakhon Pathom** and **Nonthaburi** have lower KDE values among the 6 provinces.
 :::
 
-### Nearest Neighbour Analysis: Clark-Evans Test
+#### Nearest Neighbour Analysis: Clark-Evans Test
 
 After performing the first-order spatial point pattern analysis, we move on to **Nearest Neighbour Analysis** using the **Clark-Evans test** to quantitatively assess whether the traffic accident distribution follows a random, clustered, or dispersed pattern. This test complements the visual insights gained from the Kernel Density Estimation (KDE) by providing statistical evidence for spatial clustering.
 
-- The **Clark-Evans aggregation index (R)** compares the observed mean nearest neighbour distance to the expected distance under Complete Spatial Randomness (CSR). 
-- If **R = 1**, the points are randomly distributed. 
-- If **R < 1**, the points exhibit clustering. 
-- If **R > 1**, the points are more regularly spaced, suggesting spatial dispersion.
+-   The **Clark-Evans aggregation index (R)** compares the observed mean nearest neighbour distance to the expected distance under Complete Spatial Randomness (CSR).
+-   If **R = 1**, the points are randomly distributed.
+-   If **R \< 1**, the points exhibit clustering.
+-   If **R \> 1**, the points are more regularly spaced, suggesting spatial dispersion.
 
 The test hypotheses are:
 
-- **$H_0$**: The traffic accidents are randomly distributed.
-- **$H_1$**: The traffic accidents are not randomly distributed (i.e., they are clustered or ordered).
-
+-   $H_0$: The traffic accidents are randomly distributed.
+-   $H_1$: The traffic accidents are not randomly distributed (i.e., they are clustered or ordered).
 
 We use the **95% confidence interval** for decision-making.
 
@@ -1273,19 +1234,19 @@ clarkevans.test(accidents_ppp.km,
                 alternative=c("clustered"),
                 nsim=99)
 ```
+
 ::: callout-note
 The result of the Clark-Evans test shows:
 
-- **R = 0.16207**, which is significantly less than 1, indicating that the traffic accidents exhibit strong spatial clustering.
-- The **p-value < 2.2e-16**, which is much lower than the 0.05 significance level, thus we reject the null hypothesis (**$H_0$**).
+-   **R = 0.16207**, which is significantly less than 1, indicating that the traffic accidents exhibit strong spatial clustering.
+-   The **p-value \< 2.2e-16**, which is much lower than the 0.05 significance level, thus we reject the null hypothesis ($H_0$).
 
 **The traffic accidents are not randomly distributed but are clustered**, confirming that certain areas or road segments in the Bangkok Metropolitan Region (BMR) have significantly higher concentrations of accidents.
 :::
 
-### Clark-Evans Test for Individual Provinces
+#### Clark-Evans Test for Individual Provinces
 
 Next, we perform the Clark-Evans test for each province in the BMR to assess the spatial distribution of traffic accidents.
-
 
 ```{r}
 
@@ -1305,44 +1266,36 @@ for (i in seq_along(accidents_ppps)) {
 
 ```
 
-:::callout-note 
-
+::: callout-note
 **Observations:**
 
-- **Bangkok**:  
-  - R = 0.17306, p-value < 2.2e-16  
-  - The R-value is significantly less than 1, indicating strong clustering of accidents in the province. The very low p-value confirms the clustering pattern is statistically significant.
+-   **Bangkok**:
+    -   R = 0.17306, p-value \< 2.2e-16\
+    -   The R-value is significantly less than 1, indicating strong clustering of accidents in the province. The very low p-value confirms the clustering pattern is statistically significant.
+-   **Nonthaburi**:
+    -   R = 0.41915, p-value \< 2.2e-16\
+    -   There is moderate clustering in Nonthaburi, though the clustering is less intense than in Bangkok. The p-value indicates this pattern is statistically significant.
+-   **Nakhon Pathom**:
+    -   R = 0.30873, p-value \< 2.2e-16\
+    -   The results show moderate clustering of accidents in this province. The clustering is stronger than in Nonthaburi but still less pronounced than in Bangkok.
+-   **Pathum Thani**:
+    -   R = 0.27889, p-value \< 2.2e-16\
+    -   There is moderate clustering of accidents in Pathum Thani, with an R-value similar to that of Nakhon Pathom, indicating a non-random pattern of accident distribution.
+-   **Samut Prakan**:
+    -   R = 0.191, p-value \< 2.2e-16\
+    -   Samut Prakan exhibits strong clustering of accidents, with an R-value similar to Bangkok, suggesting accident hotspots in the province. This is confirmed by the extremely low p-value.
+-   **Samut Sakhon**:
+    -   R = 0.27326, p-value \< 2.2e-16\
+    -   The results indicate moderate clustering of accidents in this province, similar to Pathum Thani and Nakhon Pathom, suggesting multiple local accident clusters.
 
-- **Nonthaburi**:  
-  - R = 0.41915, p-value < 2.2e-16  
-  - There is moderate clustering in Nonthaburi, though the clustering is less intense than in Bangkok. The p-value indicates this pattern is statistically significant.
-
-- **Nakhon Pathom**:  
-  - R = 0.30873, p-value < 2.2e-16  
-  - The results show moderate clustering of accidents in this province. The clustering is stronger than in Nonthaburi but still less pronounced than in Bangkok.
-
-- **Pathum Thani**:  
-  - R = 0.27889, p-value < 2.2e-16  
-  - There is moderate clustering of accidents in Pathum Thani, with an R-value similar to that of Nakhon Pathom, indicating a non-random pattern of accident distribution.
-
-- **Samut Prakan**:  
-  - R = 0.191, p-value < 2.2e-16  
-  - Samut Prakan exhibits strong clustering of accidents, with an R-value similar to Bangkok, suggesting accident hotspots in the province. This is confirmed by the extremely low p-value.
-
-- **Samut Sakhon**:  
-  - R = 0.27326, p-value < 2.2e-16  
-  - The results indicate moderate clustering of accidents in this province, similar to Pathum Thani and Nakhon Pathom, suggesting multiple local accident clusters.
-
-
-In summary, we **reject the null hypothesis across all provinces in the BMR**. The Clark-Evans test results show that traffic accidents are **not randomly distributed** but are strongly **clustered**. Bangkok and Samut Prakan exhibit the highest levels of clustering, while the other provinces show moderate clustering. 
-
+In summary, we **reject the null hypothesis across all provinces in the BMR**. The Clark-Evans test results show that traffic accidents are **not randomly distributed** but are strongly **clustered**. Bangkok and Samut Prakan exhibit the highest levels of clustering, while the other provinces show moderate clustering.
 :::
 
-## Second Order Spatial Point Pattern Analysis
+### Second Order Spatial Point Pattern Analysis
 
 In this section, we will focus on the **K-function** to analyze the overall pattern of clustering or dispersion of road accidents across various distances. We opt for the K-function due to its ability to capture the disc-like accumulation of points, making it ideal for understanding broader clustering trends over various distances.
 
-### Compute K-Function Estimate for BMR
+#### Compute K-Function Estimate for BMR
 
 First, we will compute the K-function to estimate the spatial relationships between accidents across the BMR.
 
@@ -1355,20 +1308,18 @@ plot(K_BMR, . -r ~ r, ylab= "K(d)-r", xlab = "d(km)")
 ```
 
 ::: callout-note
-
 **Observations:**
 
-- The K-function shows strong clustering of accidents across multiple distances, as the empirical curve is significantly above the Poisson process line.
-- Clustering exists at both local and broader spatial scales.
-
+-   The K-function shows strong clustering of accidents across multiple distances, as the empirical curve is significantly above the Poisson process line.
+-   Clustering exists at both local and broader spatial scales.
 :::
 
-### Perform Complete Spatial Randomness Test
+#### Perform Complete Spatial Randomness Test
 
 To further analyze whether the distribution of accidents deviates from Complete Spatial Randomness (CSR), we conduct a hypothesis test with the following hypotheses:
 
-- $H_0$: The distribution of accidents is randomly distributed across the BMR.
-- $H_1$: The distribution of accidents is not randomly distributed (i.e., clustered or dispersed).
+-   $H_0$: The distribution of accidents is randomly distributed across the BMR.
+-   $H_1$: The distribution of accidents is not randomly distributed (i.e., clustered or dispersed).
 
 We use a 95% confidence interval for this test.
 
@@ -1381,35 +1332,29 @@ plot(bmr_K.csr, . - r ~ r, xlab="d (km)", ylab="K(d)-r")
 ```
 
 ::: callout-note
-
 **Observations:**
 
-- The empirical K-function  lies above the theoretical K-function , indicating significant clustering of accidents across all distances.
+-   The empirical K-function lies above the theoretical K-function , indicating significant clustering of accidents across all distances.
 
-- The envelope (shaded area) confirms that the observed clustering is statistically significant, as the empirical K-function remains outside the bounds expected under complete spatial randomness.
+-   The envelope (shaded area) confirms that the observed clustering is statistically significant, as the empirical K-function remains outside the bounds expected under complete spatial randomness.
 
-- Thus we will reject the null hypothesis.
-
+-   Thus we will reject the null hypothesis.
 :::
 
-
-## Network Constrained Spatial Point Pattern Analysis
+### Network Constrained Spatial Point Pattern Analysis
 
 Network-Constrained Spatial Point Pattern Analysis (SPPA) is highly relevant for studying road accidents because these events are restricted to occurring along specific networks such as highways. Traditional spatial analysis techniques assume that events can occur anywhere in a continuous space, which is not realistic for accidents that are confined to road networks. By focusing on the structure and connectivity of roads, **network-constrained methods** provide more accurate insights into the spatial distribution of accidents, identifying high-risk areas such as intersections, highway segments, or urban streets.
 
 In this section, we will use the **spNetwork** package to compute **Network Kernel Density Estimation (NKDE)**. NKDE estimates the density of accidents while considering the network structure, offering a more realistic view of accident hotspots along the road network.
 
-### Preparing the Lixels Objects
+#### Preparing the Lixels Objects
 
-Before computing NKDE, the SpatialLines object need to be cut into lixels with a specified minimal distance. This task can be performed by using with `lixelize_lines()` of spNetwork. 
+Before computing NKDE, the SpatialLines object need to be cut into lixels with a specified minimal distance. This task can be performed by using with `lixelize_lines()` of spNetwork.
 
 ::: callout-note
-
-**Choice of lixel length**
-Initially, We chosen lixel length of 100 and mindist of 50, based on recommended settings from related research: [Visualizing Traffic Accident Hotspots Based on Spatial-Temporal Network Kernel Density Estimation](https://www.researchgate.net/publication/327634813_Visualizing_Traffic_Accident_Hotspots_Based_on_Spatial-Temporal_Network_Kernel_Density_Estimation).
+**Choice of lixel length** Initially, We chosen lixel length of 100 and mindist of 50, based on recommended settings from related research: [Visualizing Traffic Accident Hotspots Based on Spatial-Temporal Network Kernel Density Estimation](https://www.researchgate.net/publication/327634813_Visualizing_Traffic_Accident_Hotspots_Based_on_Spatial-Temporal_Network_Kernel_Density_Estimation).
 
 However, after visualizing the NKDE results, the shorter lixel length failed to reveal meaningful trends, likely due to an overly detailed segmentation of the network. To correct this, we increased the lixel length by an order of magnitude, allowing for a broader view and better identification of accident patterns at a larger scale.
-
 :::
 
 ```{r}
@@ -1428,6 +1373,8 @@ Next, we will use `lines_center()` of **spNetwork** to generate a SpatialPointsD
 ```{r}
 samples <- lines_center(lixels)
 ```
+
+#### Computing NKDE
 
 To compute the NKDE:
 
@@ -1454,6 +1401,7 @@ densities <- nkde(
   sparse = TRUE,
   verbose = TRUE)
 ```
+
 We will save the computation output as RDS data format for future analysis.
 
 ```{r}
@@ -1465,9 +1413,11 @@ write_rds(densities, "data/rds/densities_2250.rds")
 densities <- read_rds("data/rds/densities_2250.rds")
 ```
 
+#### Visualizing NKDE 
+
 To visualise the NKDE values, we have to perform a few preparation steps.
 
-1. Insert the computed density values (i.e. densities) into samples and lixels objects as density field. Rescale the density values.
+1.  Insert the computed density values (i.e. densities) into samples and lixels objects as density field. Rescale the density values.
 
 ```{r}
 samples$density <- densities
@@ -1476,7 +1426,7 @@ samples$density <- samples$density*1000
 lixels$density <- lixels$density*1000
 ```
 
-2. Use **tmap** to visualize the NKDE output.
+2.  Use **tmap** to visualize the NKDE output.
 
 ```{r nkde_plot, fig.height=6, fig.width=8}
 #| code-fold: true
@@ -1500,29 +1450,30 @@ tm_shape(admin_boundary_bmr) +
 ```
 
 ::: callout-note
-
 **Observations:**
 
-- The density patterns tend to follow major highways and key intersections, particularly in the central and central-eastern areas of Bangkok Metropolitan Region (BMR), where the density of road accidents is higher.
-
+-   The density patterns tend to follow major highways and key intersections, particularly in the central and central-eastern areas of Bangkok Metropolitan Region (BMR), where the density of road accidents is higher.
 :::
 
 ## Spatial Temporal Point Pattern Analysis
 
-Spatio-temporal analysis combines both spatial and temporal aspects to reveal how events like road traffic accidents vary over time and location. 
+Spatio-temporal analysis combines both spatial and temporal aspects to reveal how events like road traffic accidents vary over time and location.
 
-In this section, we use Spatio-temporal Kernel Density Estimation (STKDE) to visualize accident densities across space and time, capturing fluctuations in accident intensity throughout different periods. 
+In this section, we use Spatio-temporal Kernel Density Estimation (STKDE) to visualize accident densities across space and time, capturing fluctuations in accident intensity throughout different periods.
 
 > The key questions in this section are:
 >
-> 1. Are the locations of accidents in BMR spatial and spatio-temporally independent?
-> 2. If not, where and when the observed accident locations tend to cluster?
+> 1.  Are the locations of accidents in BMR spatial and spatio-temporally independent?
+> 2.  If not, where and when the observed accident locations tend to cluster?
 
 **For this analysis, we will focus on 2022 as it has the highest accident rate from our EDA results above.**
 
 ### Computing STKDE by Month
 
-We first filter the dataset to include only the road accidents that occurred in the year 2022.
+To better understand how accident densities fluctuate over time, we compute Spatio-temporal Kernel Density Estimation (STKDE) by month. This allows us to identify temporal trends and pinpoint high-risk periods or clusters of accidents that may correspond to specific events or seasons, such as holidays, weather changes, or increased traffic flow.
+
+To do so, we first filter the dataset to include only the road accidents that occurred in the year 2022.
+
 
 ```{r}
 accidents_month_2022  <- accidents_bmr_ft %>%
@@ -1563,7 +1514,7 @@ owin_bmr.km <- rescale(owin_bmr, 1000)
 owin_bmr.km
 ```
 
-After defining the observation window, we subset the jittered point pattern to include only the accident points that fall within the boundary of the BMR. 
+After defining the observation window, we subset the jittered point pattern to include only the accident points that fall within the boundary of the BMR.
 
 We then summarize the resulting point pattern to ensure that the filtering was successful.
 
@@ -1600,7 +1551,6 @@ for(i in seq(1, 12)){
 ```
 
 ::: callout-note
-
 **Month 1:** The accident hotspots are primarily concentrated in the central BMR, with moderate intensity and slight diffusion towards the outer areas.
 
 **Month 2-7:** Generally, there is a lower intensity of hotspots during this periods
@@ -1608,7 +1558,6 @@ for(i in seq(1, 12)){
 **Month 8-11**: Bangkok remains the area of highest accident density; the clusters are seen to increase in size.
 
 **Month 12:** Accident density peaks towards the end of the year, with a notable increase in the central region, especially in December. Surrounding areas also show a rise in accident activity, likely due to higher traffic or adverse conditions during this holiday time. see [Bangkok Post - Road deaths rise to 256 after 5 days of New Year holiday travel](https://www.bangkokpost.com/thailand/general/1826889/road-deaths-rise-to-256-after-5-days-of-new-year-holiday-travel)
-
 :::
 
 ### Observing the Impact of the "7 Deadly Days" of Songkran using STKDE
@@ -1640,6 +1589,7 @@ accidents_april_2022_ppp_jit.km <- rjitter(accidents_april_2022_ppp.km,
 accidents_april_2022_owin.km <- accidents_april_2022_ppp_jit.km[owin_bmr.km]
 summary(accidents_april_2022_owin.km)
 ```
+
 ```{r accidents_april_2022_owin_km, fig.width=8, fig.height=6}
 plot(accidents_april_2022_owin.km, 
      main = "Spatial Distribution of Road Accidents in April 2022 (BMR)")
@@ -1651,8 +1601,8 @@ Next, we perform a **Spatio-temporal Kernel Density Estimation (STKDE) on the ac
 st_kde_april <- spattemp.density(accidents_april_2022_owin.km)
 summary(st_kde_april)
 ```
-Finally, we plot the results of the spatio-temporal KDE for each day of April 2022. These plots illustrate the monthly variation in road accident densities across the Bangkok Metropolitan Region.
 
+Finally, we plot the results of the spatio-temporal KDE for each day of April 2022. These plots illustrate the monthly variation in road accident densities across the Bangkok Metropolitan Region.
 
 ```{r stkde_songkran, fig.width=12, fig.height=8}
 days_per_plot <- 6
@@ -1684,22 +1634,18 @@ for (i in seq(1, total_days, by = days_per_plot)) {
 ```
 
 ::: callout-note
-
 **Observations for April 2022:**
 
-- **1st to 10th April**: 
-  - The highest density of accidents remains concentrated in the central region of the Bangkok Metropolitan Area (BMR), with some variation day-to-day. 
-  - A pattern of increasing intensity is seen leading up to the Songkran festival.
-
-- **Songkran Festival (11th to 17th April)**:
-  - **11th to 13th April**: Significant increase in accident density during the Songkran holiday, particularly in central and southern areas.
-  - **14th to 17th April**: Accident hotspots during the Songkran period appear to expand further, possibly due to higher travel activities and road congestion.
-  - The Songkran period highlights the most critical accident-prone days, showing a stark rise in traffic incidents.
-
-- **18th to 30th April**:
-  - Accident density slightly decreases after the Songkran period but remains concentrated in similar central zones.
-  - Post-Songkran accident rates maintain a moderate level.
-
+-   **1st to 10th April**:
+    -   The highest density of accidents remains concentrated in the central region of the Bangkok Metropolitan Area (BMR), with some variation day-to-day.
+    -   A pattern of increasing intensity is seen leading up to the Songkran festival.
+-   **Songkran Festival (11th to 17th April)**:
+    -   **11th to 13th April**: Significant increase in accident density during the Songkran holiday, particularly in central and southern areas.
+    -   **14th to 17th April**: Accident hotspots during the Songkran period appear to expand further, possibly due to higher travel activities and road congestion.
+    -   The Songkran period highlights the most critical accident-prone days, showing a stark rise in traffic incidents.
+-   **18th to 30th April**:
+    -   Accident density slightly decreases after the Songkran period but remains concentrated in similar central zones.
+    -   Post-Songkran accident rates maintain a moderate level.
 :::
 
 ## Conclusion
@@ -1710,14 +1656,14 @@ The analysis of road traffic accidents in the Bangkok Metropolitan Region (BMR) 
 
 **Spatio-temporal KDE** provided insights into how accident patterns vary over time. The analysis captured monthly trends, revealing that accident density fluctuates throughout the year, with higher concentrations observed at the beginning and end of the year, particularly in December. This suggests seasonal influences, such as changes in traffic patterns or road conditions during the holiday season. The subsequent analysis highlighted a sharp increase in accident density during the Songkran festival (April 11-17), a time of heightened travel activity. From the STKDE plots, we can observe clear spikes in density during this period.
 
-In summary, the findings of this study highlight the non-random, spatially clustered distribution of road accidents in the BMR. We hope this comprehensive spatial-temporal analysis will support policymakers in implementing data-driven strategies that effectively mitigate road accidents in the region. 
+In summary, the findings of this study highlight the non-random, spatially clustered distribution of road accidents in the BMR. We hope this comprehensive spatial-temporal analysis will support policymakers in implementing data-driven strategies that effectively mitigate road accidents in the region.
 
 ## References
 
-- [WikiProject Thailand - OpenStreetMap Wiki](https://wiki.openstreetmap.org/wiki/WikiProject_Thailand#Highway_classification)
-- [Bangkok - Wikipedia](https://en.wikipedia.org/wiki/Bangkok#Climate)
-- [How Do You Beat Bangkok Traffic?](https://www.drivecarrental.com/blog/2023/10/05/how-do-you-beat-bangkok-traffic/#:~:text=Like%20most%20cities%2C%207%3A00,00%20to%207%3A00%20PM.) 
-- [25 deaths in 234 road accidents recorded on 1st of Songkran’s ‘7 dangerous days’](https://www.nationthailand.com/thailand/general/40037198)
-- [SPATIAL STATISTICS](https://storymaps.arcgis.com/stories/76bdb6993b79427caf8d89737c2e6761)
-- [Chapter 6 Studying spatial point patterns | Crime Mapping in R](https://maczokni.github.io/crime_mapping_textbook/studying-spatial-point-patterns.html)
-- [Visualizing Traffic Accident Hotspots Based on Spatial-Temporal Network Kernel Density Estimation](https://www.researchgate.net/publication/327634813_Visualizing_Traffic_Accident_Hotspots_Based_on_Spatial-Temporal_Network_Kernel_Density_Estimation)
+-   [WikiProject Thailand - OpenStreetMap Wiki](https://wiki.openstreetmap.org/wiki/WikiProject_Thailand#Highway_classification)
+-   [Bangkok - Wikipedia](https://en.wikipedia.org/wiki/Bangkok#Climate)
+-   [How Do You Beat Bangkok Traffic?](https://www.drivecarrental.com/blog/2023/10/05/how-do-you-beat-bangkok-traffic/#:~:text=Like%20most%20cities%2C%207%3A00,00%20to%207%3A00%20PM.)
+-   [25 deaths in 234 road accidents recorded on 1st of Songkran’s ‘7 dangerous days’](https://www.nationthailand.com/thailand/general/40037198)
+-   [SPATIAL STATISTICS](https://storymaps.arcgis.com/stories/76bdb6993b79427caf8d89737c2e6761)
+-   [Chapter 6 Studying spatial point patterns \| Crime Mapping in R](https://maczokni.github.io/crime_mapping_textbook/studying-spatial-point-patterns.html)
+-   [Visualizing Traffic Accident Hotspots Based on Spatial-Temporal Network Kernel Density Estimation](https://www.researchgate.net/publication/327634813_Visualizing_Traffic_Accident_Hotspots_Based_on_Spatial-Temporal_Network_Kernel_Density_Estimation)
