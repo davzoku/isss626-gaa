@@ -1,6 +1,6 @@
 ---
 title: "10A: Modelling Geographical Accessibility"
-subtitle: "#todo"
+subtitle: "In this exercise, we will learn to model geographical accessibility using Hansen's potential model, Spatial Accessibility Measure (SAM), and other methods in R."
 draft: true
 date: ""
 date-modified: "last-modified"
@@ -19,25 +19,48 @@ number-offset: 1
 editor: visual
 ---
 
-## Exercise 5A Reference
+## Exercise 10A Reference
 
 [R for Geospatial Data Science and Analytics - 17  Modelling Geographical Accessibility](https://r4gdsa.netlify.app/chap17.html)
 
-
 ## Overview
+
+In this exercise, we will learn to model geographical accessibility using Hansen's potential model, Spatial Accessibility Measure (SAM), and other methods in R.
 
 ## Learning Outcome
 
+- Import GIS polygon data into R and save them as a simple feature data frame using the **sf** package.
+- Import aspatial data into R and save them as a simple feature data frame using the **sf** package.
+- Compute accessibility measures using Hansen's potential model and Spatial Accessibility Measure (SAM).
+- Visualize the accessibility measures using **tmap** and **ggplot2** packages.
 
 ## The Data
 
+The following datasets will be used in this exercise:
+
+| **Data Set**              | **Description**                                                                                                      | **Format**              |
+|---------------------------|----------------------------------------------------------------------------------------------------------------------|-------------------------|
+| `MP14_SUBZONE_NO_SEA_PL`  | URA Master Plan 2014 subzone boundary GIS data.                                                                      | ESRI Shapefile          |
+| `hexagons`                | A 250m radius hexagons GIS data created using the `st_make_grid()` function of the **sf** package.                    | ESRI Shapefile          |
+| `ELDERCARE`               | GIS data showing the location of eldercare services, available in both ESRI shapefile and Google KML format.           | ESRI Shapefile          |
+| `OD_Matrix`               | A distance matrix with origin-destination information, including entry, network, and exit costs.                      | CSV                     |
 
 ## Installing and Launching the R Packages
 
+The following R packages will be used in this exercise:
 
+| **Package**       | **Purpose**                                                                                              | **Use Case in Exercise**                                                                                       |
+|-------------------|----------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------|
+| **sf**            | Handles spatial data; imports, manages, and processes vector-based geospatial data.                                                           | Importing and transforming geospatial datasets such as subzone boundaries, hexagons, and eldercare locations.   |
+| **SpatialAcc**    | Provides functions for computing geographical accessibility measures.                                                                          | Calculating Hansen's potential model, Spatial Accessibility Measure (SAM), and other accessibility metrics.     |
+| **tidyverse**     | A collection of R packages for data science tasks like data manipulation, visualization, and modeling.                                         | Wrangling and visualizing data, including importing CSV files and performing data transformations.              |
+| **tmap**          | Creates static and interactive thematic maps using cartographic quality elements.                                                              | Visualizing accessibility measures on thematic maps.                                                           |
+| **ggplot2**       | Creates data visualizations using a layered grammar of graphics.                                                                               | Visualizing statistical graphics such as histograms and boxplots of accessibility measures.                    |
+| **ggstatsplot**   | Enhances plots with statistical details and facilitates data visualization.                                                                    | Creating statistically enriched plots for exploratory data analysis and comparing distributions.                |
+| **reshape2**      | Provides tools to reshape data between wide and long formats.                                                                                 | Transforming data matrices into suitable formats for modeling.                                                  |
 
 To install and load these packages, use the following code:
 
-``` r
-pacman::p_load(sf, spNetwork, tmap, tidyverse)
+```{r}
+pacman::p_load(tmap, SpatialAcc, sf, ggstatsplot, reshape2, tidyverse)
 ```

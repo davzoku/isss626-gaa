@@ -1,6 +1,6 @@
 ---
 title: "9A: Processing and Visualising Flow Data"
-subtitle: "#todo"
+subtitle: "In this exercise, we will explore the concept of spatial interaction, and learn how to build an OD (origin/destination) matrix."
 draft: true
 date: ""
 date-modified: "last-modified"
@@ -25,18 +25,46 @@ editor: visual
 
 ## Overview
 
+In this exercise, we will explore the concept of spatial interaction, and learn how to build an OD (origin/destination) matrix.
+
+Spatial interaction represent the flow of people, material, or information between locations in geographical space. It encompasses everything from freight shipments, energy flows, and the global trade in rare antiquities, to flight schedules, rush hour woes, and pedestrian foot traffic.
+
+> An OD matrix, or spatial interaction matrix, represents each spatial interaction as a discrete origin/destination pair, where each pair corresponds to a cell in the matrix; the rows denote the locations (centroids) of origin, and the columns represent the locations (centroids) of destination.
+
+
 ## Learning Outcome
 
+- Import and extract OD data for a selected time interval.
+- Import and save geospatial data (bus stops and planning subzones) into sf tibble data frame objects.
+- Populate planning subzone codes into bus stops sf tibble data frames.
+- Construct desire lines geospatial data from the OD data.
+- Visualize passenger volume by origin and destination bus stops using the desire lines data.
 
 ## The Data
+
+The following datasets will be used in this exercise:
+
+| **Data Set**                              | **Description**                                                                                 | **Format**       |
+|--------------------------------------------|-------------------------------------------------------------------------------------------------|------------------|
+| Passenger Volume by Origin Destination Bus Stops | OD data set representing the volume of passengers traveling between bus stops.                       | CSV              |
+| BusStop                                    | Geospatial data providing the locations of bus stops as of the last quarter of 2022.               | ESRI Shapefile   |
+| MPSZ-2019                                   | Geospatial data providing the sub-zone boundary of the URA Master Plan 2019.                       | ESRI Shapefile   |
 
 
 ## Installing and Launching the R Packages
 
+The following R packages will be used in this exercise:
 
+| **Package**   | **Purpose**                                                                                                | **Use Case in Exercise**                                                                                  |
+|---------------|------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------|
+| **sf**        | Handles vector-based geospatial data.                                                                       | Importing, processing, and transforming geospatial data, such as bus stop locations and sub-zone boundaries. |
+| **tidyverse** | A collection of packages for data science tasks such as data manipulation, visualization, and modeling.     | Importing and wrangling OD and geospatial data, and visualizing analysis outputs.                           |
+| **tmap**      | Creates static and interactive thematic maps using cartographic quality elements.                           | Visualizing passenger flows and geographic clusters in a cartographic format.                               |
+| **stplanr**   | Provides functions for transport planning and modeling.                                                     | Creating geographic desire lines from OD data and solving transport-related problems.                      |
+| **DT**        | Provides an R interface to the JavaScript library DataTables for interactive table display.                 | Displaying data tables in an interactive format within the HTML output.                                     |
 
 To install and load these packages, use the following code:
 
-``` r
-pacman::p_load(sf, spNetwork, tmap, tidyverse)
+```{r pacman}
+pacman::p_load(tmap, sf, DT, stplanr, tidyverse)
 ```

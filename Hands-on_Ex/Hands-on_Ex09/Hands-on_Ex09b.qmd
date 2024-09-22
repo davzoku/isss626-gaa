@@ -1,6 +1,6 @@
 ---
 title: "9B: Calibrating Spatial Interaction Models with R"
-subtitle: "#todo"
+subtitle: "In this exercise, we will learn to calibrate Spatial Interaction Models (SIMs) using various regression methods to determine factors affecting public bus passenger flows during the morning peak in Singapore."
 draft: true
 date: ""
 date-modified: "last-modified"
@@ -19,24 +19,70 @@ number-offset: 1
 editor: visual
 ---
 
-## Exercise 5A Reference
+## Exercise 9B Reference
 
 [R for Geospatial Data Science and Analytics - 16  Calibrating Spatial Interaction Models with R](https://r4gdsa.netlify.app/chap16)
 
 ## Overview
 
+In this exercise, we will learn to calibrate Spatial Interaction Models (SIMs) using various regression methods to determine factors affecting public bus passenger flows during the morning peak in Singapore.
+
+Spatial Interaction Models (SIMs) are mathematical models for estimating flows between spatial entities developed by Alan Wilson in the late 1960s and early 1970, with considerable uptake and refinement for transport modelling since then Boyce and Williams (2015).
+
+There are four main types of traditional SIMs (Wilson 1971):
+
+-   Unconstrained
+-   Production-constrained
+-   Attraction-constrained
+-   Doubly-constrained
+
+Ordinary least square (OLS), log-normal, Poisson and negative binomial (NB) regression methods have been used extensively to calibrate OD flow models by processing flow data as different types of dependent variables. In this chapter, you will gain hands-on experiences on using appropriate R packages to calibrate SIM by using there four regression methods.
+
+::: callout-note
+Calibration is the process of adjusting parameters in the model to try and get the estimates to agree with the observed data as much as possible. Adjusting the parameters is the sort of iterative process that computers are particularly good at and the goodness-of-fit statistics can be used to indicate when the optimum solution is found. Historically this process required a researcher with the requisite programming skills to write a computer algorithm to iteratively adjust each parameter, check the goodness-of-fit, and then start all over again until the goodness-of-fit statistic was maximised/minimised. (Adam Dennett, 2018)
+:::
+
 ## Learning Outcome
 
+- Understand and apply different types of Spatial Interaction Models (SIMs).
+- Calibrate SIMs using Ordinary Least Squares (OLS), log-normal, Poisson, and Negative Binomial (NB) regression methods.
+- Import and prepare geospatial data using R packages such as **sf** and **tidyverse**.
+- Compute a distance matrix for spatial data using the **sp** package.
+- Visualize and compare model performance using **ggplot2** and **performance** packages.
 
 ## The Data
 
+The following datasets will be used in this exercise:
+
+| **Data Set**      | **Description**                                                                                     | **Format**                    |
+|-------------------|-----------------------------------------------------------------------------------------------------|--------------------------------|
+| od_data.rds       | Weekday morning peak passenger flows at the planning subzone level.                                  | RDS                            |
+| mpsz.rds          | URA Master Plan 2019 Planning Subzone boundary in simple feature tibble data frame format.           | RDS                            |
+| pop.csv           | Additional attribute data file providing population information.                                     | CSV                            |
+
+These datasets will be utilized to calibrate and visualize the Spatial Interaction Models.
+
+> This exercise is a continuation from Hands-on Exercise 9A.
 
 ## Installing and Launching the R Packages
 
+The following R packages will be used in this exercise:
 
+| **Package**     | **Purpose**                                                                                           | **Use Case in Exercise**                                                                                                  |
+|-----------------|-------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------|
+| **sf**          | Imports, integrates, processes, and transforms vector-based geospatial data.                                                                | Handling vector geospatial data, such as the URA Master Plan 2019 Planning Subzone boundary.                               |
+| **tidyverse**   | A collection of packages for data science tasks such as data manipulation, visualization, and modeling.                                    | Importing CSV files, wrangling data, and performing relational joins.                                                      |
+| **tmap**        | Creates static and interactive thematic maps using cartographic quality elements.                                                           | Visualizing regional development indicators and plotting maps showing spatial relationships and patterns.                  |
+| **performance** | Provides tools to assess and compare the performance of regression models.                                                                  | Comparing model performance metrics, such as R-squared and RMSE, for different spatial interaction models.                |
+| **sp**          | Provides functions for spatial dependence analysis, including spatial weights and spatial autocorrelation.                                   | Computing spatial weights and distance matrices for geospatial data.                                                       |
+| **ggplot2**     | Creates data visualizations using a layered grammar of graphics.                                                                             | Plotting histograms, scatter plots, and visualizing model fits and residuals for calibrated Spatial Interaction Models.    |
+| **reshape2**    | Provides functions to reshape data between wide and long formats.                                                                            | Pivoting distance matrices into long format for model calibration and analysis.                                            |
+| **ggpubr**      | Provides tools for creating and customizing publication-ready plots in **ggplot2**.                                                         | Combining multiple plots into a single visual for comparing different models.                                              |
 
 To install and load these packages, use the following code:
 
-``` r
-pacman::p_load(sf, spNetwork, tmap, tidyverse)
+```{r}
+pacman::p_load(tmap, sf, sp, performance, reshape2, ggpubr, tidyverse)
 ```
+
+These sections follow the standard markdown format, ensuring that the content is clear, concise, and well-structured for the exercise.

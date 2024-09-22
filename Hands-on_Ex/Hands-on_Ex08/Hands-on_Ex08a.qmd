@@ -1,6 +1,6 @@
 ---
 title: "8A: Geographically Weighted Predictive Models"
-subtitle: "#todo"
+subtitle: "In this exercise, we will learn how to build predictive models using the geographical random forest method to predict outcomes based on geospatial factors and historical geospatial locations."
 draft: true
 date: ""
 date-modified: "last-modified"
@@ -25,18 +25,51 @@ editor: visual
 
 ## Overview
 
+In this exercise, we will learn how to build predictive models using the geographical random forest method to predict outcomes based on geospatial factors and historical geospatial locations.
+
+Predictive modeling uses statistical and machine learning techniques to forecast future outcomes. To build these models, we start with a dataset where the outcomes are already known, along with various input variables (predictors) that might influence those outcomes. The model learns from these known examples to make accurate predictions about future events.
+
+Geospatial predictive modelling is conceptually rooted in the principle that the occurrences of events being modeled are limited in distribution. 
+
+> When geographically referenced data are used, occurrences of events are neither uniform nor random in distribution over space. There are geospatial factors (infrastructure, sociocultural, topographic, etc.) that constrain and influence where the locations of events occur. 
+
+Geospatial predictive modeling identifies and analyzes these factors by examining the relationship between past event locations and the environmental conditions that might have influenced those locations. This helps to better understand and predict where similar events are likely to happen in the future.
+
 ## Learning Outcome
 
+- Prepare training and test datasets using appropriate data sampling methods.
+- Calibrate predictive models using both geospatial statistical learning and machine learning methods.
+- Compare and select the best model for predicting future outcomes.
+- Predict future outcomes using the best-calibrated model.
 
 ## The Data
 
+The following datasets will be used in this study:
+
+| **Data Type**                      | **Description**                                                                                                                                     | **Format**        |
+|------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------|-------------------|
+| **Aspatial dataset**               | HDB Resale data: a list of HDB resale transacted prices in Singapore from Jan 2017 onwards.                                                         | CSV               |
+| **Geospatial dataset**             | *MP14_SUBZONE_WEB_PL*: A polygon feature dataset providing information on URA 2014 Master Plan Planning Subzone boundary data.                      | ESRI Shapefile    |
+| **Locational factors with geographic coordinates** | Various data sets including Eldercare, Hawker Centre, Parks, Supermarket, CHAS clinics, Childcare services, Kindergartens, MRT, and Bus stops.     | GeoJSON/Shapefile |
+| **Locational factors without geographic coordinates** | Primary school data, CBD coordinates, Shopping malls, Good primary schools (ranking by popularity).                                                | CSV/Other Sources |
 
 ## Installing and Launching the R Packages
 
+The following R packages will be used in this exercise:
 
+| **Package**   | **Purpose**                                                                                             | **Use Case in Exercise**                                                                                             |
+|---------------|---------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------|
+| **sf**        | Handles vector-based geospatial data.                                                                    | Importing and manipulating polygon and point feature data.                                                            |
+| **spdep**     | Provides functions for spatial dependence analysis, including spatial weights and spatial autocorrelation. | Performing spatially constrained cluster analysis using geographically weighted regression (GWR).                     |
+| **GWmodel**   | Provides geographically weighted modeling methods.                                                       | Calibrating models to predict HDB resale prices using geographically weighted regression.                             |
+| **SpatialML** | Supports geographical random forest models and spatial machine learning methods.                         | Calibrating models using geographically weighted random forest (GW RF).                                               |
+| **tmap**      | Creates static and interactive thematic maps.                                                            | Visualizing geospatial data, model predictions, and other geographic patterns.                                         |
+| **rsample**   | Provides tools for data resampling.                                                                      | Splitting datasets into training and testing subsets.                                                                 |
+| **Metrics**   | Provides evaluation metrics for statistical and machine learning models.                                 | Calculating RMSE (Root Mean Square Error) to evaluate model accuracy.                                                 |
+| **tidyverse** | A collection of packages for data science tasks such as data manipulation, visualization, and modeling.   | Data wrangling, visualization, and performing statistical operations on datasets.                                      |
 
 To install and load these packages, use the following code:
 
-``` r
-pacman::p_load(sf, spNetwork, tmap, tidyverse)
+```{r pacman}
+pacman::p_load(sf, spdep, GWmodel, SpatialML, tmap, rsample, Metrics, tidyverse)
 ```
