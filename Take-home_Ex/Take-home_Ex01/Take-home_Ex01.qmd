@@ -1016,26 +1016,6 @@ median_center <- accidents_xy %>%
 median_center
 ```
 
-```{r}
-accidents_bmr_ft_xy <- accidents_bmr_ft %>%
-  mutate(X = accidents_xy[, 1], Y = accidents_xy[, 2])
-
-
-mean_centers_by_year <-  accidents_bmr_ft_xy %>%
-  group_by(year) %>%
-  summarize(
-    mean_x = mean(X),
-    mean_y = mean(Y)
-  )
-
-median_centers_by_year <- accidents_bmr_ft_xy %>%
-  group_by(year) %>%
-  summarize(
-    median_x = median(X),
-    median_y = median(Y)
-  )
-```
-
 ::: callout-note
 
 **Observations:**
@@ -1356,6 +1336,7 @@ for (i in seq_along(accidents_ppps)) {
 
 In summary, we **reject the null hypothesis across all provinces in the BMR**. The Clark-Evans test results show that traffic accidents are **not randomly distributed** but are strongly **clustered**. Bangkok and Samut Prakan exhibit the highest levels of clustering, while the other provinces show moderate clustering. 
 
+:::
 
 ## Second Order Spatial Point Pattern Analysis
 
@@ -1498,6 +1479,9 @@ lixels$density <- lixels$density*1000
 2. Use **tmap** to visualize the NKDE output.
 
 ```{r nkde_plot, fig.height=6, fig.width=8}
+#| code-fold: true
+#| code-summary: "Show the code"
+
 cus_palette <- colorRampPalette(c("lightyellow", "red"))
 
 tm_shape(admin_boundary_bmr) +
@@ -1687,13 +1671,13 @@ for (i in seq(1, total_days, by = days_per_plot)) {
       plot(st_kde_april, day, 
            override.par = FALSE, 
            fix.range = TRUE, 
-           main = paste("April 2022", day, "(Songkran)"), 
+           main = paste("April 2022 Day", day, "(Songkran)"), 
            col.main = "red")
     } else {
       plot(st_kde_april, day, 
            override.par = FALSE, 
            fix.range = TRUE, 
-           main = paste("April 2022", day))
+           main = paste("April 2022 Day", day))
     }
   }
 }

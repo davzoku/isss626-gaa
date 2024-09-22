@@ -1,0 +1,15 @@
+{
+  "hash": "a4bffbfdb3f39c454f842ebc2ddaa4ae",
+  "result": {
+    "engine": "knitr",
+    "markdown": "---\ntitle: \"7A: Calibrating Hedonic Pricing Model for Private Highrise Property with GWR Method\"\nsubtitle: \"#todo\"\n# draft: true\ndate: \"Sep 15, 2024\"\ndate-modified: \"last-modified\"\nauthor: Teng Kok Wai (Walter)\nexecute:\n  echo: true\n  eval: true\n  freeze: true\n  message: false\n  warning: false\nformat:\n  html:\n    toc: true\nnumber-sections: true\nnumber-offset: 1\neditor: visual\n---\n\n\n\n## Exercise 7A Reference\n\n[R for Geospatial Data Science and Analytics - 13  Calibrating Hedonic Pricing Model for Private Highrise Property with GWR Method](https://r4gdsa.netlify.app/chap13.html)\n\n## Overview\n\n## Learning Outcome\n\n## The Data\n\n## Installing and Launching the R Packages\n\nTo install and load these packages, use the following code:\n\n\n\n::: {.cell}\n\n```{.r .cell-code}\npacman::p_load(sf, spNetwork, tmap, tidyverse)\n```\n:::\n",
+    "supporting": [],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {},
+    "engineDependencies": {},
+    "preserve": {},
+    "postProcess": true
+  }
+}

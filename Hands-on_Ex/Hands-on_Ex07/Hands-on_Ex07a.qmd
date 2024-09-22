@@ -1,7 +1,7 @@
 ---
 title: "7A: Calibrating Hedonic Pricing Model for Private Highrise Property with GWR Method"
 subtitle: "In this exercise, we will learn to build hedonic pricing models for private high-rise property using Geographically Weighted Regression (GWR) methods to account for non-stationary variables."
-# draft: true
+draft: true
 date: "Sep 22, 2024"
 date-modified: "last-modified"
 author: Teng Kok Wai (Walter)
@@ -46,7 +46,7 @@ In this exercise, we will learn to build [hedonic pricing](https://www.investope
 The following 2 datasets will be used in this study:
 
 | **Data Set**          | **Description**                                                                            | **Format**     |
-|-----------------------|--------------------------------------------------------------------------------------------|----------------|
+|--------------|---------------------------------------------|--------------|
 | MP14_SUBZONE_WEB_PL   | URA Master Plan 2014's planning subzone boundaries represented as polygon features.        | ESRI Shapefile |
 | condo_resale_2015.csv | Data on condominium resale prices in 2015, including structural and locational attributes. | CSV            |
 
@@ -55,7 +55,7 @@ The following 2 datasets will be used in this study:
 The following R packages will be used in this exercise:
 
 | **Package**   | **Purpose**                                                                                             | **Use Case in Exercise**                                                                      |
-|---------------|---------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------|
+|--------------|-------------------------------|---------------------------|
 | **sf**        | Manages, processes, and manipulates vector-based geospatial data.                                       | Handling and converting geospatial data such as the URA Master Plan boundaries.               |
 | **GWmodel**   | Calibrates geographically weighted models for local spatial analysis.                                   | Building hedonic pricing models using fixed and adaptive bandwidth GWR methods.               |
 | **olsrr**     | Performs diagnostics and builds better multiple linear regression models.                               | Testing for multicollinearity, normality, and linearity of the regression model.              |
