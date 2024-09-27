@@ -13,6 +13,7 @@ execute:
   warning: false
 format:
   html:
+    code-link: true
     toc: true
 number-sections: true
 number-offset: 1
@@ -71,7 +72,7 @@ In this section, we will perform 3 necessary steps to prepare the data for analy
 Firstly, we will use [`st_read()`](https://r-spatial.github.io/sf/reference/st_read.html) of **sf** package to import Hunan shapefile into R. The imported shapefile will be **simple features** Object of **sf**.
 
 ```{r}
-hunan <- st_read(dsn = "data/geospatial", 
+hunan <- st_read(dsn = "data/geospatial",
                  layer = "Hunan")
 ```
 
@@ -264,22 +265,22 @@ To plot the continguity-based neighbours map, we can do the following:
 ```{r fig.width=12, fig.height=6}
 par(mfrow=c(1,2))
 
-plot(hunan$geometry, 
+plot(hunan$geometry,
      main="Queen Contiguity")
-plot(wm_q, 
-     coords, 
-     pch = 19, 
-     cex = 0.6, 
-     add = TRUE, 
+plot(wm_q,
+     coords,
+     pch = 19,
+     cex = 0.6,
+     add = TRUE,
      col= "red")
 
-plot(hunan$geometry, 
+plot(hunan$geometry,
      main="Rook Contiguity")
-plot(wm_r, 
-     coords, 
-     pch = 19, 
-     cex = 0.6, 
-     add = TRUE, 
+plot(wm_r,
+     coords,
+     pch = 19,
+     cex = 0.6,
+     add = TRUE,
      col = "red")
 ```
 
@@ -372,7 +373,7 @@ str(wm_d62)
 Another way to display the structure of the weight matrix is to combine [`table()`](https://www.rdocumentation.org/packages/base/versions/3.6.2/topics/table) and [`card()`](https://r-spatial.github.io/spdep/reference/card.html) of **spdep**.
 
 ```{r}
-table(hunan$County, 
+table(hunan$County,
       card(wm_d62))
 ```
 
@@ -453,8 +454,8 @@ For more info, see [Spatial Weights as Distance Functions](https://spatialanalys
 :::
 
 ```{r}
-dist <- nbdists(wm_q, 
-                coords, 
+dist <- nbdists(wm_q,
+                coords,
                 longlat = TRUE)
 # apply 1/x on every element on list objects
 ids <- lapply(dist, function(x) 1/(x))
@@ -582,8 +583,8 @@ b_weights <- lapply(wm_q, function(x) 0*x + 1)
 # 'nb2listw' converts the neighbors list (wm_q) into a weights list.
 # 'glist = b_weights' explicitly sets the weights to the binary weights created above.
 # 'style = "B"' specifies binary weighting style, where each neighbor has equal weight (1).
-b_weights2 <- nb2listw(wm_q, 
-                       glist = b_weights, 
+b_weights2 <- nb2listw(wm_q,
+                       glist = b_weights,
                        style = "B")
 b_weights2
 ```
@@ -646,7 +647,7 @@ Again, we use *nb2listw()* and *glist()* to explicitly assign weight values.
 Lastly, we just need to create the lag variable from our weight structure and GDPPC variable.
 
 ```{r}
-lag_w_avg_gpdpc <- lag.listw(wm_qs, 
+lag_w_avg_gpdpc <- lag.listw(wm_qs,
                              hunan$GDPPC)
 lag_w_avg_gpdpc
 ```
@@ -673,8 +674,8 @@ To compare the values of lag GDPPC and Spatial window average, `kable()` of Knit
 
 ```{r}
 hunan %>%
-  select("County", 
-         "lag GDPPC", 
+  select("County",
+         "lag GDPPC",
          "lag_window_avg GDPPC") %>%
   kable()
 ```
@@ -713,8 +714,8 @@ Notice that now region 85 has 12 neighbours instead of 11.
 Again, we use `nb2listw()` and `glist()` to explicitly assign weight values.
 
 ```{r}
-b_weights2 <- nb2listw(wm_qs, 
-                       glist = b_weights, 
+b_weights2 <- nb2listw(wm_qs,
+                       glist = b_weights,
                        style = "B")
 b_weights2
 ```

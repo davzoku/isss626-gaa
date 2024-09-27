@@ -13,6 +13,7 @@ execute:
   warning: false # if false, don't include warnings in the output
 format:
   html:
+    code-link: true
     toc: true
 number-sections: true
 number-offset: 1
@@ -75,7 +76,7 @@ The following datasets will be used in this exercise:
 | **Hunan_2012.csv**             | A CSV file containing selected local development indicators for Hunan in 2012.                        | CSV                |
 
 ```{r}
-hunan_sf <- st_read(dsn = "data/geospatial", 
+hunan_sf <- st_read(dsn = "data/geospatial",
                  layer = "Hunan")
 ```
 ::: callout-tip
@@ -133,7 +134,7 @@ In this section, we aim to determine the optimal adaptive bandwidth for performi
 
 An adaptive bandwidth allows the number of neighbors considered in the model to vary depending on the density of data points. This is particularly useful when data points are unevenly distributed across the study area.
 
-We will use two different criteria—cross-validation (CV) and [Akaike information criterion](https://en.wikipedia.org/wiki/Akaike_information_criterion) to determine the optimal bandwidth. 
+We will use two different criteria—cross-validation (CV) and [Akaike information criterion](https://en.wikipedia.org/wiki/Akaike_information_criterion) to determine the optimal bandwidth.
 
 **The bandwidth that minimizes these metrics will be selected.**
 
@@ -155,7 +156,7 @@ bw_CV
 
 #### Akaike Information Criterion (AIC)
 
-Next, we use the AIC approach to determine the optimal bandwidth. AIC is a model selection criterion that balances model fit and complexity, with a lower AIC value indicating a better model. 
+Next, we use the AIC approach to determine the optimal bandwidth. AIC is a model selection criterion that balances model fit and complexity, with a lower AIC value indicating a better model.
 
 We use the same GWR model setup, but the bandwidth is now optimized based on the AIC value instead of cross-validation.
 
@@ -198,7 +199,7 @@ gwstat <- gwss (data = hunan_sp,
 
 ::: callout-note
 
-We use `bw_AIC` as the bandwidth parameter, which was determined previously based on AIC optimization. 
+We use `bw_AIC` as the bandwidth parameter, which was determined previously based on AIC optimization.
 
 Additionally, we apply the same `bisquare` kernel for consistency with the CV and AIC computation above.
 
@@ -249,7 +250,7 @@ tm_shape(hunan_gstat) +
             main.title.position = "center",
             main.title.size = 2.0,
             legend.text.size = 1.2,
-            legend.height = 1.50, 
+            legend.height = 1.50,
             legend.width = 1.50,
             frame = TRUE)
 ```
@@ -263,11 +264,11 @@ Similarly, we can use the same process to generate summary stats with fixed band
 
 
 ```{r}
-bw_CV_fixed <- bw.gwr(GDPPC ~ 1, 
+bw_CV_fixed <- bw.gwr(GDPPC ~ 1,
              data = hunan_sp,
              approach = "CV",
-             adaptive = FALSE, 
-             kernel = "bisquare", 
+             adaptive = FALSE,
+             kernel = "bisquare",
              longlat = T)
 ```
 
@@ -278,11 +279,11 @@ bw_CV_fixed
 2. AIC
 
 ```{r}
-bw_AIC_fixed <- bw.gwr(GDPPC ~ 1, 
+bw_AIC_fixed <- bw.gwr(GDPPC ~ 1,
              data = hunan_sp,
              approach ="AIC",
-             adaptive = FALSE, 
-             kernel = "bisquare", 
+             adaptive = FALSE,
+             kernel = "bisquare",
              longlat = T)
 ```
 
@@ -292,7 +293,7 @@ bw_AIC_fixed
 
 ::: callout-note
 
-Note the results differs this time. 
+Note the results differs this time.
 
 We will just use `bw_AIC_fixed` for this example.
 
@@ -337,16 +338,16 @@ tm_shape(hunan_gstat_fixed) +
 
 ```{r}
 ggscatterstats(
-  data = hunan2012, 
-  x = Agri, 
+  data = hunan2012,
+  x = Agri,
   y = GDPPC,
   xlab = "Gross Agriculture Output",
-  ylab = "GDP per capita", 
-  label.var = County, 
-  label.expression = Agri > 10000 & GDPPC > 50000, 
+  ylab = "GDP per capita",
+  label.var = County,
+  label.expression = Agri > 10000 & GDPPC > 50000,
   point.label.args = list(alpha = 0.7, size = 4, color = "grey50"),
-  xfill = "#CC79A7", 
-  yfill = "#009E73", 
+  xfill = "#CC79A7",
+  yfill = "#009E73",
   title = "Relationship between GDP PC and Gross Agriculture Output")
 ```
 
@@ -362,20 +363,20 @@ To come up with the geospatial analytics solution, we can repeat what we have le
 
 ```{r}
 # determine bandwidth
-bw <- bw.gwr(GDPPC ~ GIO, 
-             data = hunan_sp, 
-             approach = "AICc", 
+bw <- bw.gwr(GDPPC ~ GIO,
+             data = hunan_sp,
+             approach = "AICc",
              adaptive = TRUE)
 
 ```
 
 ```{r}
 # compute gwCorrelation
-gwstats <- gwss(hunan_sp, 
-                vars = c("GDPPC", "GIO"), 
+gwstats <- gwss(hunan_sp,
+                vars = c("GDPPC", "GIO"),
                 bw = bw,
                 kernel = "bisquare",
-                adaptive = TRUE, 
+                adaptive = TRUE,
                 longlat = T)
 
 gwstats$SDF
@@ -407,7 +408,7 @@ tm_shape(hunan_Corr) +
             main.title.position = "center",
             main.title.size = 2.0,
             legend.text.size = 1.2,
-            legend.height = 1.50, 
+            legend.height = 1.50,
             legend.width = 1.50,
             frame = TRUE)
 ```
@@ -434,7 +435,7 @@ tm_shape(hunan_Corr) +
             main.title.position = "center",
             main.title.size = 2.0,
             legend.text.size = 1.2,
-            legend.height = 1.50, 
+            legend.height = 1.50,
             legend.width = 1.50,
             frame = TRUE)
 ```

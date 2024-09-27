@@ -13,6 +13,7 @@ execute:
   warning: false
 format:
   html:
+    code-link: true
     toc: true
 number-sections: true
 number-offset: 1
@@ -80,7 +81,7 @@ pacman::p_load(sf, spNetwork, tmap, tidyverse)
 The code block below uses `st_read()` of **sf** package to important Punggol_St and Punggol_CC geospatial data sets into RStudio as sf data frames.
 
 ```{r}
-network <- st_read(dsn="data/geospatial", 
+network <- st_read(dsn="data/geospatial",
                    layer="Punggol_St")
 ```
 
@@ -153,9 +154,9 @@ plot(childcare,
 ```{r}
 tmap_mode('view')
 
-tm_shape(childcare) + 
+tm_shape(childcare) +
   # uniform red dots to represent childcare center
-  tm_dots(col = 'red') + 
+  tm_dots(col = 'red') +
   tm_shape(network) +
   tm_lines()
 
@@ -177,8 +178,8 @@ In this section, we will perform NKDE analysis by using appropriate functions pr
 Before computing NKDE, the SpatialLines object need to be cut into lixels with a specified minimal distance. This task can be performed by using with [lixelize_lines()](https://jeremygelb.github.io/spNetwork/reference/lixelize_lines.html) of **spNetwork** as shown in the code block below.
 
 ```{r}
-lixels <- lixelize_lines(lines=network, 
-                         lx_length=700, 
+lixels <- lixelize_lines(lines=network,
+                         lx_length=700,
                          mindist = 375)
 ```
 
@@ -209,19 +210,19 @@ The points are located at center of the line based on the length of the line.
 To compute the NKDE:
 
 ```{r}
-densities <- nkde(network, 
+densities <- nkde(network,
                   events = childcare,
                   w = rep(1, nrow(childcare)),
                   samples = samples,
                   kernel_name = "quartic",
-                  bw = 300, 
-                  div= "bw", 
-                  method = "simple", 
-                  digits = 1, 
+                  bw = 300,
+                  div= "bw",
+                  method = "simple",
+                  digits = 1,
                   tol = 1,
-                  grid_shape = c(1,1), 
+                  grid_shape = c(1,1),
                   max_depth = 8,
-                  # agg = 5, 
+                  # agg = 5,
                   sparse = TRUE,
                   verbose = FALSE)
 ```
@@ -285,15 +286,15 @@ If this hypothesis is rejected, we may infer that the distribution of childcare 
 ```{r}
 # set seed for reproducibility
 set.seed(1234)
-kfun_childcare <- kfunctions(network, 
+kfun_childcare <- kfunctions(network,
                              childcare,
-                             start = 0, 
-                             end = 1000, 
-                             step = 50, 
-                             width = 50, 
-                             nsim = 39, 
+                             start = 0,
+                             end = 1000,
+                             step = 50,
+                             width = 50,
+                             nsim = 39,
                              resolution = 50,
-                             verbose = FALSE, 
+                             verbose = FALSE,
                              conf_int = 0.05)
 ```
 
@@ -315,7 +316,7 @@ kfun_childcare <- kfunctions(network,
 We can visualise the ggplot2 object of k-function by using the code chunk below.
 
 ```{r}
-kfun_childcare$plotk + 
+kfun_childcare$plotk +
   labs(title ="K-Function") +
   theme(plot.title = element_text(face = "bold", size = 12, hjust = 0.5))
 ```

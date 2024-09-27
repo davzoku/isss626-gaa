@@ -13,6 +13,7 @@ execute:
   warning: false
 format:
   html:
+    code-link: true
     toc: true
 number-sections: true
 number-offset: 1
@@ -71,7 +72,7 @@ The following R packages will be used in this exercise:
 To install and load these packages, use the following code:
 
 ```{r pacman}
-pacman::p_load(spdep, tmap, sf, ClustGeo, 
+pacman::p_load(spdep, tmap, sf, ClustGeo,
                ggpubr, cluster, factoextra, NbClust,
                heatmaply, corrplot, psych, tidyverse, GGally, plotly, knitr)
 ```
@@ -99,9 +100,9 @@ sort(unique(shan_sf$ST))
 ```
 
 ```{r filter_for_shan_state}
-shan_sf <- 
+shan_sf <-
   shan_sf %>%
-  filter(ST %in% c("Shan (East)", "Shan (North)", "Shan (South)")) %>% 
+  filter(ST %in% c("Shan (East)", "Shan (North)", "Shan (South)")) %>%
   select(c(2:7))
 
 shan_sf
@@ -181,10 +182,10 @@ ggplotly(p)
 Boxplot is useful to detect if there are outliers.
 
 ```{r radio_ownership_boxplot}
-plot_ly(data = ict_derived, 
+plot_ly(data = ict_derived,
         x = ~RADIO,
-        type = 'box', 
-        fillcolor = 'lightblue', 
+        type = 'box',
+        fillcolor = 'lightblue',
         marker = list(color = 'lightblue'),
         notched = TRUE
        ) %>%
@@ -224,12 +225,12 @@ histogram_plot <- plot_ly(
   x = ~`RADIO_PR`,
   type = 'histogram',
   histnorm = "count",
-  marker = list(color = 'lightblue'), 
+  marker = list(color = 'lightblue'),
   hovertemplate = 'Radio Penetration Rate: %{x}<br>Frequency: %{y}<extra></extra>'
 ) %>%
   add_lines(
     x = mean_pr, y = c(0, 15),
-    line = list(width = 3, color = "black"),  
+    line = list(width = 3, color = "black"),
     showlegend = FALSE
   ) %>%
   add_annotations(
@@ -253,7 +254,7 @@ boxplot_plot <- plot_ly(
   jitter = 0.3,
   pointpos = -1.8,
   notched = TRUE,
-  fillcolor = 'lightblue', 
+  fillcolor = 'lightblue',
   marker = list(color = 'lightblue'),
   showlegend = FALSE
 ) %>%
@@ -286,40 +287,40 @@ We can also plot multiple histograms to get a sense of the feature engineered fi
 #| code-fold: true
 #| code-summary: "Show the code"
 
-radio <- ggplot(data=ict_derived, 
+radio <- ggplot(data=ict_derived,
              aes(x= `RADIO_PR`)) +
-  geom_histogram(bins=20, 
-                 color="black", 
+  geom_histogram(bins=20,
+                 color="black",
                  fill="light blue")
 
-tv <- ggplot(data=ict_derived, 
+tv <- ggplot(data=ict_derived,
              aes(x= `TV_PR`)) +
-  geom_histogram(bins=20, 
-                 color="black", 
+  geom_histogram(bins=20,
+                 color="black",
                  fill="light blue")
 
-llphone <- ggplot(data=ict_derived, 
+llphone <- ggplot(data=ict_derived,
              aes(x= `LLPHONE_PR`)) +
-  geom_histogram(bins=20, 
-                 color="black", 
+  geom_histogram(bins=20,
+                 color="black",
                  fill="light blue")
 
-mphone <- ggplot(data=ict_derived, 
+mphone <- ggplot(data=ict_derived,
              aes(x= `MPHONE_PR`)) +
-  geom_histogram(bins=20, 
-                 color="black", 
+  geom_histogram(bins=20,
+                 color="black",
                  fill="light blue")
 
-computer <- ggplot(data=ict_derived, 
+computer <- ggplot(data=ict_derived,
              aes(x= `COMPUTER_PR`)) +
-  geom_histogram(bins=20, 
-                 color="black", 
+  geom_histogram(bins=20,
+                 color="black",
                  fill="light blue")
 
-internet <- ggplot(data=ict_derived, 
+internet <- ggplot(data=ict_derived,
              aes(x= `INTERNET_PR`)) +
-  geom_histogram(bins=20, 
-                 color="black", 
+  geom_histogram(bins=20,
+                 color="black",
                  fill="light blue")
 
 ggarrange(radio, tv, llphone, mphone, computer, internet, ncol = 3, nrow = 2)
@@ -339,7 +340,7 @@ file_path <- "data/rds/shan_sf.rds"
 if (!file.exists(file_path)) {
   shan_sf <- left_join(shan_sf, ict_derived, by = c("TS_PCODE" = "TS_PCODE"))
   write_rds(shan_sf, file_path)
-  
+
 } else {
   shan_sf <- read_rds(file_path)
 }
@@ -360,19 +361,19 @@ qtm(shan_sf, "RADIO_PR")
 In order to reveal the distribution shown in the choropleth map above are bias to the underlying total number of households at the townships, we will create two choropleth maps, one for the total number of households (i.e. TT_HOUSEHOLDS.map) and one for the total number of household with Radio (RADIO.map) by using the code below.
 
 ```{r households_radio_maps, fig.width=10}
-TT_HOUSEHOLDS.map <- tm_shape(shan_sf) + 
+TT_HOUSEHOLDS.map <- tm_shape(shan_sf) +
   tm_fill(col = "TT_HOUSEHOLDS",
           n = 5,
-          style = "jenks", 
-          title = "Total households") + 
-  tm_borders(alpha = 0.5) 
+          style = "jenks",
+          title = "Total households") +
+  tm_borders(alpha = 0.5)
 
-RADIO.map <- tm_shape(shan_sf) + 
+RADIO.map <- tm_shape(shan_sf) +
   tm_fill(col = "RADIO",
           n = 5,
           style = "jenks",
-          title = "Number Radio ") + 
-  tm_borders(alpha = 0.5) 
+          title = "Number Radio ") +
+  tm_borders(alpha = 0.5)
 
 tmap_arrange(TT_HOUSEHOLDS.map, RADIO.map,
              asp=NA, ncol=2)
@@ -407,7 +408,7 @@ In this section, we will use [*corrplot.mixed()*](https://cran.r-project.org/web
 ```{r plot_correlation_analysis}
 cluster_vars.cor = cor(ict_derived[,12:17])
 corrplot.mixed(cluster_vars.cor,
-         lower = "ellipse", 
+         lower = "ellipse",
                upper = "number",
                tl.pos = "lt",
                diag = "l",
@@ -499,26 +500,26 @@ To plot the scaled `Radio_PR` field:
 #| code-fold: true
 #| code-summary: "Show the code"
 
-r <- ggplot(data=ict_derived, 
+r <- ggplot(data=ict_derived,
              aes(x= `RADIO_PR`)) +
-  geom_histogram(bins=20, 
-                 color="black", 
+  geom_histogram(bins=20,
+                 color="black",
                  fill="light blue") +
   ggtitle("Raw values without standardisation")
 
 shan_ict_s_df <- as.data.frame(shan_ict.std)
-s <- ggplot(data=shan_ict_s_df, 
+s <- ggplot(data=shan_ict_s_df,
        aes(x=`RADIO_PR`)) +
-  geom_histogram(bins=20, 
-                 color="black", 
+  geom_histogram(bins=20,
+                 color="black",
                  fill="light blue") +
   ggtitle("Min-Max Standardisation")
 
 shan_ict_z_df <- as.data.frame(shan_ict.z)
-z <- ggplot(data=shan_ict_z_df, 
+z <- ggplot(data=shan_ict_z_df,
        aes(x=`RADIO_PR`)) +
-  geom_histogram(bins=20, 
-                 color="black", 
+  geom_histogram(bins=20,
+                 color="black",
                  fill="light blue") +
   ggtitle("Z-score Standardisation")
 
@@ -537,21 +538,21 @@ The overall distribution of the clustering variables changes after the data stan
 #| code-fold: true
 #| code-summary: "Show the code"
 
-r <- ggplot(data=ict_derived, 
+r <- ggplot(data=ict_derived,
              aes(x= `RADIO_PR`)) +
   geom_density(color="black",
                fill="light blue") +
   ggtitle("Raw values without standardisation")
 
 shan_ict_s_df <- as.data.frame(shan_ict.std)
-s <- ggplot(data=shan_ict_s_df, 
+s <- ggplot(data=shan_ict_s_df,
        aes(x=`RADIO_PR`)) +
   geom_density(color="black",
                fill="light blue") +
   ggtitle("Min-Max Standardisation")
 
 shan_ict_z_df <- as.data.frame(shan_ict.z)
-z <- ggplot(data=shan_ict_z_df, 
+z <- ggplot(data=shan_ict_z_df,
        aes(x=`RADIO_PR`)) +
   geom_density(color="black",
                fill="light blue") +
@@ -648,10 +649,10 @@ To compute the gap statistic, use the [`clusGap()`](https://www.rdocumentation.o
 
 ```{r}
 set.seed(12345)
-gap_stat <- clusGap(shan_ict, 
-                    FUN = hcut, 
-                    nstart = 25, 
-                    K.max = 10, 
+gap_stat <- clusGap(shan_ict,
+                    FUN = hcut,
+                    nstart = 25,
+                    K.max = 10,
                     B = 50)
 # use firstmax to get the location of the first local maximum.
 print(gap_stat, method = "firstmax")
@@ -689,8 +690,8 @@ The following code plots the dendrogram and draws borders around the 6 clusters:
 
 ```{r plot_dendrogram_borders, fig.width=10, fig.height=6}
 plot(hclust_ward, cex = 0.6)
-rect.hclust(hclust_ward, 
-            k = 6, 
+rect.hclust(hclust_ward,
+            k = 6,
             border = 2:5)
 ```
 
@@ -808,8 +809,8 @@ coords <- st_coordinates(
 plot(st_geometry(shan_sf),
      border=grey(.5))
 plot(shan.nb,
-     coords, 
-     col="blue", 
+     coords,
+     col="blue",
      add=TRUE)
 ```
 
@@ -836,8 +837,8 @@ In order to achieve this, [*nb2listw()*](https://r-spatial.github.io/spdep/refer
 Note that we specify the *style* as **B** to make sure the cost values are not row-standardised.
 
 ```{r}
-shan.w <- nb2listw(shan.nb, 
-                   lcosts, 
+shan.w <- nb2listw(shan.nb,
+                   lcosts,
                    style="B")
 summary(shan.w)
 ```
@@ -872,13 +873,13 @@ head(shan.mst)
 The plot method for the MST include a way to show the observation numbers of the nodes in addition to the edge. As before, we plot this together with the township boundaries. We can see how the initial neighbour list is simplified to just one edge connecting each of the nodes, while passing through all the nodes.
 
 ```{r plot_mst}
-plot(st_geometry(shan_sf), 
+plot(st_geometry(shan_sf),
                  border=gray(.5))
-plot.mst(shan.mst, 
-         coords, 
-         col="blue", 
-         cex.lab=0.7, 
-         cex.circles=0.005, 
+plot.mst(shan.mst,
+         coords,
+         col="blue",
+         cex.lab=0.7,
+         cex.circles=0.005,
          add=TRUE)
 ```
 
@@ -887,9 +888,9 @@ plot.mst(shan.mst,
 The code below compute the spatially constrained cluster using [*skater()*](https://r-spatial.github.io/spdep/reference/skater.html) of **spdep** package.
 
 ```{r}
-clust6 <- spdep::skater(edges = shan.mst[,1:2], 
-                 data = shan_ict, 
-                 method = "euclidean", 
+clust6 <- spdep::skater(edges = shan.mst[,1:2],
+                 data = shan_ict,
+                 method = "euclidean",
                  ncuts = 5)
 ```
 
@@ -914,7 +915,7 @@ ccs6 <- clust6$groups
 ccs6
 ```
 
-We can find out how many observations are in each cluster by means of the table command. 
+We can find out how many observations are in each cluster by means of the table command.
 
 Parenthetially, we can also find this as the dimension of each vector in the lists contained in edges.groups. For example, the first list has node with dimension 12, which is also the number of observations in the first cluster.
 
@@ -925,13 +926,13 @@ table(ccs6)
 Lastly, we can also plot the pruned tree that shows the five clusters on top of the townshop area.
 
 ```{r plot_skater_mst, fig.width=8, fig.height=6}
-plot(st_geometry(shan_sf), 
+plot(st_geometry(shan_sf),
      border=gray(.5))
-plot(clust6, 
-     coords, 
+plot(clust6,
+     coords,
      cex.lab=.7,
      groups.colors=c("red","green","blue", "brown", "pink"),
-     cex.circles=0.005, 
+     cex.circles=0.005,
      add=TRUE)
 ```
 
@@ -950,15 +951,15 @@ For easy comparison, it will be better to place both the hierarchical clustering
 
 ```{r compare_clust_tmaps, fig.width=10, fig.height=6}
 hclust.map <- qtm(shan_sf_cluster,
-                  "CLUSTER") + 
-  tm_borders(alpha = 0.5) 
+                  "CLUSTER") +
+  tm_borders(alpha = 0.5)
 
 shclust.map <- qtm(shan_sf_spatialcluster,
-                   "SP_CLUSTER") + 
-  tm_borders(alpha = 0.5) 
+                   "SP_CLUSTER") +
+  tm_borders(alpha = 0.5)
 
 tmap_arrange(hclust.map, shclust.map,
-             asp=NA, ncol=2)               
+             asp=NA, ncol=2)
 ```
 
 ## Spatially Constrained Clustering: ClustGeo Method
@@ -984,8 +985,8 @@ To perform non-spatially constrained hierarchical clustering, provide the functi
 ```{r plot_dendrogram_ward}
 nongeo_cluster <- hclustgeo(proxmat)
 plot(nongeo_cluster, cex = 0.5)
-rect.hclust(nongeo_cluster, 
-            k = 6, 
+rect.hclust(nongeo_cluster,
+            k = 6,
             border = 2:5)
 ```
 
@@ -1077,13 +1078,13 @@ Parallel coordinate plot can be used to reveal clustering variables by cluster v
 
 ```{r multivar_viz}
 #| fig-width: 12
-ggparcoord(data = shan_sf_ngeo_cluster, 
-           columns = c(17:21), 
+ggparcoord(data = shan_sf_ngeo_cluster,
+           columns = c(17:21),
            scale = "globalminmax",
            alphaLines = 0.2,
-           boxplot = TRUE, 
+           boxplot = TRUE,
            title = "Multiple Parallel Coordinates Plots of ICT Variables by Cluster") +
-  facet_grid(~ CLUSTER) + 
+  facet_grid(~ CLUSTER) +
   theme(axis.text.x = element_text(angle = 30))
 ```
 
@@ -1111,7 +1112,7 @@ The suitability of scale argument is dependent on your use case.
 To complement the visual interpretation, use `group_by()` and `summarise()` of dplyr are used to derive mean values of the clustering variables:
 
 ```{r}
-shan_sf_ngeo_cluster %>% 
+shan_sf_ngeo_cluster %>%
   st_set_geometry(NULL) %>%
   group_by(CLUSTER) %>%
   summarise(mean_RADIO_PR = mean(RADIO_PR),

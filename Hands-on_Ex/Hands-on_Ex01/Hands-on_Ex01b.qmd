@@ -7,11 +7,12 @@ author: Teng Kok Wai (Walter)
 execute:
   echo: true
   eval: true
-  freeze: auto  
+  freeze: auto
   message: false
   warning: false
 format:
   html:
+    code-link: true
     toc: true
 number-sections: true
 number-offset: 1

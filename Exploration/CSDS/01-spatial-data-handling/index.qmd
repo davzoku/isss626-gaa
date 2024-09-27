@@ -13,6 +13,7 @@ execute:
   warning: false
 format:
   html:
+    code-link: true
     toc: true
 number-sections: true
 number-offset: 1
@@ -156,7 +157,7 @@ The filtered table now only has 2,637 observations.
 The current data frame contains 26 variables. Several of these are not really of interest to us, since we basically want the locations of the events. We will use
 the `select` command from **tidyverse** to pick out the columns that we want to keep. In addition, we will use the rename option in `select` to give new variable names. While this is not absolutely necessary at this stage (**RSocrata** has turned
 any *weird* variable names into proper R names), we may later want to save the
-data as a point shape file. The data associated with a shape file are store in a 
+data as a point shape file. The data associated with a shape file are store in a
 separate dBase file, and dBase only allows 10 characters for variable names.
 
 So, in order to save ourselves some work later on, we will rename the selected
@@ -173,7 +174,7 @@ To keep things simple, we will only keep **community_area**, **latitude** and
 We check the result with the `head` command.
 
 ```{r}
-vehicles.final <- vehicle.sept16 %>% select(comm = community_area, 
+vehicles.final <- vehicle.sept16 %>% select(comm = community_area,
                           lat = latitude, lon = longitude)
 head(vehicles.final)
 ```
@@ -188,7 +189,7 @@ spatial points object. Note that **lon** is the x-coordinate and **lat** is the 
 ### Creating a point layer from coordinates in a table - principle
 In **sf**, a simple features object is constructed by combining a *geometry* with the actual data (in a data frame). However, this is simplified for *point objects* when the data frame contains the coordinates as variables. This is the case in our example, where we have latitude and longitude. We also have x and y, but since we are not sure what projection these coordinates correspond with, they are not useful at this stage.
 
-The advantage of lat-lon is that they are decimal degrees, and thus unprojected. 
+The advantage of lat-lon is that they are decimal degrees, and thus unprojected.
 However, we can provide the information on the datum, typically WGS84 (the standard
 used in most applications for decimal degrees) by passing the coordinate reference
 system argument (`crs`) set to the **EPSG** code 4326. After that, we can
@@ -213,7 +214,7 @@ There are 2 records with missing coordinates, so we will omit them. The data rec
 
 ### Creating a spatial points object
 
-The **sf** package turns a non-spatial object like a data frame into a 
+The **sf** package turns a non-spatial object like a data frame into a
 simple features spatial object by means of the `st_as_sf` function. This function can take a large number of arguments, but for now we will only use a few:
 
 - the name of the data frame, i.e., vehicle.coord
@@ -258,10 +259,10 @@ we carry out a spatial join between our points object and the polygon object to 
 
 We resort to the City of Chicago open data portal for the boundary file of
 the community areas.
-From the opening screen, select the button for 
+From the opening screen, select the button for
 [Facilities & Geo Boundaries](https://data.cityofchicago.org/browse?category=Facilities+%26+Geographic%20Boundaries). This yields a list of different boundary files for a range of geographic areal units. The one for the community areas is
- [Boundaries - Community Areas (current)](https://data.cityofchicago.org/Facilities-Geographic-Boundaries/Boundaries-Community-Areas-current-/cauq-8yn6). This brings up an overview map of the geography of the community areas of Chicago. Of course, we could simply select one of the export buttons to download the files, but we want to do this programmatically. As it turns out, **sf** can read a **geojson** formatted file directly from the web, and we will exploit that functionality. 
- 
+ [Boundaries - Community Areas (current)](https://data.cityofchicago.org/Facilities-Geographic-Boundaries/Boundaries-Community-Areas-current-/cauq-8yn6). This brings up an overview map of the geography of the community areas of Chicago. Of course, we could simply select one of the export buttons to download the files, but we want to do this programmatically. As it turns out, **sf** can read a **geojson** formatted file directly from the web, and we will exploit that functionality.
+
 First, we need the name for the file. We can check the Socrata API file name, but that contains a **json** file, and we want a specific **geojson** file. As it turns out, the latter is simply the same file name, but with the **geojson** file extension. We set our
 variable **comm.file** to this URL and then use `sf_read` to load the boundary information into **chicago.comm**. As before, we can do a quick check of the class using the `class` command.
 
@@ -399,7 +400,7 @@ structure of the plot commands in the **ggplot** package.
 
 We leave a detailed treatment of **tmap** for a future lab and just use the basic
 defaults in this example. The commands are layered and always start by specifying a
-layer using the `tm_shape` command. In our example, this is **chicago.comm**. 
+layer using the `tm_shape` command. In our example, this is **chicago.comm**.
 Next (after the plus sign) follow one of more drawing commands that cover a wide
 range of geographic shapes. Here, we will just use `tm_polygons` and specify
 **AGG.COUNT** as the variable to determine the classification. We leave everything to the default and obtain a map that illustrates the spatial distribution of the
@@ -422,7 +423,7 @@ https://www.cityofchicago.org/content/dam/city/depts/zlup/Zoning_Main_Page/Publi
 ### Extracting a pdf file
 
 A pdf file is difficult to handle as a source of data, since it doesn't contain tags like an html file.
-We will use the **pdftools** package that allows us to turn the contents of a pdf file into a list of long character strings. 
+We will use the **pdftools** package that allows us to turn the contents of a pdf file into a list of long character strings.
 
 The resulting data structure is somewhat complex and not necessarily easy to parse. However, in our case, the table has such a simple structure that we can extract the population values by doing some sleuthing on which columns
 contain those values. This will illustrate the power of the various parsing and text extraction functions available in R.
@@ -461,7 +462,7 @@ length(pop.dat[[1]])
 
 We will parse this file by first turning each element into a separate list and then extracting the parts we are interested in.
 
-First, to illustrate in detail what is going on, we will go through each step one by one, but then, 
+First, to illustrate in detail what is going on, we will go through each step one by one, but then,
 in order to reach some level of efficiency, we turn it
 into a loop over the two elements, `for (i in 1:2)`.
 
@@ -531,7 +532,7 @@ nnlist <- nnlist[2:(length(nnlist)-1)]
 
 ### Extracting the population values
 
-We first initialize a vector of zeros to hold the population values. It is the preferred approach to 
+We first initialize a vector of zeros to hold the population values. It is the preferred approach to
 initialize a vector first if one knows its size, rather than having it grow by appending rows or columns.
 We use the `vector` command and specify the `mode="numeric"` and give the `length` as the
 length of the list.
@@ -599,7 +600,7 @@ We will now create a new variable using the **tidyverse** `mutate` command as th
 of vehicle counts per 1000 population.
 
 ```{r}
-chicago.comm <- chicago.comm %>% mutate(vehpcap = (AGG.COUNT / POP2010) * 1000) 
+chicago.comm <- chicago.comm %>% mutate(vehpcap = (AGG.COUNT / POP2010) * 1000)
 head(chicago.comm)
 ```
 
@@ -614,7 +615,7 @@ tm_shape(chicago.comm) +
   tm_polygons("vehpcap")
 ```
 
-When compared to the total counts, we see quite a different spatial distribution. 
+When compared to the total counts, we see quite a different spatial distribution.
 In particular, the locations of the highest ratios are quite different from those of the highest counts. As a rule, one should *never* create a choropleth map of a spatially extensive variable, unless the size of the areal units is somehow controlled for
 (e.g., equal area grid cells, or equal population zones).
 
@@ -624,9 +625,9 @@ Finally, we can write the community area layer to the working directory. Note th
 
 We can write the community area to a shape file (actually, four files contained
 in a directory) by means of the **sf** command `st_write`. This command has many
-options, but we just use the minimal ones. The **chicago.comm** object will 
-be written to a set of files in the directory **chicago_vehicles** using the 
-**ESRI Shapefile** format. Note that if the directory already exists, it should be 
+options, but we just use the minimal ones. The **chicago.comm** object will
+be written to a set of files in the directory **chicago_vehicles** using the
+**ESRI Shapefile** format. Note that if the directory already exists, it should be
 deleted or renamed first, since `st_write` only creates a new directory. Otherwise,
 there will be an error message.
 
@@ -638,7 +639,7 @@ st_write(chicago.comm,"../data/chicago_vehicles",driver="ESRI Shapefile")
 
 However, this map can be highly misleading since it pertains to a so-called
 *spatially extensive* variable, such as a count. Even if every area had the
-same risk of having abandoned vehicles, larger community areas would have 
+same risk of having abandoned vehicles, larger community areas would have
 higher counts. In other words, since the count is directly related to the
 size of the area, it does not provide a proper indication of the risk.
 

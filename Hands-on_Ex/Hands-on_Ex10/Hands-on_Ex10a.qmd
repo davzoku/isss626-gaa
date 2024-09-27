@@ -13,6 +13,7 @@ execute:
   warning: false
 format:
   html:
+    code-link: true
     toc: true
 number-sections: true
 number-offset: 1

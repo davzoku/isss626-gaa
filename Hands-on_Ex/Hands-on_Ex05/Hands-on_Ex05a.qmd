@@ -13,6 +13,7 @@ execute:
   warning: false
 format:
   html:
+    code-link: true
     toc: true
 number-sections: true
 number-offset: 1
@@ -43,7 +44,7 @@ In this exercise, we will learn to compute Global Measures of Spatial Autocorrel
 In spatial policy planning, one of the main development objective of the local government and planners is to ensure equal distribution of development in the province. In this study, we will apply spatial statistical methods to examine the distribution of development in Hunan Province, China, using a selected indicator (e.g., GDP per capita).
 
 > Our key questions are:
-> 
+>
 > 1. Is development evenly distributed geographically?
 > 2. If not, is there evidence of spatial clustering?
 > 3. If clustering exists, where are these clusters located?
@@ -87,7 +88,7 @@ The data preparation is the same as previous exercise such as [Exercise 4A](/han
 Firstly, we will use [`st_read()`](https://r-spatial.github.io/sf/reference/st_read.html) of **sf** package to import Hunan shapefile into R. The imported shapefile will be **simple features** Object of **sf**.
 
 ```{r}
-hunan <- st_read(dsn = "data/geospatial", 
+hunan <- st_read(dsn = "data/geospatial",
                  layer = "Hunan")
 ```
 
@@ -127,9 +128,9 @@ quantile <- tm_shape(hunan) +
   tm_borders(col = "grey") +
   tm_layout(main.title = "Equal Quantile Classification")
 
-tmap_arrange(equal, 
-             quantile, 
-             asp=1, 
+tmap_arrange(equal,
+             quantile,
+             asp=1,
              ncol=2)
 ```
 
@@ -166,7 +167,7 @@ In the code block below, the `poly2nb()` function from the **spdep** package cal
 By default, `poly2nb()` uses the "Queen" criteria, which considers any shared boundary or corner as a neighbor (equivalent to setting `queen = TRUE`). If we want to restrict the criteria to shared boundaries only (excluding corners), set `queen = FALSE`.
 
 ```{r}
-wm_q <- poly2nb(hunan, 
+wm_q <- poly2nb(hunan,
                 queen=TRUE)
 summary(wm_q)
 ```
@@ -229,9 +230,9 @@ To assess whether there is significant spatial autocorrelation in the GDP per ca
 We will use an **alpha value (α) of 0.05 (95% confidence level)** to determine the statistical significance.
 
 ```{r}
-moran.test(hunan$GDPPC, 
-           listw=rswm_q, 
-           zero.policy = TRUE, 
+moran.test(hunan$GDPPC,
+           listw=rswm_q,
+           zero.policy = TRUE,
            na.action=na.omit)
 ```
 
@@ -252,10 +253,10 @@ In this example, we explore the spatial distribution of Hunan GDPPC by county fo
 ```{r}
 set.seed(1234)
 
-bperm= moran.mc(hunan$GDPPC, 
-                listw=rswm_q, 
-                nsim=999, 
-                zero.policy = TRUE, 
+bperm= moran.mc(hunan$GDPPC,
+                listw=rswm_q,
+                nsim=999,
+                zero.policy = TRUE,
                 na.action=na.omit)
 bperm
 ```
@@ -291,12 +292,12 @@ summary(bperm$res[1:999])
 #### ggplot2
 
 ```{r}
-ggplot(data.frame(x = bperm$res), aes(x = x)) + 
+ggplot(data.frame(x = bperm$res), aes(x = x)) +
   geom_histogram(binwidth = diff(range(bperm$res)) / 20,
                  fill = "grey",
                  color = "black") +
   geom_vline(xintercept = 0,
-             color = "red", 
+             color = "red",
              linetype = "solid") +
   labs(x = "Simulated Moran's I",
        y = "Frequency",
@@ -305,14 +306,14 @@ ggplot(data.frame(x = bperm$res), aes(x = x)) +
 
 #### base R
 ```{r}
-hist(bperm$res, 
+hist(bperm$res,
      freq = TRUE,         # Show the frequency (count) on y-axis
      breaks = 20,         # Set the number of bins
      xlab = "Simulated Moran's I")
 
 # Add vertical red line at 0 to indicate the mean under the null hypothesis of no autocorrelation
-abline(v = 0, 
-       col = "red") 
+abline(v = 0,
+       col = "red")
 ```
 :::
 
@@ -334,7 +335,7 @@ In this section, we will perform Geary's C statistics testing by using appropria
 
 ### Geary's C test
 
-Another popular index of global spatial autocorrelation is Geary’s C which is a cousin to the Moran’s I. 
+Another popular index of global spatial autocorrelation is Geary’s C which is a cousin to the Moran’s I.
 
 ::: callout-note
 
@@ -378,7 +379,7 @@ geary.test(hunan$GDPPC, listw=rswm_q)
 
 - The p-value is 0.0001526, which is much smaller than our alpha value of 0.05. This provides strong evidence against the null hypothesis of no spatial autocorrelation.
 
-Therefore, we will reject the null hypothesis at 95% confidence interval because the p-value is smaller than our chosen alpha value. 
+Therefore, we will reject the null hypothesis at 95% confidence interval because the p-value is smaller than our chosen alpha value.
 :::
 
 ### Computing Monte Carlo Geary's C
@@ -389,8 +390,8 @@ To perform permutation test for Geary's C statistic by using [`geary.mc()`](http
 
 ```{r}
 set.seed(1234)
-bperm=geary.mc(hunan$GDPPC, 
-               listw=rswm_q, 
+bperm=geary.mc(hunan$GDPPC,
+               listw=rswm_q,
                nsim=999)
 bperm
 ```
@@ -428,22 +429,22 @@ summary(bperm$res[1:999])
 
 ```{r}
 
-ggplot(data.frame(x = bperm$res), aes(x = x)) + 
+ggplot(data.frame(x = bperm$res), aes(x = x)) +
   geom_histogram(binwidth = diff(range(bperm$res)) / 20,
-                 color = "black", 
-                 fill = "grey") + 
-  geom_vline(xintercept = 1, 
-             color = "red") + 
-  labs(x = "Simulated Geary's C", 
+                 color = "black",
+                 fill = "grey") +
+  geom_vline(xintercept = 1,
+             color = "red") +
+  labs(x = "Simulated Geary's C",
        y = "Frequency",
-       title = "Histogram of Simulated Geary's C Values")       
+       title = "Histogram of Simulated Geary's C Values")
 
 ```
 
 #### base R
 ```{r}
 hist(bperm$res, freq=TRUE, breaks=20, xlab="Simulated Geary's C")
-abline(v=1, col="red") 
+abline(v=1, col="red")
 ```
 :::
 
@@ -470,10 +471,10 @@ While correlograms are not as fundamental as variograms—a core concept in geos
 In the code below, we use the [`sp.correlogram()`](https://r-spatial.github.io/spdep/reference/sp.correlogram.html) function from the **spdep** package to compute a 6-lag spatial correlogram for GDP per capita (GDPPC). This function calculates global spatial autocorrelation using Moran's I. The base R **plot()** function is then used to visualize the correlogram.
 
 ```{r}
-MI_corr <- sp.correlogram(wm_q, 
-                          hunan$GDPPC, 
-                          order = 6, 
-                          method = "I", 
+MI_corr <- sp.correlogram(wm_q,
+                          hunan$GDPPC,
+                          order = 6,
+                          method = "I",
                           style = "W")
 plot(MI_corr)
 ```
@@ -489,7 +490,7 @@ print(MI_corr)
 ::: callout-note
 **Question: What statistical observation can you draw from the plot above?**
 
-The spatial correlogram shows Moran's I values for different distance lags, which indicate how spatial autocorrelation in GDP per capita (GDPPC) changes as the distance between regions increases. 
+The spatial correlogram shows Moran's I values for different distance lags, which indicate how spatial autocorrelation in GDP per capita (GDPPC) changes as the distance between regions increases.
 
 1. **Significant Positive Spatial Autocorrelation at Shorter Distances:**
    - For lags 1 and 2, Moran's I values are significantly positive (0.30075 and 0.20601, respectively). The p-values for these lags are very small (p < 0.001). This suggests that regions with similar GDPPC values tend to be clustered together at these shorter distances.
@@ -508,10 +509,10 @@ The spatial correlogram shows Moran's I values for different distance lags, whic
 Similarly, we can use `sp.correlogram()` of **spdep** package to compute a 6-lag spatial correlogram of GDPPC. The global spatial autocorrelation used in Geary's C and the **plot()** of base Graph is then used to plot the output.
 
 ```{r}
-GC_corr <- sp.correlogram(wm_q, 
-                          hunan$GDPPC, 
-                          order=6, 
-                          method="C", 
+GC_corr <- sp.correlogram(wm_q,
+                          hunan$GDPPC,
+                          order=6,
+                          method="C",
                           style="W")
 plot(GC_corr)
 ```

@@ -13,6 +13,7 @@ execute:
   warning: false
 format:
   html:
+    code-link: true
     toc: true
 number-sections: true
 number-offset: 1
@@ -93,7 +94,7 @@ The data preparation is the same as previous exercise such as [Exercise 4A](/han
 Firstly, we will use [`st_read()`](https://r-spatial.github.io/sf/reference/st_read.html) of **sf** package to import Hunan shapefile into R. The imported shapefile will be **simple features** Object of **sf**.
 
 ```{r}
-hunan <- st_read(dsn = "data/geospatial", 
+hunan <- st_read(dsn = "data/geospatial",
                  layer = "Hunan")
 ```
 
@@ -133,9 +134,9 @@ quantile <- tm_shape(hunan) +
   tm_borders(alpha = 0.5) +
   tm_layout(main.title = "Equal quantile classification")
 
-tmap_arrange(equal, 
-             quantile, 
-             asp=1, 
+tmap_arrange(equal,
+             quantile,
+             asp=1,
              ncol=2)
 ```
 
@@ -154,7 +155,7 @@ In the code block below, the `poly2nb()` function from the **spdep** package cal
 By default, `poly2nb()` uses the "Queen" criteria, which considers any shared boundary or corner as a neighbor (equivalent to setting `queen = TRUE`). If we want to restrict the criteria to shared boundaries only (excluding corners), set `queen = FALSE`.
 
 ```{r}
-wm_q <- poly2nb(hunan, 
+wm_q <- poly2nb(hunan,
                 queen=TRUE)
 summary(wm_q)
 ```
@@ -217,7 +218,7 @@ Next, we list the content of the local Moran matrix derived by using [*printCoef
 
 ```{r}
 printCoefmat(data.frame(
-  localMI[fips,], 
+  localMI[fips,],
   row.names=hunan$County[fips]),
   check.names=FALSE)
 ```
@@ -238,7 +239,7 @@ We can plot the local Moran's I values using choropleth mapping functions of **t
 
 ```{r}
 tm_shape(hunan.localMI) +
-  tm_fill(col = "Ii", 
+  tm_fill(col = "Ii",
           style = "pretty",
           palette = "RdBu",
           title = "local moran statistics") +
@@ -253,9 +254,9 @@ The code block below produce a choropleth map of Moran's I p-values by using fun
 
 ```{r}
 tm_shape(hunan.localMI) +
-  tm_fill(col = "Pr.Ii", 
+  tm_fill(col = "Pr.Ii",
           breaks=c(-Inf, 0.001, 0.01, 0.05, 0.1, Inf),
-          palette="-Blues", 
+          palette="-Blues",
           title = "local Moran's I p-values") +
   tm_borders(alpha = 0.5)
 ```
@@ -268,15 +269,15 @@ The code block below will be used to create such visualisation.
 
 ```{r fig.width=12, fig.height=8}
 localMI.map <- tm_shape(hunan.localMI) +
-  tm_fill(col = "Ii", 
-          style = "pretty", 
+  tm_fill(col = "Ii",
+          style = "pretty",
           title = "local moran statistics") +
   tm_borders(alpha = 0.5)
 
 pvalue.map <- tm_shape(hunan.localMI) +
-  tm_fill(col = "Pr.Ii", 
+  tm_fill(col = "Pr.Ii",
           breaks=c(-Inf, 0.001, 0.01, 0.05, 0.1, Inf),
-          palette="-Blues", 
+          palette="-Blues",
           title = "local Moran's I p-values") +
   tm_borders(alpha = 0.5)
 
@@ -337,8 +338,8 @@ The code block below plots the Moran scatterplot of GDPPC 2012 by using [*moran.
 
 ```{r fig.width=6, fig.height=6}
 nci <- moran.plot(hunan$GDPPC, rswm_q,
-                  labels=as.character(hunan$County), 
-                  xlab="GDPPC 2012", 
+                  labels=as.character(hunan$County),
+                  xlab="GDPPC 2012",
                   ylab="Spatially Lag GDPPC 2012")
 ```
 
@@ -359,14 +360,14 @@ To plot Moran scatterplot with standardised variable:
 -   Plot the Moran scatterplot
 
 ```{r}
-hunan$Z.GDPPC <- scale(hunan$GDPPC) %>% 
-  as.vector 
+hunan$Z.GDPPC <- scale(hunan$GDPPC) %>%
+  as.vector
 ```
 
 ```{r fig.width=6, fig.height=6}
 nci2 <- moran.plot(hunan$Z.GDPPC, rswm_q,
                    labels=as.character(hunan$County),
-                   xlab="z-GDPPC 2012", 
+                   xlab="z-GDPPC 2012",
                    ylab="Spatially Lag z-GDPPC 2012")
 ```
 
@@ -388,22 +389,22 @@ quadrant <- vector(mode="numeric",
 2.  derive the spatially lagged variable of interest (i.e. GDPPC) and centers the spatially lagged variable around its mean.
 
 ```{r}
-hunan$lag_GDPPC <- lag.listw(rswm_q, 
+hunan$lag_GDPPC <- lag.listw(rswm_q,
                              hunan$GDPPC)
 
-DV <- hunan$lag_GDPPC - mean(hunan$lag_GDPPC)     
+DV <- hunan$lag_GDPPC - mean(hunan$lag_GDPPC)
 ```
 
 3.  center the local Moran's variable around the mean.
 
 ```{r}
-LM_I <- localMI[,1] - mean(localMI[,1])    
+LM_I <- localMI[,1] - mean(localMI[,1])
 ```
 
 4.  set a statistical significance level (alpha value) for the local Moran.
 
 ```{r}
-signif <- 0.05       
+signif <- 0.05
 ```
 
 5.  define quadrants. The four command lines define the low-low (1), low-high (2), high-low (3) and high-high (4) categories.
@@ -411,8 +412,8 @@ signif <- 0.05
 ```{r}
 quadrant[DV <0 & LM_I>0] <- 1
 quadrant[DV >0 & LM_I<0] <- 2
-quadrant[DV <0 & LM_I<0] <- 3  
-quadrant[DV >0 & LM_I>0] <- 4      
+quadrant[DV <0 & LM_I<0] <- 3
+quadrant[DV >0 & LM_I>0] <- 4
 ```
 
 6.  place non-significant Moran in the category 0.
@@ -431,9 +432,9 @@ colors <- c("#ffffff", "#2c7bb6", "#abd9e9", "#fdae61", "#d7191c")
 clusters <- c("insignificant", "low-low", "low-high", "high-low", "high-high")
 
 tm_shape(hunan.localMI) +
-  tm_fill(col = "quadrant", 
-          style = "cat", 
-          palette = colors[c(sort(unique(quadrant)))+1], 
+  tm_fill(col = "quadrant",
+          style = "cat",
+          palette = colors[c(sort(unique(quadrant)))+1],
           labels = clusters[c(sort(unique(quadrant)))+1],
           popup.vars = c("")) +
   tm_view(set.zoom.limits = c(11,17)) +
@@ -454,15 +455,15 @@ colors <- c("#ffffff", "#2c7bb6", "#abd9e9", "#fdae61", "#d7191c")
 clusters <- c("insignificant", "low-low", "low-high", "high-low", "high-high")
 
 LISAmap <- tm_shape(hunan.localMI) +
-  tm_fill(col = "quadrant", 
-          style = "cat", 
-          palette = colors[c(sort(unique(quadrant)))+1], 
+  tm_fill(col = "quadrant",
+          style = "cat",
+          palette = colors[c(sort(unique(quadrant)))+1],
           labels = clusters[c(sort(unique(quadrant)))+1],
           popup.vars = c("")) +
   tm_view(set.zoom.limits = c(11,17)) +
   tm_borders(alpha=0.5)
 
-tmap_arrange(gdppc, LISAmap, 
+tmap_arrange(gdppc, LISAmap,
              asp=1, ncol=2)
 ```
 
@@ -472,7 +473,7 @@ We can also include the local Moran's I map and p-value map as shown below for e
 #| echo: false
 #| fig-width: 12
 #| fig-height: 8
-tmap_arrange(localMI.map, pvalue.map, 
+tmap_arrange(localMI.map, pvalue.map,
              asp=1, ncol=2)
 ```
 
@@ -626,7 +627,7 @@ The code block below shows the functions used to map the Gi values derived using
 gdppc <- qtm(hunan, "GDPPC")
 
 Gimap_fd <-tm_shape(hunan.gi) +
-  tm_fill(col = "gstat_fixed", 
+  tm_fill(col = "gstat_fixed",
           style = "pretty",
           palette="-RdBu",
           title = "local Gi") +
@@ -659,18 +660,18 @@ hunan.gi <- cbind(hunan, as.matrix(gi.adaptive)) %>%
 # adaptive distance
 gdppc<- qtm(hunan, "GDPPC")
 
-Gimap_ad <- tm_shape(hunan.gi) + 
-  tm_fill(col = "gstat_adaptive", 
-          style = "pretty", 
-          palette="-RdBu", 
-          title = "local Gi") + 
-  tm_borders(alpha = 0.5)+ 
+Gimap_ad <- tm_shape(hunan.gi) +
+  tm_fill(col = "gstat_adaptive",
+          style = "pretty",
+          palette="-RdBu",
+          title = "local Gi") +
+  tm_borders(alpha = 0.5)+
   tm_layout(title = "Gi Map using Adaptive Distance Weight Matrix")
 
 
-tmap_arrange(gdppc, 
-             Gimap_ad, 
-             asp=1, 
+tmap_arrange(gdppc,
+             Gimap_ad,
+             asp=1,
              ncol=2)
 
 ```

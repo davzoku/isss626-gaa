@@ -13,6 +13,7 @@ execute:
   warning: false
 format:
   html:
+    code-link: true
     toc: true
 number-sections: true
 number-offset: 1
@@ -808,12 +809,12 @@ clarkevans.test(childcareSG_ppp,
                 nsim=39)
 ```
 
-::: callout-note 
+::: callout-note
 **Result Interpretation**
 
 -   Given that **R**, the Clark-Evans ratio, is **0.56703**, it indicates that the childcare services are clustered rather than randomly distributed. The further R is from 1 (and closer to 0), the stronger the clustering.
 -   The **p-value** is extremely small (much less than the standard significance level of 0.05).
--   At a 95% confidence level, we can **reject the null hypothesis** of random distribution and accept the alternative hypothesis that the services are clustered. 
+-   At a 95% confidence level, we can **reject the null hypothesis** of random distribution and accept the alternative hypothesis that the services are clustered.
 :::
 
 ### Clark and Evans Test: Choa Chu Kang Planning Area

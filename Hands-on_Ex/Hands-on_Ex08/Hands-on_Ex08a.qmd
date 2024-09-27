@@ -13,6 +13,7 @@ execute:
   warning: false
 format:
   html:
+    code-link: true
     toc: true
 number-sections: true
 number-offset: 1
@@ -29,9 +30,9 @@ In this exercise, we will learn how to build predictive models using the geograp
 
 Predictive modeling uses statistical and machine learning techniques to forecast future outcomes. To build these models, we start with a dataset where the outcomes are already known, along with various input variables (predictors) that might influence those outcomes. The model learns from these known examples to make accurate predictions about future events.
 
-Geospatial predictive modelling is conceptually rooted in the principle that the occurrences of events being modeled are limited in distribution. 
+Geospatial predictive modelling is conceptually rooted in the principle that the occurrences of events being modeled are limited in distribution.
 
-> When geographically referenced data are used, occurrences of events are neither uniform nor random in distribution over space. There are geospatial factors (infrastructure, sociocultural, topographic, etc.) that constrain and influence where the locations of events occur. 
+> When geographically referenced data are used, occurrences of events are neither uniform nor random in distribution over space. There are geospatial factors (infrastructure, sociocultural, topographic, etc.) that constrain and influence where the locations of events occur.
 
 Geospatial predictive modeling identifies and analyzes these factors by examining the relationship between past event locations and the environmental conditions that might have influenced those locations. This helps to better understand and predict where similar events are likely to happen in the future.
 

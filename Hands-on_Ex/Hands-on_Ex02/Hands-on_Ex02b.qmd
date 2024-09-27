@@ -13,6 +13,7 @@ execute:
   warning: false
 format:
   html:
+    code-link: true
     toc: true
 number-sections: true
 number-offset: 1
@@ -761,7 +762,7 @@ In other words, It helps you determine if your observed spatial pattern (e.g., l
 
 1.  Test if the observed spatial pattern deviates significantly from a random pattern or other theoretical patterns.
 2.  Assess the statistical significance of spatial features or clustering in your data.
-3.  
+3.
 
 **Choice of `nsim`:** The choice of 39 simulations (nsim = 39) in Monte Carlo techniques for spatial analysis is often a practical compromise between computational efficiency and statistical robustness.
 
