@@ -1,8 +1,8 @@
 ---
 title: "9B: Calibrating Spatial Interaction Models with R"
 subtitle: "In this exercise, we will learn to calibrate Spatial Interaction Models (SIMs) using various regression methods to determine factors affecting public bus passenger flows during the morning peak in Singapore."
-draft: true
-date: ""
+# draft: true
+date: "Sep 29, 2024"
 date-modified: "last-modified"
 author: Teng Kok Wai (Walter)
 execute:
@@ -45,21 +45,21 @@ Calibration is the process of adjusting parameters in the model to try and get t
 
 ## Learning Outcome
 
-- Understand and apply different types of Spatial Interaction Models (SIMs).
-- Calibrate SIMs using Ordinary Least Squares (OLS), log-normal, Poisson, and Negative Binomial (NB) regression methods.
-- Import and prepare geospatial data using R packages such as **sf** and **tidyverse**.
-- Compute a distance matrix for spatial data using the **sp** package.
-- Visualize and compare model performance using **ggplot2** and **performance** packages.
+-   Understand and apply different types of Spatial Interaction Models (SIMs).
+-   Calibrate SIMs using Ordinary Least Squares (OLS), log-normal, Poisson, and Negative Binomial (NB) regression methods.
+-   Import and prepare geospatial data using R packages such as **sf** and **tidyverse**.
+-   Compute a distance matrix for spatial data using the **sp** package.
+-   Visualize and compare model performance using **ggplot2** and **performance** packages.
 
 ## The Data
 
-The following datasets will be used in this exercise:
+This exercise is a continuation of Hands-on Exercise 9A and the following datasets will be used in this exercise:
 
-| **Data Set**      | **Description**                                                                                     | **Format**                    |
-|-------------------|-----------------------------------------------------------------------------------------------------|--------------------------------|
-| od_data.rds       | Weekday morning peak passenger flows at the planning subzone level.                                  | RDS                            |
-| mpsz.rds          | URA Master Plan 2019 Planning Subzone boundary in simple feature tibble data frame format.           | RDS                            |
-| pop.csv           | Additional attribute data file providing population information.                                     | CSV                            |
+| **Data Set** | **Description** | **Format** |
+|---------------|-------------------------------------------|---------------|
+| od_data.rds | Weekday morning peak passenger flows at the planning subzone level. | RDS |
+| mpsz.rds | URA Master Plan 2019 Planning Subzone boundary in simple feature tibble data frame format. | RDS |
+| pop.csv | Additional attribute data file providing population information. | CSV |
 
 These datasets will be utilized to calibrate and visualize the Spatial Interaction Models.
 
@@ -69,16 +69,16 @@ These datasets will be utilized to calibrate and visualize the Spatial Interacti
 
 The following R packages will be used in this exercise:
 
-| **Package**     | **Purpose**                                                                                           | **Use Case in Exercise**                                                                                                  |
-|-----------------|-------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------|
-| **sf**          | Imports, integrates, processes, and transforms vector-based geospatial data.                                                                | Handling vector geospatial data, such as the URA Master Plan 2019 Planning Subzone boundary.                               |
-| **tidyverse**   | A collection of packages for data science tasks such as data manipulation, visualization, and modeling.                                    | Importing CSV files, wrangling data, and performing relational joins.                                                      |
-| **tmap**        | Creates static and interactive thematic maps using cartographic quality elements.                                                           | Visualizing regional development indicators and plotting maps showing spatial relationships and patterns.                  |
-| **performance** | Provides tools to assess and compare the performance of regression models.                                                                  | Comparing model performance metrics, such as R-squared and RMSE, for different spatial interaction models.                |
-| **sp**          | Provides functions for spatial dependence analysis, including spatial weights and spatial autocorrelation.                                   | Computing spatial weights and distance matrices for geospatial data.                                                       |
-| **ggplot2**     | Creates data visualizations using a layered grammar of graphics.                                                                             | Plotting histograms, scatter plots, and visualizing model fits and residuals for calibrated Spatial Interaction Models.    |
-| **reshape2**    | Provides functions to reshape data between wide and long formats.                                                                            | Pivoting distance matrices into long format for model calibration and analysis.                                            |
-| **ggpubr**      | Provides tools for creating and customizing publication-ready plots in **ggplot2**.                                                         | Combining multiple plots into a single visual for comparing different models.                                              |
+| **Package** | **Purpose** | **Use Case in Exercise** |
+|--------------|--------------------------|--------------------------------|
+| **sf** | Imports, integrates, processes, and transforms vector-based geospatial data. | Handling vector geospatial data, such as the URA Master Plan 2019 Planning Subzone boundary. |
+| **tidyverse** | A collection of packages for data science tasks such as data manipulation, visualization, and modeling. | Importing CSV files, wrangling data, and performing relational joins. |
+| **tmap** | Creates static and interactive thematic maps using cartographic quality elements. | Visualizing regional development indicators and plotting maps showing spatial relationships and patterns. |
+| **performance** | Provides tools to assess and compare the performance of regression models. | Comparing model performance metrics, such as R-squared and RMSE, for different spatial interaction models. |
+| **sp** | Provides functions for spatial dependence analysis, including spatial weights and spatial autocorrelation. | Computing spatial weights and distance matrices for geospatial data. |
+| **ggplot2** | Creates data visualizations using a layered grammar of graphics. | Plotting histograms, scatter plots, and visualizing model fits and residuals for calibrated Spatial Interaction Models. |
+| **reshape2** | Provides functions to reshape data between wide and long formats. | Pivoting distance matrices into long format for model calibration and analysis. |
+| **ggpubr** | Provides tools for creating and customizing publication-ready plots in **ggplot2**. | Combining multiple plots into a single visual for comparing different models. |
 
 To install and load these packages, use the following code:
 
@@ -86,4 +86,565 @@ To install and load these packages, use the following code:
 pacman::p_load(tmap, sf, sp, performance, reshape2, ggpubr, tidyverse)
 ```
 
-These sections follow the standard markdown format, ensuring that the content is clear, concise, and well-structured for the exercise.
+
+### Computing Distance Matrix
+
+In spatial interaction, a distance matrix displays the distance between pairs of locations. For example, the Euclidean distance between two locations like MESZ01 and RVSZ05 is 3926.0025, and between MESZ01 and SRSZ01 is 3939.1079. An entry of 0 on the diagonal indicates that the location is compared with itself.
+
+First, import *mpsz.rds* into R:
+
+```{r}
+mpsz <- read_rds("data/rds/mpsz.rds")
+mpsz
+```
+
+Note that it is a sf tibble dataframe object class.
+
+### Converting from sf data.table to SpatialPolygonsDataFrame
+
+There are at least two ways to compute the required distance matrix. One is based on sf and the other is based on sp. Past experience shown that computing distance matrix by using sf function took relatively longer time that sp method especially the data set is large. In view of this, sp method is used in the code chunks below.
+
+First [`as.Spatial()`](https://r-spatial.github.io/sf/reference/coerce-methods.html) will be used to convert *mpsz* from sf tibble data frame to SpatialPolygonsDataFrame of sp object as shown in the code chunk below.
+
+```{r}
+mpsz_sp <- as(mpsz, "Spatial")
+mpsz_sp
+```
+
+### Computing the Distance Matrix
+
+Now, we compute the Euclidean distance between centroids of planning subzones using `spDists()` from the **sp** package.
+
+::: callout-note
+### Q&A
+
+**Do you know why the distance is calculated between two centroids of a pair of spatial polygons?**
+
+Centroids simplify distance calculations by representing each polygon with a single point, avoiding the complexity of measuring distances between all boundary points of irregular shapes
+
+:::
+
+```{r}
+dist <- spDists(mpsz_sp, longlat = FALSE)
+
+head(dist, n = c(10, 10))
+```
+
+The output *dist* is a matrix without labeled rows and columns for the planning subzone codes.
+
+### Labeling the Distance Matrix
+
+We will label the rows and columns of the distance matrix using the planning subzone codes.
+
+```{r}
+sz_names <- mpsz$SUBZONE_C
+colnames(dist) <- sz_names
+rownames(dist) <- sz_names
+```
+
+### Pivoting the Distance Matrix
+
+Next, we pivot the distance matrix into a long format, where rows represent the origin and destination pairs.
+
+```{r}
+distPair <- melt(dist) %>%
+  rename(dist = value)
+head(distPair, 10)
+```
+
+::: callout-note
+
+**Observations:**
+
+The within zone distance is 0.
+
+:::
+
+### Updating Intra-Zonal Distances
+
+In this section, we are going to append a constant value to replace the intra-zonal distance of 0.
+
+We will select and find out the minimum value of the distance by using `summary()`.
+
+```{r}
+distPair %>%
+  filter(dist > 0) %>%
+  summary()
+```
+Then, we replace intra-zonal distances (which are 0) with a constant value of 50m.
+
+```{r}
+distPair$dist <- ifelse(distPair$dist == 0, 50, distPair$dist)
+distPair %>%
+  summary()
+```
+### Renaming Fields and Saving
+
+Next, qe rename the origin and destination fields for clarity.
+
+```{r}
+distPair <- distPair %>%
+  rename(orig = Var1, dest = Var2)
+```
+
+Finally, save the updated distance pair dataframe for future use.
+
+```{r}
+#| eval: false
+
+write_rds(distPair, "data/rds/distPair.rds")
+distPair <- read_rds("data/rds/distPair.rds")
+```
+
+## Preparing Flow Data
+
+First, we import the *od_data* from Hands-on Exercise 9A.
+
+```{r}
+#| eval: false
+od_data_fii <- read_rds("data/rds/od_data_fii.rds")
+```
+
+### Computing Total Passenger Trips
+
+Next, compute the total passenger trips between and within planning subzones.
+
+```{r}
+#| eval: false
+flow_data <- od_data_fii %>%
+  group_by(ORIGIN_SZ, DESTIN_SZ) %>%
+  summarize(TRIPS = sum(MORNING_PEAK))
+```
+
+Display the first 10 rows of `flow_data`:
+
+```{r}
+#| eval: false
+head(flow_data, 10)
+```
+
+### Separating Intra-Zonal Flows
+
+The code below adds two fields to `flow_data`, separating intra-zonal trips.
+
+```{r}
+#| eval: false
+flow_data$FlowNoIntra <- ifelse(flow_data$ORIGIN_SZ == flow_data$DESTIN_SZ, 0, flow_data$TRIPS)
+flow_data$offset <- ifelse(flow_data$ORIGIN_SZ == flow_data$DESTIN_SZ, 0.000001, 1)
+```
+
+### Combining Passenger Volume and Distance Data
+
+Before we can join `flow_data` and `distPair`, we need to convert data value type of `ORIGIN_SZ` and `DESTIN_SZ` fields of flow_data dataframe into factor data type.
+
+```{r}
+#| eval: false
+flow_data$ORIGIN_SZ <- as.factor(flow_data$ORIGIN_SZ)
+flow_data$DESTIN_SZ <- as.factor(flow_data$DESTIN_SZ)
+```
+
+Then, we can perform left join on `flow_data` with `distPair` to combine passenger volumes with distances.
+
+```{r}
+#| eval: false
+flow_data1 <- flow_data %>%
+  left_join(distPair, by = c("ORIGIN_SZ" = "orig", "DESTIN_SZ" = "dest"))
+```
+
+## Preparing Origin and Destination Attributes
+
+In this section, we will prepare the origin and destination attribute data.
+
+### Importing Population Data
+
+```{r}
+#| eval: false
+pop <- read_csv("data/aspatial/pop.csv")
+```
+
+### Geospatial Data Wrangling 
+
+Join the population data with `mpsz`.
+
+```{r}
+#| eval: false
+pop <- pop %>%
+  left_join(mpsz, by = c("PA" = "PLN_AREA_N", "SZ" = "SUBZONE_N")) %>%
+  select(1:6) %>%
+  rename(SZ_NAME = SZ, SZ = SUBZONE_C)
+```
+
+### Adding Origin Attributes
+
+Join population data with `flow_data1` for origin attributes.
+
+```{r}
+#| eval: false
+flow_data1 <- flow_data1 %>%
+  left_join(pop, by = c(ORIGIN_SZ = "SZ")) %>%
+  rename(ORIGIN_AGE7_12 = AGE7_12, ORIGIN_AGE13_24 = AGE13_24, ORIGIN_AGE25_64 = AGE25_64) %>%
+  select(-c(PA, SZ_NAME))
+```
+
+### Adding Destination Attributes
+
+Join population data with `flow_data1` for destination attributes.
+
+```{r}
+#| eval: false
+flow_data1 <- flow_data1 %>%
+  left_join(pop, by = c(DESTIN_SZ = "SZ")) %>%
+  rename(DESTIN_AGE7_12 = AGE7_12, DESTIN_AGE13_24 = AGE13_24, DESTIN_AGE25_64 = AGE25_64) %>%
+  select(-c(PA, SZ_NAME))
+```
+
+### Saving Processed Data
+
+The final output will be saved as *SIM_data* in RDS format.
+
+```{r}
+#| eval: false
+write_rds(flow_data1, "data/rds/flow_data_6-9.rds")
+```
+
+## Calibrating Spatial Interaction Models
+
+In this section, you will learn how to calibrate Spatial Interaction Models by using Poisson Regression method.
+
+### Importing the Modelling Data
+
+Firstly, we will import the saved modelling data.
+
+```{r}
+SIM_data <- read_rds("data/rds/flow_data_6-9.rds")
+```
+
+### Visualizing the Dependent Variable
+
+To visualize the dependent variable, we will plot the distribution of `TRIPS` using a histogram.
+
+```{r hist_trips}
+ggplot(data = SIM_data, aes(x = TRIPS)) +
+  geom_histogram()
+```
+
+::: callout-note
+
+**Observations:**
+
+Notice that the distribution is highly skewed and not resemble bell shape or also known as normal distribution.
+
+:::
+
+We can also visualize the relationship between `TRIPS` and `distance` using a scatter plot.
+
+```{r scatter_trips_dist}
+ggplot(data = SIM_data, aes(x = dist, y = TRIPS)) +
+  geom_point() +
+  geom_smooth(method = lm)
+```
+
+::: callout-note
+
+**Observations:**
+
+the relationship between `TRIPS` and `distance` hardly resemble a linear relationship.
+
+:::
+
+We can perform log-transformation on both variables to make he relationship appears more linear.
+
+```{r scatter_log_trips_dist}
+ggplot(data = SIM_data, aes(x = log(dist), y = log(TRIPS))) +
+  geom_point() +
+  geom_smooth(method = lm)
+```
+
+### Handling Zero Values in Variables
+
+Since Poisson Regression is based of log and log 0 is undefined, it is important for us to ensure that no 0 values in the explanatory variables.
+
+We will compute the summary statistics of all variables in SIM_data data frame.
+
+```{r}
+summary(SIM_data)
+```
+The print report above reveals that variables ORIGIN_AGE7_12, ORIGIN_AGE13_24, ORIGIN_AGE25_64,DESTIN_AGE7_12, DESTIN_AGE13_24, DESTIN_AGE25_64 consist of 0 values.
+
+```{r}
+SIM_data$DESTIN_AGE7_12 <- ifelse(SIM_data$DESTIN_AGE7_12 == 0, 0.99, SIM_data$DESTIN_AGE7_12)
+SIM_data$DESTIN_AGE13_24 <- ifelse(SIM_data$DESTIN_AGE13_24 == 0, 0.99, SIM_data$DESTIN_AGE13_24)
+SIM_data$DESTIN_AGE25_64 <- ifelse(SIM_data$DESTIN_AGE25_64 == 0, 0.99, SIM_data$DESTIN_AGE25_64)
+SIM_data$ORIGIN_AGE7_12 <- ifelse(SIM_data$ORIGIN_AGE7_12 == 0, 0.99, SIM_data$ORIGIN_AGE7_12)
+SIM_data$ORIGIN_AGE13_24 <- ifelse(SIM_data$ORIGIN_AGE13_24 == 0, 0.99, SIM_data$ORIGIN_AGE13_24)
+SIM_data$ORIGIN_AGE25_64 <- ifelse(SIM_data$ORIGIN_AGE25_64 == 0, 0.99, SIM_data$ORIGIN_AGE25_64)
+
+summary(SIM_data)
+```
+All the 0 values have been replaced by 0.99.
+
+### Unconstrained Spatial Interaction Model
+
+In this section, we will calibrate an unconstrained spatial interaction model by using `glm()` of Base Stats. 
+
+::: callout-note
+
+The general formula of Unconstrained Spatial Interaction Model
+
+$\lambda_{ij} = \exp \left( k + \mu \ln V_i + \alpha \ln W_j - \beta \ln d_{ij} \right)$
+
+:::
+
+The explanatory variables are origin population by different age cohort, destination population by different age cohort (i.e. `ORIGIN_AGE25_64`) and distance between origin and destination in km (i.e. `dist`). To fit an unconstrained Spatial Interaction Model using Poisson regression:
+
+```{r}
+uncSIM <- glm(formula = TRIPS ~ log(ORIGIN_AGE25_64) + log(DESTIN_AGE25_64) + log(dist),
+              family = poisson(link = "log"),
+              data = SIM_data,
+              na.action = na.exclude)
+uncSIM
+```
+### Calculating R-squared for Unconstrained SIM
+
+In order to measure how much variation of the trips can be accounted by the model, we will define a function to calculate R-squared and apply it to the model.
+
+```{r}
+CalcRSquared <- function(observed, estimated){
+  r <- cor(observed, estimated)
+  r^2
+}
+```
+
+Then, we will calculate the R-squared of the unconstrained model.
+
+```{r}
+CalcRSquared(uncSIM$data$TRIPS, uncSIM$fitted.values)
+```
+
+Alternatively, we can calculate McFadden's R-squared.
+
+```{r}
+r2_mcfadden(uncSIM)
+```
+
+::: callout-note
+
+**McFadden's R-squared**
+
+- **Interpretation**: McFadden's R-squared is used for logistic regression models and measures the improvement of the fitted model over the null model. It is not directly comparable to the traditional R-squared.
+- **Range**: McFadden's R-squared values typically range from 0 to just under 1.
+  - **0**: The model is no better than the null model.
+  - **1**: The model perfectly predicts the outcome.
+- **Good Range**:
+  - **0.2 to 0.4**: Considered good for logistic regression models.
+  - **Above 0.4**: Indicates a very strong model.
+
+:::
+
+### Origin (Production) Constrained SIM
+
+In this section, we will fit an origin constrained SIM, where the trips are constrained by the origin.
+
+::: callout-note
+
+The general formula of Origin Constrained Spatial Interaction Model
+
+$\lambda_{ij} = \exp\left( k + \mu_i + \alpha \ln W_j - \beta \ln d_{ij} \right)$
+
+Notice that the difference between Unconstrained Spatial Interaction Model and this formula lies in the second term. In the Unconstrained Spatial Interaction Model formula, it is $\mu \ln V_i$ as compared to $\mu_i$ in Origin Constrained Spatial Interaction Model.
+:::
+
+```{r}
+orcSIM <- glm(formula = TRIPS ~ ORIGIN_SZ + log(DESTIN_AGE25_64) + log(dist),
+              family = poisson(link = "log"),
+              data = SIM_data,
+              na.action = na.exclude)
+summary(orcSIM)
+```
+Similarly, we can calculate R-squared for the origin-constrained model:
+
+```{r}
+CalcRSquared(orcSIM$data$TRIPS, orcSIM$fitted.values)
+```
+
+### Destination Constrained
+
+In this section, We will fit a destination-constrained Spatial Interaction Model (SIM).
+
+::: callout-note
+
+The general formula of Destination Constrained Spatial Interaction Model
+
+$\lambda_{ij} = \exp \left( k + \mu \ln V_i + \alpha_i - \beta \ln d_{ij} \right)$
+
+
+Notice that the difference between Unconstrained Spatial Interaction Model and this formula lies in the third term. In the Unconstrained Spatial Interaction Model formula, it is $\alpha \ln W_j$ as compared to $\alpha_i$ in Destination Constrained Spatial Interaction Model.
+
+:::
+
+```{r}
+decSIM <- glm(formula = TRIPS ~
+                DESTIN_SZ +
+                log(ORIGIN_AGE25_64) +
+                log(dist),
+              family = poisson(link = "log"),
+              data = SIM_data,
+              na.action = na.exclude)
+summary(decSIM)
+```
+
+Next, we can examine how the constraints hold for destinations this time.
+
+```{r}
+CalcRSquared(decSIM$data$TRIPS, decSIM$fitted.values)
+```
+
+### Doubly Constrained
+
+In this section, We will fit a doubly constrained SIM.
+
+::: callout-note
+
+The general formula of Doubly Constrained Spatial Interaction Model
+
+$\lambda_{ij} = \exp \left( k + \mu_i + \alpha_i - \beta \ln d_{ij} \right)$
+
+
+Notice that the difference between Unconstrained Spatial Interaction Model and this formula lies in the second and third term. Comparing Unconstrained Spatial Interaction Model formula and Doubly Constrained Spatial Interaction Model, it is $\mu \ln V_i$ compared to $\mu_i$ and $\alpha \ln W_j$ compared to $\alpha_i$ respectively.
+
+:::
+
+```{r}
+dbcSIM <- glm(formula = TRIPS ~
+                ORIGIN_SZ +
+                DESTIN_SZ +
+                log(dist),
+              family = poisson(link = "log"),
+              data = SIM_data,
+              na.action = na.exclude)
+summary(dbcSIM)
+```
+
+We can examine how the constraints hold this time.
+
+```{r}
+CalcRSquared(dbcSIM$data$TRIPS, dbcSIM$fitted.values)
+```
+
+::: callout-note
+
+**Observations:**
+
+There is a relatively greater improvement in the $R^2$ value using the doubly constrained model.
+
+:::
+
+### Model Comparison
+
+Another useful model performance measure for continuous dependent variable is **Root Mean Squared Error**. We can use `compare_performance()` of performance package for this purpose.
+
+First, we will create a list of models:
+
+```{r}
+model_list <- list(unconstrained=uncSIM,
+                   originConstrained=orcSIM,
+                   destinationConstrained=decSIM,
+                   doublyConstrained=dbcSIM)
+```
+
+
+Then, compare their RMSE values:
+
+```{r}
+compare_performance(model_list,
+                    metrics = "RMSE")
+```
+
+::: callout-note
+
+**Observations:**
+
+The doubly constrained SIM has the lowest RMSE, making it the best model.
+
+:::
+
+### Visualizing Fitted Values
+
+We can extract and visualize the fitted values for each model. To do so, start by extracting the fitted values for each model and adding their fitted values to `SIM_data`:
+
+```{r}
+df <- as.data.frame(uncSIM$fitted.values) %>%
+  round(digits = 0)
+SIM_data <- SIM_data %>%
+  cbind(df) %>%
+  rename(uncTRIPS = "uncSIM$fitted.values")
+
+df <- as.data.frame(orcSIM$fitted.values) %>%
+  round(digits = 0)
+
+SIM_data <- SIM_data %>%
+  cbind(df) %>%
+  rename(orcTRIPS = "orcSIM$fitted.values")
+
+df <- as.data.frame(decSIM$fitted.values) %>%
+  round(digits = 0)
+
+SIM_data <- SIM_data %>%
+  cbind(df) %>%
+  rename(decTRIPS = "decSIM$fitted.values")
+
+df <- as.data.frame(dbcSIM$fitted.values) %>%
+  round(digits = 0)
+
+SIM_data <- SIM_data %>%
+  cbind(df) %>%
+  rename(dbcTRIPS = "dbcSIM$fitted.values")
+```
+
+Create scatter plots for each model and present in single plot:
+
+```{r compare_models}
+#| fig-width: 12
+#| fig-height: 7
+
+unc_p <- ggplot(data = SIM_data,
+                aes(x = uncTRIPS,
+                    y = TRIPS)) +
+  geom_point() +
+  geom_smooth(method = lm)
+
+orc_p <- ggplot(data = SIM_data,
+                aes(x = orcTRIPS,
+                    y = TRIPS)) +
+  geom_point() +
+  geom_smooth(method = lm)
+
+dec_p <- ggplot(data = SIM_data,
+                aes(x = decTRIPS,
+                    y = TRIPS)) +
+  geom_point() +
+  geom_smooth(method = lm)
+
+dbc_p <- ggplot(data = SIM_data,
+                aes(x = dbcTRIPS,
+                    y = TRIPS)) +
+  geom_point() +
+  geom_smooth(method = lm)
+
+ggarrange(unc_p, orc_p, dec_p, dbc_p,
+          ncol = 2,
+          nrow = 2)
+```
+
+::: callout-note
+
+**Observations:**
+
+- The doubly constrained model provides the best fit to the data, as seen by the closer clustering around the diagonal line.
+
+- Both the origin and destination-constrained models improve over the unconstrained model but still show some deviations.
+
+- The unconstrained model performs the worst, with a weak relationship between predicted and actual values.
+
+:::
+

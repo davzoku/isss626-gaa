@@ -1,8 +1,8 @@
 ---
 title: "9A: Processing and Visualising Flow Data"
 subtitle: "In this exercise, we will explore the concept of spatial interaction, and learn how to build an OD (origin/destination) matrix."
-draft: true
-date: ""
+# draft: true
+date: "Sep 29, 2024"
 date-modified: "last-modified"
 author: Teng Kok Wai (Walter)
 execute:
@@ -32,40 +32,278 @@ Spatial interaction represent the flow of people, material, or information betwe
 
 > An OD matrix, or spatial interaction matrix, represents each spatial interaction as a discrete origin/destination pair, where each pair corresponds to a cell in the matrix; the rows denote the locations (centroids) of origin, and the columns represent the locations (centroids) of destination.
 
-
 ## Learning Outcome
 
-- Import and extract OD data for a selected time interval.
-- Import and save geospatial data (bus stops and planning subzones) into sf tibble data frame objects.
-- Populate planning subzone codes into bus stops sf tibble data frames.
-- Construct desire lines geospatial data from the OD data.
-- Visualize passenger volume by origin and destination bus stops using the desire lines data.
+-   Import and extract OD data for a selected time interval.
+-   Import and save geospatial data (bus stops and planning subzones) into sf tibble data frame objects.
+-   Populate planning subzone codes into bus stops sf tibble data frames.
+-   Construct desire lines geospatial data from the OD data.
+-   Visualize passenger volume by origin and destination bus stops using the desire lines data.
 
 ## The Data
 
 The following datasets will be used in this exercise:
 
-| **Data Set**                              | **Description**                                                                                 | **Format**       |
-|--------------------------------------------|-------------------------------------------------------------------------------------------------|------------------|
-| Passenger Volume by Origin Destination Bus Stops | OD data set representing the volume of passengers traveling between bus stops.                       | CSV              |
-| BusStop                                    | Geospatial data providing the locations of bus stops as of the last quarter of 2022.               | ESRI Shapefile   |
-| MPSZ-2019                                   | Geospatial data providing the sub-zone boundary of the URA Master Plan 2019.                       | ESRI Shapefile   |
-
+| **Data Set** | **Description** | **Format** |
+|-----------------|--------------------------------------|-----------------|
+| Passenger Volume by Origin Destination Bus Stops | OD data set representing the volume of passengers traveling between bus stops. | CSV |
+| BusStop | Geospatial data providing the locations of bus stops as of the last quarter of 2022. | ESRI Shapefile |
+| MPSZ-2019 | Geospatial data providing the sub-zone boundary of the URA Master Plan 2019. | ESRI Shapefile |
 
 ## Installing and Launching the R Packages
 
 The following R packages will be used in this exercise:
 
-| **Package**   | **Purpose**                                                                                                | **Use Case in Exercise**                                                                                  |
-|---------------|------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------|
-| **sf**        | Handles vector-based geospatial data.                                                                       | Importing, processing, and transforming geospatial data, such as bus stop locations and sub-zone boundaries. |
-| **tidyverse** | A collection of packages for data science tasks such as data manipulation, visualization, and modeling.     | Importing and wrangling OD and geospatial data, and visualizing analysis outputs.                           |
-| **tmap**      | Creates static and interactive thematic maps using cartographic quality elements.                           | Visualizing passenger flows and geographic clusters in a cartographic format.                               |
-| **stplanr**   | Provides functions for transport planning and modeling.                                                     | Creating geographic desire lines from OD data and solving transport-related problems.                      |
-| **DT**        | Provides an R interface to the JavaScript library DataTables for interactive table display.                 | Displaying data tables in an interactive format within the HTML output.                                     |
+| **Package** | **Purpose** | **Use Case in Exercise** |
+|-----------------|----------------------------|----------------------------|
+| **sf** | Handles vector-based geospatial data. | Importing, processing, and transforming geospatial data, such as bus stop locations and sub-zone boundaries. |
+| **tidyverse** | A collection of packages for data science tasks such as data manipulation, visualization, and modeling. | Importing and wrangling OD and geospatial data, and visualizing analysis outputs. |
+| **tmap** | Creates static and interactive thematic maps using cartographic quality elements. | Visualizing passenger flows and geographic clusters in a cartographic format. |
+| **stplanr** | Provides functions for transport planning and modeling. | Creating geographic desire lines from OD data and solving transport-related problems. |
+| **DT** | Provides an R interface to the JavaScript library DataTables for interactive table display. | Displaying data tables in an interactive format within the HTML output. |
 
 To install and load these packages, use the following code:
 
 ```{r pacman}
-pacman::p_load(tmap, sf, DT, stplanr, tidyverse)
+pacman::p_load(tmap, sf, DT, stplanr, tidyverse, knitr)
 ```
+
+## Preparing the Flow Data
+
+### Importing the OD data
+
+First, we import the *Passenger Volume by Origin Destination Bus Stops* dataset using `read_csv()` from the **readr** package.
+
+```{r}
+odbus <- read_csv("data/aspatial/origin_destination_bus_202408.csv")
+glimpse(odbus)
+```
+
+*odbus* tibble data frame shows that the values in `ORIGIN_PT_CODE` and `DESTINATON_PT_CODE` are in character data type, we will convert themm into factor data type.
+
+```{r}
+odbus$ORIGIN_PT_CODE <- as.factor(odbus$ORIGIN_PT_CODE)
+odbus$DESTINATION_PT_CODE <- as.factor(odbus$DESTINATION_PT_CODE)
+glimpse(odbus)
+```
+
+### Extracting the Study Data
+
+For the purpose of this exercise, we extract commuting flows on weekdays between 6 and 9 a.m. and sum the trips.
+
+```{r}
+odbus6_9 <- odbus %>%
+  filter(DAY_TYPE == "WEEKDAY") %>%
+  filter(TIME_PER_HOUR >= 6 & TIME_PER_HOUR <= 9) %>%
+  group_by(ORIGIN_PT_CODE, DESTINATION_PT_CODE) %>%
+  summarise(TRIPS = sum(TOTAL_TRIPS))
+```
+
+The table below shows the head content of `odbus6_9`:
+
+```{r}
+datatable(head(odbus6_9, 10))
+```
+
+### Saving and loading the data
+
+We save the filtered data for future use in RDS format.
+
+```{r}
+#| eval: false
+
+write_rds(odbus6_9, "data/rds/odbus6_9.rds")
+odbus6_9 <- read_rds("data/rds/odbus6_9.rds")
+```
+
+## Working with Geospatial Data
+
+For this exercise, two geospatial datasets will be used:
+
+-   **BusStop**: Contains the locations of bus stops as of Q4 2022.
+-   **MPSZ-2019**: Provides the sub-zone boundaries from the URA Master Plan 2019.
+
+Both datasets are in ESRI shapefile format.
+
+### Importing Geospatial Data
+
+The code below imports the geospatial data:
+
+```{r}
+busstop <- st_read(dsn = "data/geospatial", layer = "BusStop") %>%
+  st_transform(crs = 3414)
+```
+
+```{r}
+mpsz <- st_read(dsn = "data/geospatial", layer = "MPSZ-2019") %>%
+  st_transform(crs = 3414)
+```
+```{r}
+mpsz <- write_rds(mpsz, "data/rds/mpsz.rds")
+```
+
+## Geospatial Data Wrangling
+
+### Combining BusStop and MPSZ
+
+The code below joins the planning subzone codes from `mpsz` to the bus stops in `busstop`:
+
+```{r}
+busstop_mpsz <- st_intersection(busstop, mpsz) %>%
+  select(BUS_STOP_N, SUBZONE_C) %>%
+  st_drop_geometry()
+```
+
+```{r}
+datatable(head(busstop_mpsz, 10))
+```
+
+```{r}
+nrow(busstop)
+nrow(busstop_mpsz)
+```
+
+::: callout-note
+-   `st_intersection()` performs a point-and-polygon overlay.
+-   `select()` keeps only `BUS_STOP_N` and `SUBZONE_C` fields.
+-   Five bus stops outside Singapore are excluded.
+:::
+
+Save the result as an RDS file:
+
+```{r}
+#| eval: false
+
+write_rds(busstop_mpsz, "data/rds/busstop_mpsz.rds")
+```
+
+Next, append the subzone codes to the `odbus6_9` dataset:
+
+```{r}
+od_data <- left_join(odbus6_9, busstop_mpsz, by = c("ORIGIN_PT_CODE" = "BUS_STOP_N")) %>%
+  rename(ORIGIN_BS = ORIGIN_PT_CODE, ORIGIN_SZ = SUBZONE_C, DESTIN_BS = DESTINATION_PT_CODE)
+```
+
+Check for duplicate records:
+
+```{r}
+duplicate <- od_data %>%
+  group_by_all() %>%
+  filter(n() > 1) %>%
+  ungroup()
+
+duplicate
+```
+
+Since duplicates exist, we will remove them:
+
+```{r}
+nrow(od_data)
+od_data <- unique(od_data)
+nrow(od_data)
+```
+
+Now, append the destination subzone codes:
+
+```{r}
+od_data <- left_join(od_data, busstop_mpsz, by = c("DESTIN_BS" = "BUS_STOP_N")) %>%
+  rename(DESTIN_SZ = SUBZONE_C) %>%
+  drop_na() %>%
+  group_by(ORIGIN_SZ, DESTIN_SZ) %>%
+  summarise(MORNING_PEAK = sum(TRIPS))
+
+od_data_fii <- od_data
+```
+
+Finally, save the cleaned data:
+
+```{r}
+#| eval: false
+
+write_rds(od_data_fii, "data/rds/od_data_fii.rds")
+od_data_fii <- read_rds("data/rds/od_data_fii.rds")
+```
+
+## Visualising Spatial Interaction
+
+In this section, we will prepare a desire line by using **stplanr** package.
+
+### Removing Intra-Zonal Flows
+
+We will exclude flows within the same zone to focus on inter-zonal flows. The code below removes these intra-zonal flows:
+
+```{r}
+#| eval: false
+od_data_fij <- od_data[od_data$ORIGIN_SZ != od_data$DESTIN_SZ,]
+```
+
+::: callout-tip
+
+The comma in the code `od_data1 <- od_data[od_data$ORIGIN_SZ != od_data$DESTIN_SZ,]` is crucial because it specifies that you are subsetting the rows of the data frame based on a condition, while keeping all the columns.
+
+:::
+
+Save the result for future use:
+
+```{r}
+#| eval: false
+
+write_rds(od_data_fij, "data/rds/od_data_fij.rds")
+```
+
+```{r}
+od_data_fij <- read_rds("data/rds/od_data_fij.rds")
+```
+
+
+### Creating Desire Lines
+
+::: callout-note
+Desire lines are used to illustrate on a map the flows of people or goods from point to point based on the values from a matrix.
+:::
+
+Next, we use `od2line()` from the **stplanr** package to generate desire lines:
+
+```{r}
+flowLine <- od2line(flow = od_data_fij, 
+                    zones = mpsz,
+                    zone_code = "SUBZONE_C")
+
+flowLine
+```
+
+Save the generated desire lines:
+
+```{r}
+#| eval: false
+
+write_rds(flowLine, "data/rds/flowLine.rds")
+
+flowLine <- read_rds("data/rds/flowLine.rds")
+```
+
+### Filtering High-Volume Flows
+
+To simplify the visual output and focus on significant flows, we filter for high-volumes flows.
+
+```{r}
+summary(flowLine$MORNING_PEAK)
+```
+
+For example, we can visualize flow greater than or equal to 2000 as shown below.
+  
+```{r viz_high_flow}
+tm_shape(mpsz) +
+  tm_polygons() +
+flowLine %>%  
+  # filter for 2000
+  filter(MORNING_PEAK >= 2000) %>%  
+tm_shape() +
+  tm_lines(lwd = "MORNING_PEAK",
+           style = "quantile",
+           scale = c(0.1, 1, 3, 5, 7, 10),
+           n = 6)
+#           alpha = 0.3)
+```
+
+
