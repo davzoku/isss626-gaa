@@ -123,14 +123,14 @@ To plot a choropleth map showing the distribution of GDPPC of Hunan province:
 #| fig-height: 7
 tmap_mode("plot")
 tm_shape(hunan) +
-  tm_fill("GDPPC", 
-          style = "quantile", 
+  tm_fill("GDPPC",
+          style = "quantile",
           palette = "Blues",
           title = "GDPPC") +
   tm_layout(main.title = "Distribution of GDP per capita by county, Hunan Province",
             main.title.position = "center",
             main.title.size = 1.2,
-            legend.height = 0.45, 
+            legend.height = 0.45,
             legend.width = 0.35,
             frame = TRUE) +
   tm_borders(alpha = 0.5) +
@@ -230,7 +230,7 @@ Now we will perform Monte Carlo simulation using `global_moran_perm()`.
 global_moran_perm(wm_q$GDPPC,
                   wm_q$nb,
                   wm_q$wt,
-                  nsim = 99) 
+                  nsim = 99)
 ```
 
 ::: callout-note
@@ -250,7 +250,7 @@ LISA map is a categorical map showing **outliers** and **clusters**. There are t
 In this section, we will compute Local Moran's I of GDPPC at county level by using [`local_moran()`](https://sfdep.josiahparry.com/reference/local_moran.html) of sfdep package.
 
 ```{r}
-lisa <- wm_q %>% 
+lisa <- wm_q %>%
   mutate(local_moran = local_moran(
     GDPPC, nb, wt, nsim = 99),
          .before = 1) %>%
@@ -281,7 +281,7 @@ The output of `local_moran()` is a sf data.frame containing the columns ii, eii,
 
 When interpreting / visualizing local Moran's I, we should plot the Moran's I and p-value side by side.
 
-```{r, local_moran_i_p_value fig.height=8, fig.width=12}
+```{r, local_moran_i_p_value, fig.height=8, fig.width=12}
 tmap_mode("plot")
 map1 <- tm_shape(lisa) +
   tm_fill("ii") +
@@ -316,7 +316,7 @@ tm_shape(lisa) +
   tm_polygons() +
   tm_borders(alpha = 0.5) +
 tm_shape(lisa_sig) +
-  tm_fill("mean") + 
+  tm_fill("mean") +
   tm_borders(alpha = 0.4)
 ```
 
@@ -332,8 +332,8 @@ As usual, we will need to derive a spatial weight matrix before we can compute l
 wm_idw <- hunan %>%
   mutate(nb = include_self(
     st_contiguity(geometry)),
-    wts = st_inverse_distance(nb, 
-                              geometry, 
+    wts = st_inverse_distance(nb,
+                              geometry,
                               scale = 1,
                               alpha = 1),
          .before = 1)
@@ -349,7 +349,7 @@ wm_idw <- hunan %>%
 Now, we will compute the local Gi\* by using the code below.
 
 ```{r}
-HCSA <- wm_idw %>% 
+HCSA <- wm_idw %>%
   mutate(local_Gi = local_gstar_perm(
     GDPPC, nb, wts, nsim = 99),
          .before = 1) %>%
@@ -361,10 +361,10 @@ HCSA
 
 Similarly, for effective comparison, we should plot the local Gi\* values with its p-value.
 
-```{r local_hcsa fig.height=8, fig.width=12}
+```{r local_hcsa, fig.height=8, fig.width=12}
 tmap_mode("plot")
 map1 <- tm_shape(HCSA) +
-  tm_fill("gi_star") + 
+  tm_fill("gi_star") +
   tm_borders(alpha = 0.5) +
   tm_view(set.zoom.limits = c(6,8)) +
   tm_layout(main.title = "Gi* of GDPPC",
@@ -373,7 +373,7 @@ map1 <- tm_shape(HCSA) +
 map2 <- tm_shape(HCSA) +
   tm_fill("p_value",
           breaks = c(0, 0.001, 0.01, 0.05, 1),
-              labels = c("0.001", "0.01", "0.05", "Not sig")) + 
+              labels = c("0.001", "0.01", "0.05", "Not sig")) +
   tm_borders(alpha = 0.5) +
   tm_layout(main.title = "p-value of Gi*",
             main.title.size = 0.8)
@@ -392,7 +392,7 @@ tm_shape(HCSA) +
   tm_polygons() +
   tm_borders(alpha = 0.5) +
 tm_shape(HCSA_sig) +
-  tm_fill("cluster") + 
+  tm_fill("cluster") +
   tm_borders(alpha = 0.4)
 ```
 
