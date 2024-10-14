@@ -5,8 +5,8 @@
 <meta name="generator" content="quarto-1.5.56">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <meta name="author" content="Teng Kok Wai (Walter)">
-<meta name="dcterms.date" content="2024-09-29">
-<title>9A: Processing and Visualising Flow Data – Walter Teng’s Coursework for SMU ISSS626: Geospatial Analytics and Applications</title>
+<meta name="dcterms.date" content="2024-09-30">
+<title>9A: Modelling Geographical Accessibility – Walter Teng’s Coursework for SMU ISSS626: Geospatial Analytics and Applications</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -107,18 +107,13 @@ window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
 gtag('config', 'G-4MGB7PXBSL', { 'anonymize_ip': true});
-</script><link href="../../site_libs/htmltools-fill-0.5.8.1/fill.css" rel="stylesheet">
-<script src="../../site_libs/htmlwidgets-1.6.4/htmlwidgets.js"></script><link href="../../site_libs/datatables-css-0.0.0/datatables-crosstalk.css" rel="stylesheet">
-<script src="../../site_libs/datatables-binding-0.33/datatables.js"></script><script src="../../site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script><link href="../../site_libs/dt-core-1.13.6/css/jquery.dataTables.min.css" rel="stylesheet">
-<link href="../../site_libs/dt-core-1.13.6/css/jquery.dataTables.extra.css" rel="stylesheet">
-<script src="../../site_libs/dt-core-1.13.6/js/jquery.dataTables.min.js"></script><link href="../../site_libs/crosstalk-1.2.1/css/crosstalk.min.css" rel="stylesheet">
-<script src="../../site_libs/crosstalk-1.2.1/js/crosstalk.min.js"></script><link rel="stylesheet" href="../../styles.css">
-<meta property="og:title" content="9A: Processing and Visualising Flow Data – Walter Teng’s Coursework for SMU ISSS626: Geospatial Analytics and Applications">
-<meta property="og:description" content="In this exercise, we will explore the concept of spatial interaction, and learn how to build an OD (origin/destination) matrix.">
+</script><link rel="stylesheet" href="../../styles.css">
+<meta property="og:title" content="9A: Modelling Geographical Accessibility – Walter Teng’s Coursework for SMU ISSS626: Geospatial Analytics and Applications">
+<meta property="og:description" content="In this exercise, we will learn to model geographical accessibility using Hansen’s potential model, Spatial Accessibility Measure (SAM), and other methods in R.">
 <meta property="og:image" content="https://isss626-gaa.netlify.app/Hands-on_Ex/Hands-on_Ex09/og-img.png">
 <meta property="og:site_name" content="Walter Teng's Coursework for SMU ISSS626: Geospatial Analytics and Applications">
-<meta name="twitter:title" content="9A: Processing and Visualising Flow Data – Walter Teng’s Coursework for SMU ISSS626: Geospatial Analytics and Applications">
-<meta name="twitter:description" content="In this exercise, we will explore the concept of spatial interaction, and learn how to build an OD (origin/destination) matrix.">
+<meta name="twitter:title" content="9A: Modelling Geographical Accessibility – Walter Teng’s Coursework for SMU ISSS626: Geospatial Analytics and Applications">
+<meta name="twitter:description" content="In this exercise, we will learn to model geographical accessibility using Hansen’s potential model, Spatial Accessibility Measure (SAM), and other methods in R.">
 <meta name="twitter:image" content="https://isss626-gaa.netlify.app/Hands-on_Ex/Hands-on_Ex09/og-img.png">
 <meta name="twitter:creator" content="@davzoku">
 <meta name="twitter:site" content="@davzoku">
@@ -305,45 +300,59 @@ gtag('config', 'G-4MGB7PXBSL', { 'anonymize_ip': true});
         <nav id="TOC" role="doc-toc" class="toc-active"><h2 id="toc-title">On this page</h2>
    
   <ul>
-<li><a href="#exercise-9a-reference" id="toc-exercise-9a-reference" class="nav-link active" data-scroll-target="#exercise-9a-reference"><span class="header-section-number">1</span> Exercise 9A Reference</a></li>
+<li><a href="#exercise-09a-reference" id="toc-exercise-09a-reference" class="nav-link active" data-scroll-target="#exercise-09a-reference"><span class="header-section-number">1</span> Exercise 09A Reference</a></li>
   <li><a href="#overview" id="toc-overview" class="nav-link" data-scroll-target="#overview"><span class="header-section-number">2</span> Overview</a></li>
   <li><a href="#learning-outcome" id="toc-learning-outcome" class="nav-link" data-scroll-target="#learning-outcome"><span class="header-section-number">3</span> Learning Outcome</a></li>
   <li><a href="#the-data" id="toc-the-data" class="nav-link" data-scroll-target="#the-data"><span class="header-section-number">4</span> The Data</a></li>
   <li><a href="#installing-and-launching-the-r-packages" id="toc-installing-and-launching-the-r-packages" class="nav-link" data-scroll-target="#installing-and-launching-the-r-packages"><span class="header-section-number">5</span> Installing and Launching the R Packages</a></li>
   <li>
-<a href="#preparing-the-flow-data" id="toc-preparing-the-flow-data" class="nav-link" data-scroll-target="#preparing-the-flow-data"><span class="header-section-number">6</span> Preparing the Flow Data</a>
+<a href="#geospatial-data-wrangling" id="toc-geospatial-data-wrangling" class="nav-link" data-scroll-target="#geospatial-data-wrangling"><span class="header-section-number">6</span> Geospatial Data Wrangling</a>
   <ul class="collapse">
-<li><a href="#importing-the-od-data" id="toc-importing-the-od-data" class="nav-link" data-scroll-target="#importing-the-od-data"><span class="header-section-number">6.1</span> Importing the OD data</a></li>
-  <li><a href="#extracting-the-study-data" id="toc-extracting-the-study-data" class="nav-link" data-scroll-target="#extracting-the-study-data"><span class="header-section-number">6.2</span> Extracting the Study Data</a></li>
-  <li><a href="#saving-and-loading-the-data" id="toc-saving-and-loading-the-data" class="nav-link" data-scroll-target="#saving-and-loading-the-data"><span class="header-section-number">6.3</span> Saving and loading the data</a></li>
+<li><a href="#importing-geospatial-data" id="toc-importing-geospatial-data" class="nav-link" data-scroll-target="#importing-geospatial-data"><span class="header-section-number">6.1</span> Importing Geospatial Data</a></li>
+  <li><a href="#updating-crs-information" id="toc-updating-crs-information" class="nav-link" data-scroll-target="#updating-crs-information"><span class="header-section-number">6.2</span> Updating CRS Information</a></li>
+  <li><a href="#cleaning-and-updating-attribute-fields" id="toc-cleaning-and-updating-attribute-fields" class="nav-link" data-scroll-target="#cleaning-and-updating-attribute-fields"><span class="header-section-number">6.3</span> Cleaning and Updating Attribute Fields</a></li>
   </ul>
 </li>
   <li>
-<a href="#working-with-geospatial-data" id="toc-working-with-geospatial-data" class="nav-link" data-scroll-target="#working-with-geospatial-data"><span class="header-section-number">7</span> Working with Geospatial Data</a>
+<a href="#aspatial-data-handling-and-wrangling" id="toc-aspatial-data-handling-and-wrangling" class="nav-link" data-scroll-target="#aspatial-data-handling-and-wrangling"><span class="header-section-number">7</span> Aspatial Data Handling and Wrangling</a>
   <ul class="collapse">
-<li><a href="#importing-geospatial-data" id="toc-importing-geospatial-data" class="nav-link" data-scroll-target="#importing-geospatial-data"><span class="header-section-number">7.1</span> Importing Geospatial Data</a></li>
+<li><a href="#importing-distance-matrix" id="toc-importing-distance-matrix" class="nav-link" data-scroll-target="#importing-distance-matrix"><span class="header-section-number">7.1</span> Importing Distance Matrix</a></li>
+  <li><a href="#tidying-the-distance-matrix" id="toc-tidying-the-distance-matrix" class="nav-link" data-scroll-target="#tidying-the-distance-matrix"><span class="header-section-number">7.2</span> Tidying the Distance Matrix</a></li>
+  <li><a href="#converting-distance-to-kilometers" id="toc-converting-distance-to-kilometers" class="nav-link" data-scroll-target="#converting-distance-to-kilometers"><span class="header-section-number">7.3</span> Converting Distance to Kilometers</a></li>
   </ul>
 </li>
   <li>
-<a href="#geospatial-data-wrangling" id="toc-geospatial-data-wrangling" class="nav-link" data-scroll-target="#geospatial-data-wrangling"><span class="header-section-number">8</span> Geospatial Data Wrangling</a>
+<a href="#modelling-and-visualising-accessibility-using-hansen-method" id="toc-modelling-and-visualising-accessibility-using-hansen-method" class="nav-link" data-scroll-target="#modelling-and-visualising-accessibility-using-hansen-method"><span class="header-section-number">8</span> Modelling and Visualising Accessibility using Hansen Method</a>
   <ul class="collapse">
-<li><a href="#combining-busstop-and-mpsz" id="toc-combining-busstop-and-mpsz" class="nav-link" data-scroll-target="#combining-busstop-and-mpsz"><span class="header-section-number">8.1</span> Combining BusStop and MPSZ</a></li>
+<li><a href="#computing-hansens-accessibility" id="toc-computing-hansens-accessibility" class="nav-link" data-scroll-target="#computing-hansens-accessibility"><span class="header-section-number">8.1</span> Computing Hansen’s Accessibility</a></li>
+  <li><a href="#renaming-columns-and-formatting-data" id="toc-renaming-columns-and-formatting-data" class="nav-link" data-scroll-target="#renaming-columns-and-formatting-data"><span class="header-section-number">8.2</span> Renaming Columns and Formatting Data</a></li>
+  <li><a href="#joining-with-hexagons-data" id="toc-joining-with-hexagons-data" class="nav-link" data-scroll-target="#joining-with-hexagons-data"><span class="header-section-number">8.3</span> Joining with Hexagons Data</a></li>
+  <li><a href="#visualising-hansens-accessibility" id="toc-visualising-hansens-accessibility" class="nav-link" data-scroll-target="#visualising-hansens-accessibility"><span class="header-section-number">8.4</span> Visualising Hansen’s Accessibility</a></li>
+  <li><a href="#statistical-graphic-visualization" id="toc-statistical-graphic-visualization" class="nav-link" data-scroll-target="#statistical-graphic-visualization"><span class="header-section-number">8.5</span> Statistical Graphic Visualization</a></li>
   </ul>
 </li>
   <li>
-<a href="#visualising-spatial-interaction" id="toc-visualising-spatial-interaction" class="nav-link" data-scroll-target="#visualising-spatial-interaction"><span class="header-section-number">9</span> Visualising Spatial Interaction</a>
+<a href="#modelling-and-visualising-accessibility-using-kd2sfca-method" id="toc-modelling-and-visualising-accessibility-using-kd2sfca-method" class="nav-link" data-scroll-target="#modelling-and-visualising-accessibility-using-kd2sfca-method"><span class="header-section-number">9</span> Modelling and Visualising Accessibility using KD2SFCA Method</a>
   <ul class="collapse">
-<li><a href="#removing-intra-zonal-flows" id="toc-removing-intra-zonal-flows" class="nav-link" data-scroll-target="#removing-intra-zonal-flows"><span class="header-section-number">9.1</span> Removing Intra-Zonal Flows</a></li>
-  <li><a href="#creating-desire-lines" id="toc-creating-desire-lines" class="nav-link" data-scroll-target="#creating-desire-lines"><span class="header-section-number">9.2</span> Creating Desire Lines</a></li>
-  <li><a href="#filtering-high-volume-flows" id="toc-filtering-high-volume-flows" class="nav-link" data-scroll-target="#filtering-high-volume-flows"><span class="header-section-number">9.3</span> Filtering High-Volume Flows</a></li>
+<li><a href="#computing-accessibility" id="toc-computing-accessibility" class="nav-link" data-scroll-target="#computing-accessibility"><span class="header-section-number">9.1</span> Computing Accessibility</a></li>
+  <li><a href="#visualizing-kd2sfca-accessibility" id="toc-visualizing-kd2sfca-accessibility" class="nav-link" data-scroll-target="#visualizing-kd2sfca-accessibility"><span class="header-section-number">9.2</span> Visualizing KD2SFCA Accessibility</a></li>
+  <li><a href="#statistical-graphic-visualisation" id="toc-statistical-graphic-visualisation" class="nav-link" data-scroll-target="#statistical-graphic-visualisation"><span class="header-section-number">9.3</span> Statistical Graphic Visualisation</a></li>
+  </ul>
+</li>
+  <li>
+<a href="#modelling-and-visualising-accessibility-using-spatial-accessibility-measure-sam-method" id="toc-modelling-and-visualising-accessibility-using-spatial-accessibility-measure-sam-method" class="nav-link" data-scroll-target="#modelling-and-visualising-accessibility-using-spatial-accessibility-measure-sam-method"><span class="header-section-number">10</span> Modelling and Visualising Accessibility using Spatial Accessibility Measure (SAM) Method</a>
+  <ul class="collapse">
+<li><a href="#computing-accessibility-1" id="toc-computing-accessibility-1" class="nav-link" data-scroll-target="#computing-accessibility-1"><span class="header-section-number">10.1</span> Computing Accessibility</a></li>
+  <li><a href="#visualizing-sam-accessibility" id="toc-visualizing-sam-accessibility" class="nav-link" data-scroll-target="#visualizing-sam-accessibility"><span class="header-section-number">10.2</span> Visualizing SAM Accessibility</a></li>
+  <li><a href="#comparing-sam-accessibility-by-region" id="toc-comparing-sam-accessibility-by-region" class="nav-link" data-scroll-target="#comparing-sam-accessibility-by-region"><span class="header-section-number">10.3</span> Comparing SAM Accessibility by Region</a></li>
   </ul>
 </li>
   </ul></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block default"><div class="quarto-title">
-<h1 class="title">9A: Processing and Visualising Flow Data</h1>
-<p class="subtitle lead">In this exercise, we will explore the concept of spatial interaction, and learn how to build an OD (origin/destination) matrix.</p>
+<h1 class="title">9A: Modelling Geographical Accessibility</h1>
+<p class="subtitle lead">In this exercise, we will learn to model geographical accessibility using Hansen’s potential model, Spatial Accessibility Measure (SAM), and other methods in R.</p>
 </div>
 
 
@@ -360,14 +369,14 @@ gtag('config', 'G-4MGB7PXBSL', { 'anonymize_ip': true});
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">September 29, 2024</p>
+      <p class="date">September 30, 2024</p>
     </div>
   </div>
   
     <div>
     <div class="quarto-title-meta-heading">Modified</div>
     <div class="quarto-title-meta-contents">
-      <p class="date-modified">September 29, 2024</p>
+      <p class="date-modified">October 14, 2024</p>
     </div>
   </div>
     
@@ -375,32 +384,27 @@ gtag('config', 'G-4MGB7PXBSL', { 'anonymize_ip': true});
   
 
 
-</header><section id="exercise-9a-reference" class="level2" data-number="1"><h2 data-number="1" class="anchored" data-anchor-id="exercise-9a-reference">
-<span class="header-section-number">1</span> Exercise 9A Reference</h2>
-<p><a href="https://r4gdsa.netlify.app/chap15">R for Geospatial Data Science and Analytics - 15&nbsp; Processing and Visualising Flow Data</a></p>
+</header><section id="exercise-09a-reference" class="level2" data-number="1"><h2 data-number="1" class="anchored" data-anchor-id="exercise-09a-reference">
+<span class="header-section-number">1</span> Exercise 09A Reference</h2>
+<p><a href="https://r4gdsa.netlify.app/chap17.html">R for Geospatial Data Science and Analytics - 17&nbsp; Modelling Geographical Accessibility</a></p>
 </section><section id="overview" class="level2" data-number="2"><h2 data-number="2" class="anchored" data-anchor-id="overview">
 <span class="header-section-number">2</span> Overview</h2>
-<p>In this exercise, we will explore the concept of spatial interaction, and learn how to build an OD (origin/destination) matrix.</p>
-<p>Spatial interaction represent the flow of people, material, or information between locations in geographical space. It encompasses everything from freight shipments, energy flows, and the global trade in rare antiquities, to flight schedules, rush hour woes, and pedestrian foot traffic.</p>
-<blockquote class="blockquote">
-<p>An OD matrix, or spatial interaction matrix, represents each spatial interaction as a discrete origin/destination pair, where each pair corresponds to a cell in the matrix; the rows denote the locations (centroids) of origin, and the columns represent the locations (centroids) of destination.</p>
-</blockquote>
+<p>In this exercise, we will learn to model geographical accessibility using Hansen’s potential model, Spatial Accessibility Measure (SAM), and other methods in R.</p>
 </section><section id="learning-outcome" class="level2" data-number="3"><h2 data-number="3" class="anchored" data-anchor-id="learning-outcome">
 <span class="header-section-number">3</span> Learning Outcome</h2>
 <ul>
-<li>Import and extract OD data for a selected time interval.</li>
-<li>Import and save geospatial data (bus stops and planning subzones) into sf tibble data frame objects.</li>
-<li>Populate planning subzone codes into bus stops sf tibble data frames.</li>
-<li>Construct desire lines geospatial data from the OD data.</li>
-<li>Visualize passenger volume by origin and destination bus stops using the desire lines data.</li>
+<li>Import GIS polygon data into R and save them as a simple feature data frame using the <strong>sf</strong> package.</li>
+<li>Import aspatial data into R and save them as a simple feature data frame using the <strong>sf</strong> package.</li>
+<li>Compute accessibility measures using Hansen’s potential model and Spatial Accessibility Measure (SAM).</li>
+<li>Visualize the accessibility measures using <strong>tmap</strong> and <strong>ggplot2</strong> packages.</li>
 </ul></section><section id="the-data" class="level2" data-number="4"><h2 data-number="4" class="anchored" data-anchor-id="the-data">
 <span class="header-section-number">4</span> The Data</h2>
 <p>The following datasets will be used in this exercise:</p>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 23%">
-<col style="width: 52%">
-<col style="width: 23%">
+<col style="width: 21%">
+<col style="width: 56%">
+<col style="width: 21%">
 </colgroup>
 <thead><tr class="header">
 <th><strong>Data Set</strong></th>
@@ -409,28 +413,37 @@ gtag('config', 'G-4MGB7PXBSL', { 'anonymize_ip': true});
 </tr></thead>
 <tbody>
 <tr class="odd">
-<td>Passenger Volume by Origin Destination Bus Stops</td>
-<td>OD data set representing the volume of passengers traveling between bus stops.</td>
-<td>CSV</td>
+<td><code>MP14_SUBZONE_NO_SEA_PL</code></td>
+<td>URA Master Plan 2014 subzone boundary GIS data.</td>
+<td>ESRI Shapefile</td>
 </tr>
 <tr class="even">
-<td>BusStop</td>
-<td>Geospatial data providing the locations of bus stops as of the last quarter of 2022.</td>
+<td><code>hexagons</code></td>
+<td>A 250m radius hexagons GIS data created using the <code>st_make_grid()</code> function of the <strong>sf</strong> package.</td>
 <td>ESRI Shapefile</td>
 </tr>
 <tr class="odd">
-<td>MPSZ-2019</td>
-<td>Geospatial data providing the sub-zone boundary of the URA Master Plan 2019.</td>
+<td><code>ELDERCARE</code></td>
+<td>GIS data showing the location of eldercare services, available in both ESRI shapefile and Google KML format.</td>
 <td>ESRI Shapefile</td>
 </tr>
+<tr class="even">
+<td><code>OD_Matrix</code></td>
+<td>A distance matrix with origin-destination information, including entry, network, and exit costs.</td>
+<td>CSV</td>
+</tr>
 </tbody>
-</table></section><section id="installing-and-launching-the-r-packages" class="level2" data-number="5"><h2 data-number="5" class="anchored" data-anchor-id="installing-and-launching-the-r-packages">
+</table>
+<blockquote class="blockquote">
+<p>All the values of the cost related fields are in <strong>metres</strong>.</p>
+</blockquote>
+</section><section id="installing-and-launching-the-r-packages" class="level2" data-number="5"><h2 data-number="5" class="anchored" data-anchor-id="installing-and-launching-the-r-packages">
 <span class="header-section-number">5</span> Installing and Launching the R Packages</h2>
 <p>The following R packages will be used in this exercise:</p>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 23%">
-<col style="width: 38%">
+<col style="width: 37%">
 <col style="width: 38%">
 </colgroup>
 <thead><tr class="header">
@@ -441,256 +454,152 @@ gtag('config', 'G-4MGB7PXBSL', { 'anonymize_ip': true});
 <tbody>
 <tr class="odd">
 <td><strong>sf</strong></td>
-<td>Handles vector-based geospatial data.</td>
-<td>Importing, processing, and transforming geospatial data, such as bus stop locations and sub-zone boundaries.</td>
+<td>Handles spatial data; imports, manages, and processes vector-based geospatial data.</td>
+<td>Importing and transforming geospatial datasets such as subzone boundaries, hexagons, and eldercare locations.</td>
 </tr>
 <tr class="even">
-<td><strong>tidyverse</strong></td>
-<td>A collection of packages for data science tasks such as data manipulation, visualization, and modeling.</td>
-<td>Importing and wrangling OD and geospatial data, and visualizing analysis outputs.</td>
+<td><strong>SpatialAcc</strong></td>
+<td>Provides functions for computing geographical accessibility measures.</td>
+<td>Calculating Hansen’s potential model, Spatial Accessibility Measure (SAM), and other accessibility metrics.</td>
 </tr>
 <tr class="odd">
+<td><strong>tidyverse</strong></td>
+<td>A collection of R packages for data science tasks like data manipulation, visualization, and modeling.</td>
+<td>Wrangling and visualizing data, including importing CSV files and performing data transformations.</td>
+</tr>
+<tr class="even">
 <td><strong>tmap</strong></td>
 <td>Creates static and interactive thematic maps using cartographic quality elements.</td>
-<td>Visualizing passenger flows and geographic clusters in a cartographic format.</td>
-</tr>
-<tr class="even">
-<td><strong>stplanr</strong></td>
-<td>Provides functions for transport planning and modeling.</td>
-<td>Creating geographic desire lines from OD data and solving transport-related problems.</td>
+<td>Visualizing accessibility measures on thematic maps.</td>
 </tr>
 <tr class="odd">
-<td><strong>DT</strong></td>
-<td>Provides an R interface to the JavaScript library DataTables for interactive table display.</td>
-<td>Displaying data tables in an interactive format within the HTML output.</td>
+<td><strong>ggplot2</strong></td>
+<td>Creates data visualizations using a layered grammar of graphics.</td>
+<td>Visualizing statistical graphics such as histograms and boxplots of accessibility measures.</td>
+</tr>
+<tr class="even">
+<td><strong>ggstatsplot</strong></td>
+<td>Enhances plots with statistical details and facilitates data visualization.</td>
+<td>Creating statistically enriched plots for exploratory data analysis and comparing distributions.</td>
+</tr>
+<tr class="odd">
+<td><strong>reshape2</strong></td>
+<td>Provides tools to reshape data between wide and long formats.</td>
+<td>Transforming data matrices into suitable formats for modeling.</td>
 </tr>
 </tbody>
 </table>
 <p>To install and load these packages, use the following code:</p>
 <div class="cell">
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">pacman</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/pacman/man/p_load.html">p_load</a></span><span class="op">(</span><span class="va">tmap</span>, <span class="va">sf</span>, <span class="va">DT</span>, <span class="va">stplanr</span>, <span class="va">tidyverse</span>, <span class="va">knitr</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">pacman</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/pacman/man/p_load.html">p_load</a></span><span class="op">(</span><span class="va">tmap</span>, <span class="va">SpatialAcc</span>, <span class="va">sf</span>, <span class="va">ggstatsplot</span>, <span class="va">reshape2</span>, <span class="va">tidyverse</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-</section><section id="preparing-the-flow-data" class="level2" data-number="6"><h2 data-number="6" class="anchored" data-anchor-id="preparing-the-flow-data">
-<span class="header-section-number">6</span> Preparing the Flow Data</h2>
-<section id="importing-the-od-data" class="level3" data-number="6.1"><h3 data-number="6.1" class="anchored" data-anchor-id="importing-the-od-data">
-<span class="header-section-number">6.1</span> Importing the OD data</h3>
-<p>First, we import the <em>Passenger Volume by Origin Destination Bus Stops</em> dataset using <code>read_csv()</code> from the <strong>readr</strong> package.</p>
+</section><section id="geospatial-data-wrangling" class="level2" data-number="6"><h2 data-number="6" class="anchored" data-anchor-id="geospatial-data-wrangling">
+<span class="header-section-number">6</span> Geospatial Data Wrangling</h2>
+<section id="importing-geospatial-data" class="level3" data-number="6.1"><h3 data-number="6.1" class="anchored" data-anchor-id="importing-geospatial-data">
+<span class="header-section-number">6.1</span> Importing Geospatial Data</h3>
+<p>Three geospatial datasets—<em>MP14_SUBZONE_NO_SEA_PL</em>, <em>hexagons</em>, and <em>ELDERCARE</em>—are imported from the <em>data/geospatial</em> folder using the <code>st_read()</code> function from the <strong>sf</strong> package.</p>
 <div class="cell">
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">odbus</span> <span class="op">&lt;-</span> <span class="fu">read_csv</span><span class="op">(</span><span class="st">"data/aspatial/origin_destination_bus_202408.csv"</span><span class="op">)</span></span>
-<span><span class="fu">glimpse</span><span class="op">(</span><span class="va">odbus</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">mpsz</span> <span class="op">&lt;-</span> <span class="fu">st_read</span><span class="op">(</span>dsn <span class="op">=</span> <span class="st">"data/geospatial"</span>, layer <span class="op">=</span> <span class="st">"MP14_SUBZONE_NO_SEA_PL"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Rows: 5,760,081
-Columns: 7
-$ YEAR_MONTH          &lt;chr&gt; "2024-08", "2024-08", "2024-08", "2024-08", "2024-…
-$ DAY_TYPE            &lt;chr&gt; "WEEKENDS/HOLIDAY", "WEEKENDS/HOLIDAY", "WEEKENDS/…
-$ TIME_PER_HOUR       &lt;dbl&gt; 18, 7, 19, 9, 5, 12, 23, 15, 12, 13, 7, 9, 17, 15,…
-$ PT_TYPE             &lt;chr&gt; "BUS", "BUS", "BUS", "BUS", "BUS", "BUS", "BUS", "…
-$ ORIGIN_PT_CODE      &lt;chr&gt; "76201", "10351", "76061", "14271", "54581", "1008…
-$ DESTINATION_PT_CODE &lt;chr&gt; "76079", "13201", "75371", "07021", "66471", "1007…
-$ TOTAL_TRIPS         &lt;dbl&gt; 6, 7, 1, 2, 1, 145, 2, 78, 2, 1, 3, 1, 2, 3, 5, 3,…</code></pre>
-</div>
-</div>
-<p><em>odbus</em> tibble data frame shows that the values in <code>ORIGIN_PT_CODE</code> and <code>DESTINATON_PT_CODE</code> are in character data type, we will convert themm into factor data type.</p>
-<div class="cell">
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">odbus</span><span class="op">$</span><span class="va">ORIGIN_PT_CODE</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">as.factor</a></span><span class="op">(</span><span class="va">odbus</span><span class="op">$</span><span class="va">ORIGIN_PT_CODE</span><span class="op">)</span></span>
-<span><span class="va">odbus</span><span class="op">$</span><span class="va">DESTINATION_PT_CODE</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">as.factor</a></span><span class="op">(</span><span class="va">odbus</span><span class="op">$</span><span class="va">DESTINATION_PT_CODE</span><span class="op">)</span></span>
-<span><span class="fu">glimpse</span><span class="op">(</span><span class="va">odbus</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Rows: 5,760,081
-Columns: 7
-$ YEAR_MONTH          &lt;chr&gt; "2024-08", "2024-08", "2024-08", "2024-08", "2024-…
-$ DAY_TYPE            &lt;chr&gt; "WEEKENDS/HOLIDAY", "WEEKENDS/HOLIDAY", "WEEKENDS/…
-$ TIME_PER_HOUR       &lt;dbl&gt; 18, 7, 19, 9, 5, 12, 23, 15, 12, 13, 7, 9, 17, 15,…
-$ PT_TYPE             &lt;chr&gt; "BUS", "BUS", "BUS", "BUS", "BUS", "BUS", "BUS", "…
-$ ORIGIN_PT_CODE      &lt;fct&gt; 76201, 10351, 76061, 14271, 54581, 10089, 67231, 5…
-$ DESTINATION_PT_CODE &lt;fct&gt; 76079, 13201, 75371, 07021, 66471, 10079, 67179, 5…
-$ TOTAL_TRIPS         &lt;dbl&gt; 6, 7, 1, 2, 1, 145, 2, 78, 2, 1, 3, 1, 2, 3, 5, 3,…</code></pre>
-</div>
-</div>
-</section><section id="extracting-the-study-data" class="level3" data-number="6.2"><h3 data-number="6.2" class="anchored" data-anchor-id="extracting-the-study-data">
-<span class="header-section-number">6.2</span> Extracting the Study Data</h3>
-<p>For the purpose of this exercise, we extract commuting flows on weekdays between 6 and 9 a.m. and sum the trips.</p>
-<div class="cell">
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">odbus6_9</span> <span class="op">&lt;-</span> <span class="va">odbus</span> <span class="op">%&gt;%</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="va">DAY_TYPE</span> <span class="op">==</span> <span class="st">"WEEKDAY"</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="va">TIME_PER_HOUR</span> <span class="op">&gt;=</span> <span class="fl">6</span> <span class="op">&amp;</span> <span class="va">TIME_PER_HOUR</span> <span class="op">&lt;=</span> <span class="fl">9</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
-<span>  <span class="fu">group_by</span><span class="op">(</span><span class="va">ORIGIN_PT_CODE</span>, <span class="va">DESTINATION_PT_CODE</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
-<span>  <span class="fu">summarise</span><span class="op">(</span>TRIPS <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">TOTAL_TRIPS</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>The table below shows the head content of <code>odbus6_9</code>:</p>
-<div class="cell">
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">datatable</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">odbus6_9</span>, <span class="fl">10</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<div class="datatables html-widget html-fill-item" id="htmlwidget-ab985367530ae1a84614" style="width:100%;height:auto;"></div>
-<script type="application/json" data-for="htmlwidget-ab985367530ae1a84614">{"x":{"filter":"none","vertical":false,"data":[["1","2","3","4","5","6","7","8","9","10"],["01012","01012","01012","01012","01012","01012","01012","01012","01012","01012"],["01112","01113","01121","01211","01311","07371","60011","60021","60031","60159"],[224,179,91,77,229,9,2,10,50,20]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>ORIGIN_PT_CODE<\/th>\n      <th>DESTINATION_PT_CODE<\/th>\n      <th>TRIPS<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":3},{"orderable":false,"targets":0},{"name":" ","targets":0},{"name":"ORIGIN_PT_CODE","targets":1},{"name":"DESTINATION_PT_CODE","targets":2},{"name":"TRIPS","targets":3}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
-</div>
-</div>
-</section><section id="saving-and-loading-the-data" class="level3" data-number="6.3"><h3 data-number="6.3" class="anchored" data-anchor-id="saving-and-loading-the-data">
-<span class="header-section-number">6.3</span> Saving and loading the data</h3>
-<p>We save the filtered data for future use in RDS format.</p>
-<div class="cell">
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">write_rds</span><span class="op">(</span><span class="va">odbus6_9</span>, <span class="st">"data/rds/odbus6_9.rds"</span><span class="op">)</span></span>
-<span><span class="va">odbus6_9</span> <span class="op">&lt;-</span> <span class="fu">read_rds</span><span class="op">(</span><span class="st">"data/rds/odbus6_9.rds"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-</section></section><section id="working-with-geospatial-data" class="level2" data-number="7"><h2 data-number="7" class="anchored" data-anchor-id="working-with-geospatial-data">
-<span class="header-section-number">7</span> Working with Geospatial Data</h2>
-<p>For this exercise, two geospatial datasets will be used:</p>
-<ul>
-<li>
-<strong>BusStop</strong>: Contains the locations of bus stops as of Q4 2022.</li>
-<li>
-<strong>MPSZ-2019</strong>: Provides the sub-zone boundaries from the URA Master Plan 2019.</li>
-</ul>
-<p>Both datasets are in ESRI shapefile format.</p>
-<section id="importing-geospatial-data" class="level3" data-number="7.1"><h3 data-number="7.1" class="anchored" data-anchor-id="importing-geospatial-data">
-<span class="header-section-number">7.1</span> Importing Geospatial Data</h3>
-<p>The code below imports the geospatial data:</p>
-<div class="cell">
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">busstop</span> <span class="op">&lt;-</span> <span class="fu">st_read</span><span class="op">(</span>dsn <span class="op">=</span> <span class="st">"data/geospatial"</span>, layer <span class="op">=</span> <span class="st">"BusStop"</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
-<span>  <span class="fu">st_transform</span><span class="op">(</span>crs <span class="op">=</span> <span class="fl">3414</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Reading layer `BusStop' from data source 
+<pre><code>Reading layer `MP14_SUBZONE_NO_SEA_PL' from data source 
   `/Users/walter/code/isss626/isss626-gaa/Hands-on_Ex/Hands-on_Ex09/data/geospatial' 
   using driver `ESRI Shapefile'
-Simple feature collection with 5166 features and 3 fields
-Geometry type: POINT
-Dimension:     XY
-Bounding box:  xmin: 3970.122 ymin: 26482.1 xmax: 48285.52 ymax: 52983.82
-Projected CRS: SVY21</code></pre>
-</div>
-</div>
-<div class="cell">
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">mpsz</span> <span class="op">&lt;-</span> <span class="fu">st_read</span><span class="op">(</span>dsn <span class="op">=</span> <span class="st">"data/geospatial"</span>, layer <span class="op">=</span> <span class="st">"MPSZ-2019"</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
-<span>  <span class="fu">st_transform</span><span class="op">(</span>crs <span class="op">=</span> <span class="fl">3414</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Reading layer `MPSZ-2019' from data source 
-  `/Users/walter/code/isss626/isss626-gaa/Hands-on_Ex/Hands-on_Ex09/data/geospatial' 
-  using driver `ESRI Shapefile'
-Simple feature collection with 332 features and 6 fields
+Simple feature collection with 323 features and 15 fields
 Geometry type: MULTIPOLYGON
 Dimension:     XY
-Bounding box:  xmin: 103.6057 ymin: 1.158699 xmax: 104.0885 ymax: 1.470775
-Geodetic CRS:  WGS 84</code></pre>
+Bounding box:  xmin: 2667.538 ymin: 15748.72 xmax: 56396.44 ymax: 50256.33
+Projected CRS: SVY21</code></pre>
 </div>
-</div>
-<div class="cell">
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">mpsz</span> <span class="op">&lt;-</span> <span class="fu">write_rds</span><span class="op">(</span><span class="va">mpsz</span>, <span class="st">"data/rds/mpsz.rds"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-</section></section><section id="geospatial-data-wrangling" class="level2" data-number="8"><h2 data-number="8" class="anchored" data-anchor-id="geospatial-data-wrangling">
-<span class="header-section-number">8</span> Geospatial Data Wrangling</h2>
-<section id="combining-busstop-and-mpsz" class="level3" data-number="8.1"><h3 data-number="8.1" class="anchored" data-anchor-id="combining-busstop-and-mpsz">
-<span class="header-section-number">8.1</span> Combining BusStop and MPSZ</h3>
-<p>The code below joins the planning subzone codes from <code>mpsz</code> to the bus stops in <code>busstop</code>:</p>
-<div class="cell">
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">busstop_mpsz</span> <span class="op">&lt;-</span> <span class="fu">st_intersection</span><span class="op">(</span><span class="va">busstop</span>, <span class="va">mpsz</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
-<span>  <span class="fu">select</span><span class="op">(</span><span class="va">BUS_STOP_N</span>, <span class="va">SUBZONE_C</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
-<span>  <span class="fu">st_drop_geometry</span><span class="op">(</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell">
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">datatable</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">busstop_mpsz</span>, <span class="fl">10</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<div class="datatables html-widget html-fill-item" id="htmlwidget-1fb6cac240ac931d35b9" style="width:100%;height:auto;"></div>
-<script type="application/json" data-for="htmlwidget-1fb6cac240ac931d35b9">{"x":{"filter":"none","vertical":false,"data":[["1332","5045","774","782","841","997","1324","2249","2523","2965"],["13099","13089","13211","13139","06151","13109","13119","06169","06159","04321"],["RVSZ05","RVSZ05","SRSZ01","SRSZ01","SRSZ01","SRSZ01","SRSZ01","SRSZ01","SRSZ01","SRSZ01"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>BUS_STOP_N<\/th>\n      <th>SUBZONE_C<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"orderable":false,"targets":0},{"name":" ","targets":0},{"name":"BUS_STOP_N","targets":1},{"name":"SUBZONE_C","targets":2}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
-</div>
-</div>
-<div class="cell">
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">busstop</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">hexagons</span> <span class="op">&lt;-</span> <span class="fu">st_read</span><span class="op">(</span>dsn <span class="op">=</span> <span class="st">"data/geospatial"</span>, layer <span class="op">=</span> <span class="st">"hexagons"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 5166</code></pre>
+<pre><code>Reading layer `hexagons' from data source 
+  `/Users/walter/code/isss626/isss626-gaa/Hands-on_Ex/Hands-on_Ex09/data/geospatial' 
+  using driver `ESRI Shapefile'
+Simple feature collection with 3125 features and 6 fields
+Geometry type: POLYGON
+Dimension:     XY
+Bounding box:  xmin: 2667.538 ymin: 21506.33 xmax: 50010.26 ymax: 50256.33
+Projected CRS: SVY21 / Singapore TM</code></pre>
 </div>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">busstop_mpsz</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">eldercare</span> <span class="op">&lt;-</span> <span class="fu">st_read</span><span class="op">(</span>dsn <span class="op">=</span> <span class="st">"data/geospatial"</span>, layer <span class="op">=</span> <span class="st">"ELDERCARE"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 5161</code></pre>
+<pre><code>Reading layer `ELDERCARE' from data source 
+  `/Users/walter/code/isss626/isss626-gaa/Hands-on_Ex/Hands-on_Ex09/data/geospatial' 
+  using driver `ESRI Shapefile'
+Simple feature collection with 120 features and 19 fields
+Geometry type: POINT
+Dimension:     XY
+Bounding box:  xmin: 14481.92 ymin: 28218.43 xmax: 41665.14 ymax: 46804.9
+Projected CRS: SVY21 / Singapore TM</code></pre>
 </div>
 </div>
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Note
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<ul>
-<li>
-<code>st_intersection()</code> performs a point-and-polygon overlay.</li>
-<li>
-<code>select()</code> keeps only <code>BUS_STOP_N</code> and <code>SUBZONE_C</code> fields.</li>
-<li>Five bus stops outside Singapore are excluded.</li>
-</ul>
-</div>
-</div>
-<p>Save the result as an RDS file:</p>
+</section><section id="updating-crs-information" class="level3" data-number="6.2"><h3 data-number="6.2" class="anchored" data-anchor-id="updating-crs-information">
+<span class="header-section-number">6.2</span> Updating CRS Information</h3>
+<p>We update the Coordinate Reference System (CRS) to EPSG:3414 for all datasets.</p>
 <div class="cell">
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">write_rds</span><span class="op">(</span><span class="va">busstop_mpsz</span>, <span class="st">"data/rds/busstop_mpsz.rds"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">mpsz</span> <span class="op">&lt;-</span> <span class="fu">st_transform</span><span class="op">(</span><span class="va">mpsz</span>, <span class="fl">3414</span><span class="op">)</span></span>
+<span><span class="va">eldercare</span> <span class="op">&lt;-</span> <span class="fu">st_transform</span><span class="op">(</span><span class="va">eldercare</span>, <span class="fl">3414</span><span class="op">)</span></span>
+<span><span class="va">hexagons</span> <span class="op">&lt;-</span> <span class="fu">st_transform</span><span class="op">(</span><span class="va">hexagons</span>, <span class="fl">3414</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Next, append the subzone codes to the <code>odbus6_9</code> dataset:</p>
+<p>You can verify the CRS of <em>mpsz</em> using <code>st_crs()</code>:</p>
 <div class="cell">
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">od_data</span> <span class="op">&lt;-</span> <span class="fu">left_join</span><span class="op">(</span><span class="va">odbus6_9</span>, <span class="va">busstop_mpsz</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"ORIGIN_PT_CODE"</span> <span class="op">=</span> <span class="st">"BUS_STOP_N"</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
-<span>  <span class="fu">rename</span><span class="op">(</span>ORIGIN_BS <span class="op">=</span> <span class="va">ORIGIN_PT_CODE</span>, ORIGIN_SZ <span class="op">=</span> <span class="va">SUBZONE_C</span>, DESTIN_BS <span class="op">=</span> <span class="va">DESTINATION_PT_CODE</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>Check for duplicate records:</p>
-<div class="cell">
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">duplicate</span> <span class="op">&lt;-</span> <span class="va">od_data</span> <span class="op">%&gt;%</span></span>
-<span>  <span class="fu">group_by_all</span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="fu">n</span><span class="op">(</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">1</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
-<span>  <span class="fu">ungroup</span><span class="op">(</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">duplicate</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">st_crs</span><span class="op">(</span><span class="va">mpsz</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 1,464 × 4
-   ORIGIN_BS DESTIN_BS TRIPS ORIGIN_SZ
-   &lt;chr&gt;     &lt;fct&gt;     &lt;dbl&gt; &lt;chr&gt;    
- 1 09047     02029         2 ORSZ02   
- 2 09047     02029         2 ORSZ02   
- 3 09047     02049        49 ORSZ02   
- 4 09047     02049        49 ORSZ02   
- 5 09047     02089        46 ORSZ02   
- 6 09047     02089        46 ORSZ02   
- 7 09047     02151        95 ORSZ02   
- 8 09047     02151        95 ORSZ02   
- 9 09047     02161        35 ORSZ02   
-10 09047     02161        35 ORSZ02   
-# ℹ 1,454 more rows</code></pre>
+<pre><code>Coordinate Reference System:
+  User input: EPSG:3414 
+  wkt:
+PROJCRS["SVY21 / Singapore TM",
+    BASEGEOGCRS["SVY21",
+        DATUM["SVY21",
+            ELLIPSOID["WGS 84",6378137,298.257223563,
+                LENGTHUNIT["metre",1]]],
+        PRIMEM["Greenwich",0,
+            ANGLEUNIT["degree",0.0174532925199433]],
+        ID["EPSG",4757]],
+    CONVERSION["Singapore Transverse Mercator",
+        METHOD["Transverse Mercator",
+            ID["EPSG",9807]],
+        PARAMETER["Latitude of natural origin",1.36666666666667,
+            ANGLEUNIT["degree",0.0174532925199433],
+            ID["EPSG",8801]],
+        PARAMETER["Longitude of natural origin",103.833333333333,
+            ANGLEUNIT["degree",0.0174532925199433],
+            ID["EPSG",8802]],
+        PARAMETER["Scale factor at natural origin",1,
+            SCALEUNIT["unity",1],
+            ID["EPSG",8805]],
+        PARAMETER["False easting",28001.642,
+            LENGTHUNIT["metre",1],
+            ID["EPSG",8806]],
+        PARAMETER["False northing",38744.572,
+            LENGTHUNIT["metre",1],
+            ID["EPSG",8807]]],
+    CS[Cartesian,2],
+        AXIS["northing (N)",north,
+            ORDER[1],
+            LENGTHUNIT["metre",1]],
+        AXIS["easting (E)",east,
+            ORDER[2],
+            LENGTHUNIT["metre",1]],
+    USAGE[
+        SCOPE["Cadastre, engineering survey, topographic mapping."],
+        AREA["Singapore - onshore and offshore."],
+        BBOX[1.13,103.59,1.47,104.07]],
+    ID["EPSG",3414]]</code></pre>
 </div>
 </div>
-<p>Since duplicates exist, we will remove them:</p>
+</section><section id="cleaning-and-updating-attribute-fields" class="level3" data-number="6.3"><h3 data-number="6.3" class="anchored" data-anchor-id="cleaning-and-updating-attribute-fields">
+<span class="header-section-number">6.3</span> Cleaning and Updating Attribute Fields</h3>
+<p>We remove redundant fields and add new ones. For <em>eldercare</em>, we add a <code>capacity</code> field, and for <em>hexagons</em>, we add a <code>demand</code> field, both with a constant value of 100.</p>
 <div class="cell">
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">od_data</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] 240554</code></pre>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">eldercare</span> <span class="op">&lt;-</span> <span class="va">eldercare</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">select</span><span class="op">(</span><span class="va">fid</span>, <span class="va">ADDRESSPOS</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">mutate</span><span class="op">(</span>capacity <span class="op">=</span> <span class="fl">100</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">od_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html">unique</a></span><span class="op">(</span><span class="va">od_data</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">od_data</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] 239822</code></pre>
-</div>
-</div>
-<p>Now, append the destination subzone codes:</p>
 <div class="cell">
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">od_data</span> <span class="op">&lt;-</span> <span class="fu">left_join</span><span class="op">(</span><span class="va">od_data</span>, <span class="va">busstop_mpsz</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"DESTIN_BS"</span> <span class="op">=</span> <span class="st">"BUS_STOP_N"</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
-<span>  <span class="fu">rename</span><span class="op">(</span>DESTIN_SZ <span class="op">=</span> <span class="va">SUBZONE_C</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
-<span>  <span class="fu">drop_na</span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
-<span>  <span class="fu">group_by</span><span class="op">(</span><span class="va">ORIGIN_SZ</span>, <span class="va">DESTIN_SZ</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
-<span>  <span class="fu">summarise</span><span class="op">(</span>MORNING_PEAK <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">TRIPS</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">od_data_fii</span> <span class="op">&lt;-</span> <span class="va">od_data</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>Finally, save the cleaned data:</p>
-<div class="cell">
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">write_rds</span><span class="op">(</span><span class="va">od_data_fii</span>, <span class="st">"data/rds/od_data_fii.rds"</span><span class="op">)</span></span>
-<span><span class="va">od_data_fii</span> <span class="op">&lt;-</span> <span class="fu">read_rds</span><span class="op">(</span><span class="st">"data/rds/od_data_fii.rds"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-</section></section><section id="visualising-spatial-interaction" class="level2" data-number="9"><h2 data-number="9" class="anchored" data-anchor-id="visualising-spatial-interaction">
-<span class="header-section-number">9</span> Visualising Spatial Interaction</h2>
-<p>In this section, we will prepare a desire line by using <strong>stplanr</strong> package.</p>
-<section id="removing-intra-zonal-flows" class="level3" data-number="9.1"><h3 data-number="9.1" class="anchored" data-anchor-id="removing-intra-zonal-flows">
-<span class="header-section-number">9.1</span> Removing Intra-Zonal Flows</h3>
-<p>We will exclude flows within the same zone to focus on inter-zonal flows. The code below removes these intra-zonal flows:</p>
-<div class="cell">
-<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">od_data_fij</span> <span class="op">&lt;-</span> <span class="va">od_data</span><span class="op">[</span><span class="va">od_data</span><span class="op">$</span><span class="va">ORIGIN_SZ</span> <span class="op">!=</span> <span class="va">od_data</span><span class="op">$</span><span class="va">DESTIN_SZ</span>,<span class="op">]</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">hexagons</span> <span class="op">&lt;-</span> <span class="va">hexagons</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">select</span><span class="op">(</span><span class="va">fid</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">mutate</span><span class="op">(</span>demand <span class="op">=</span> <span class="fl">100</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center">
@@ -702,18 +611,50 @@ Tip
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>The comma in the code <code>od_data1 &lt;- od_data[od_data$ORIGIN_SZ != od_data$DESTIN_SZ,]</code> is crucial because it specifies that you are subsetting the rows of the data frame based on a condition, while keeping all the columns.</p>
+<p>For this exercise, a constant value of 100 is used. In practice, actual demand and capacity values should be used.</p>
 </div>
 </div>
-<p>Save the result for future use:</p>
+</section></section><section id="aspatial-data-handling-and-wrangling" class="level2" data-number="7"><h2 data-number="7" class="anchored" data-anchor-id="aspatial-data-handling-and-wrangling">
+<span class="header-section-number">7</span> Aspatial Data Handling and Wrangling</h2>
+<section id="importing-distance-matrix" class="level3" data-number="7.1"><h3 data-number="7.1" class="anchored" data-anchor-id="importing-distance-matrix">
+<span class="header-section-number">7.1</span> Importing Distance Matrix</h3>
+<p>We import the <code>OD_Matrix.csv</code> file using <code>read_csv()</code> from the <strong>readr</strong> package, which creates a tibble data frame called <code>ODMatrix</code>.</p>
 <div class="cell">
-<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">write_rds</span><span class="op">(</span><span class="va">od_data_fij</span>, <span class="st">"data/rds/od_data_fij.rds"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">ODMatrix</span> <span class="op">&lt;-</span> <span class="fu">read_csv</span><span class="op">(</span><span class="st">"data/aspatial/OD_Matrix.csv"</span>, skip <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+</section><section id="tidying-the-distance-matrix" class="level3" data-number="7.2"><h3 data-number="7.2" class="anchored" data-anchor-id="tidying-the-distance-matrix">
+<span class="header-section-number">7.2</span> Tidying the Distance Matrix</h3>
+<p>The imported <em>ODMatrix</em> organizes the distance matrix column-wise.</p>
 <div class="cell">
-<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">od_data_fij</span> <span class="op">&lt;-</span> <span class="fu">read_rds</span><span class="op">(</span><span class="st">"data/rds/od_data_fij.rds"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">ODMatrix</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 6
+  origin_id destination_id entry_cost network_cost exit_cost total_cost
+      &lt;dbl&gt;          &lt;dbl&gt;      &lt;dbl&gt;        &lt;dbl&gt;     &lt;dbl&gt;      &lt;dbl&gt;
+1         1              1       668.       19847.      47.6     20562.
+2         1              2       668.       45027.      31.9     45727.
+3         1              3       668.       17644.     173.      18486.
+4         1              4       668.       36010.      92.2     36770.
+5         1              5       668.       31068.      64.6     31801.
+6         1              6       668.       31195.     117.      31980.</code></pre>
 </div>
-</section><section id="creating-desire-lines" class="level3" data-number="9.2"><h3 data-number="9.2" class="anchored" data-anchor-id="creating-desire-lines">
-<span class="header-section-number">9.2</span> Creating Desire Lines</h3>
+</div>
+<p>However, most R modeling packages expect the matrix in a format where rows represent origins (from) and columns represent destinations (to).</p>
+<p>We use <code>pivot_wider()</code> from the <strong>tidyr</strong> package to reshape the data from a long format to a wide format.</p>
+<div class="cell">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">distmat</span> <span class="op">&lt;-</span> <span class="va">ODMatrix</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">select</span><span class="op">(</span><span class="va">origin_id</span>, <span class="va">destination_id</span>, <span class="va">total_cost</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">pivot_wider</span><span class="op">(</span>names_from <span class="op">=</span> <span class="va">destination_id</span>, values_from <span class="op">=</span> <span class="va">total_cost</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">origin_id</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section><section id="converting-distance-to-kilometers" class="level3" data-number="7.3"><h3 data-number="7.3" class="anchored" data-anchor-id="converting-distance-to-kilometers">
+<span class="header-section-number">7.3</span> Converting Distance to Kilometers</h3>
+<p>Since the distances are in meters (due to the SVY21 projected coordinate system), we convert them to kilometers using the code below.</p>
+<div class="cell">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">distmat_km</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span><span class="op">(</span><span class="va">distmat</span><span class="op">/</span><span class="fl">1000</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section></section><section id="modelling-and-visualising-accessibility-using-hansen-method" class="level2" data-number="8"><h2 data-number="8" class="anchored" data-anchor-id="modelling-and-visualising-accessibility-using-hansen-method">
+<span class="header-section-number">8</span> Modelling and Visualising Accessibility using Hansen Method</h2>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -724,71 +665,273 @@ Note
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Desire lines are used to illustrate on a map the flows of people or goods from point to point based on the values from a matrix.</p>
+<p>Hansen Accessibility Model (1959) is based upon concept that the more accessible an area is to various activities and the more vacant land area has greater growth potential. It is a spatial analysis method used to measure accessibility by considering both the distance to and the capacity of services or facilities (e.g., eldercare centers). It calculates accessibility as a function of the proximity of a location to these facilities, weighted by their capacity, and decays with distance.</p>
+<p>For more info: <a href="https://frontdesk.co.in/planning/land-use-and-transport-planning/hansen-accessibility-model/">Hansen Accessibility Model - Front Desk Architects</a></p>
 </div>
 </div>
-<p>Next, we use <code>od2line()</code> from the <strong>stplanr</strong> package to generate desire lines:</p>
+<section id="computing-hansens-accessibility" class="level3" data-number="8.1"><h3 data-number="8.1" class="anchored" data-anchor-id="computing-hansens-accessibility">
+<span class="header-section-number">8.1</span> Computing Hansen’s Accessibility</h3>
+<p>We compute Hansen’s accessibility using the <code>ac()</code> function from the <strong>SpatialAcc</strong> package. The code below calculates accessibility, and the output is saved in a data frame called <code>acc_Hansen</code>.</p>
 <div class="cell">
-<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">flowLine</span> <span class="op">&lt;-</span> <span class="fu">od2line</span><span class="op">(</span>flow <span class="op">=</span> <span class="va">od_data_fij</span>, </span>
-<span>                    zones <span class="op">=</span> <span class="va">mpsz</span>,</span>
-<span>                    zone_code <span class="op">=</span> <span class="st">"SUBZONE_C"</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">acc_Hansen</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span><span class="fu">ac</span><span class="op">(</span><span class="va">hexagons</span><span class="op">$</span><span class="va">demand</span>,</span>
+<span>                            <span class="va">eldercare</span><span class="op">$</span><span class="va">capacity</span>,</span>
+<span>                            <span class="va">distmat_km</span>, </span>
+<span>                            power <span class="op">=</span> <span class="fl">2</span>, </span>
+<span>                            family <span class="op">=</span> <span class="st">"Hansen"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">flowLine</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">acc_Hansen</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Simple feature collection with 20625 features and 3 fields
-Geometry type: LINESTRING
-Dimension:     XY
-Bounding box:  xmin: 5105.594 ymin: 25813.33 xmax: 46654.41 ymax: 49552.79
-Projected CRS: SVY21 / Singapore TM
-First 10 features:
-   ORIGIN_SZ DESTIN_SZ MORNING_PEAK                       geometry
-1     AMSZ01    AMSZ02        10895 LINESTRING (29501.77 39419....
-2     AMSZ01    AMSZ03        15626 LINESTRING (29501.77 39419....
-3     AMSZ01    AMSZ04         2865 LINESTRING (29501.77 39419....
-4     AMSZ01    AMSZ05         8166 LINESTRING (29501.77 39419....
-5     AMSZ01    AMSZ06         2309 LINESTRING (29501.77 39419....
-6     AMSZ01    AMSZ07         1446 LINESTRING (29501.77 39419....
-7     AMSZ01    AMSZ08         2572 LINESTRING (29501.77 39419....
-8     AMSZ01    AMSZ09         2380 LINESTRING (29501.77 39419....
-9     AMSZ01    AMSZ10          287 LINESTRING (29501.77 39419....
-10    AMSZ01    AMSZ11          741 LINESTRING (29501.77 39419....</code></pre>
+<pre><code>  ac.hexagons.demand..eldercare.capacity..distmat_km..power...2..
+1                                                    1.648313e-14
+2                                                    1.096143e-16
+3                                                    3.865857e-17
+4                                                    1.482856e-17
+5                                                    1.051348e-17
+6                                                    5.076391e-18</code></pre>
 </div>
 </div>
-<p>Save the generated desire lines:</p>
+</section><section id="renaming-columns-and-formatting-data" class="level3" data-number="8.2"><h3 data-number="8.2" class="anchored" data-anchor-id="renaming-columns-and-formatting-data">
+<span class="header-section-number">8.2</span> Renaming Columns and Formatting Data</h3>
+<p>The default field names are messy, so we rename the output column to <code>accHansen</code> and convert the data to a tibble format.</p>
 <div class="cell">
-<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">write_rds</span><span class="op">(</span><span class="va">flowLine</span>, <span class="st">"data/rds/flowLine.rds"</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">acc_Hansen</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">"accHansen"</span></span>
+<span><span class="va">acc_Hansen</span> <span class="op">&lt;-</span> <span class="fu">tbl_df</span><span class="op">(</span><span class="va">acc_Hansen</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">flowLine</span> <span class="op">&lt;-</span> <span class="fu">read_rds</span><span class="op">(</span><span class="st">"data/rds/flowLine.rds"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-</section><section id="filtering-high-volume-flows" class="level3" data-number="9.3"><h3 data-number="9.3" class="anchored" data-anchor-id="filtering-high-volume-flows">
-<span class="header-section-number">9.3</span> Filtering High-Volume Flows</h3>
-<p>To simplify the visual output and focus on significant flows, we filter for high-volumes flows.</p>
-<div class="cell">
-<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="va">flowLine</span><span class="op">$</span><span class="va">MORNING_PEAK</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">acc_Hansen</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>    Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
-     1.0     16.0     84.0    993.9    429.0 218070.0 </code></pre>
+<pre><code># A tibble: 6 × 1
+  accHansen
+      &lt;dbl&gt;
+1  1.65e-14
+2  1.10e-16
+3  3.87e-17
+4  1.48e-17
+5  1.05e-17
+6  5.08e-18</code></pre>
 </div>
 </div>
-<p>For example, we can visualize flow greater than or equal to 2000 as shown below.</p>
+</section><section id="joining-with-hexagons-data" class="level3" data-number="8.3"><h3 data-number="8.3" class="anchored" data-anchor-id="joining-with-hexagons-data">
+<span class="header-section-number">8.3</span> Joining with Hexagons Data</h3>
+<p>We use <code>bind_cols()</code> from <strong>dplyr</strong> to join the accessibility data with the <code>hexagons</code> simple feature data frame. The output is saved as <code>hexagon_Hansen</code>.</p>
 <div class="cell">
-<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">tm_shape</span><span class="op">(</span><span class="va">mpsz</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">tm_polygons</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span><span class="va">flowLine</span> <span class="op">%&gt;%</span>  </span>
-<span>  <span class="co"># filter for 2000</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="va">MORNING_PEAK</span> <span class="op">&gt;=</span> <span class="fl">2000</span><span class="op">)</span> <span class="op">%&gt;%</span>  </span>
-<span><span class="fu">tm_shape</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">tm_lines</span><span class="op">(</span>lwd <span class="op">=</span> <span class="st">"MORNING_PEAK"</span>,</span>
-<span>           style <span class="op">=</span> <span class="st">"quantile"</span>,</span>
-<span>           scale <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.1</span>, <span class="fl">1</span>, <span class="fl">3</span>, <span class="fl">5</span>, <span class="fl">7</span>, <span class="fl">10</span><span class="op">)</span>,</span>
-<span>           n <span class="op">=</span> <span class="fl">6</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">hexagon_Hansen</span> <span class="op">&lt;-</span> <span class="fu">bind_cols</span><span class="op">(</span><span class="va">hexagons</span>, <span class="va">acc_Hansen</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/class.html">class</a></span><span class="op">(</span><span class="va">hexagon_Hansen</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "sf"         "data.frame"</code></pre>
+</div>
+</div>
+<p>Note that <code>hexagon_Hansen</code> is a simple feature data frame and not a typical tibble data frame.</p>
+</section><section id="visualising-hansens-accessibility" class="level3" data-number="8.4"><h3 data-number="8.4" class="anchored" data-anchor-id="visualising-hansens-accessibility">
+<span class="header-section-number">8.4</span> Visualising Hansen’s Accessibility</h3>
+<section id="extracting-map-extent" class="level4" data-number="8.4.1"><h4 data-number="8.4.1" class="anchored" data-anchor-id="extracting-map-extent">
+<span class="header-section-number">8.4.1</span> Extracting Map Extent</h4>
+<p>First, we extract the extent of the <code>hexagons</code> data using <code>st_bbox()</code> from the <strong>sf</strong> package.</p>
+<div class="cell">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">mapex</span> <span class="op">&lt;-</span> <span class="fu">st_bbox</span><span class="op">(</span><span class="va">hexagons</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section><section id="creating-the-map" class="level4" data-number="8.4.2"><h4 data-number="8.4.2" class="anchored" data-anchor-id="creating-the-map">
+<span class="header-section-number">8.4.2</span> Creating the Map</h4>
+<p>We use <strong>tmap</strong> to visualize accessibility to eldercare centers with Hansen’s method. The map shows accessibility in Singapore with color-coded hexagons.</p>
+<div class="cell">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">tmap_mode</span><span class="op">(</span><span class="st">"plot"</span><span class="op">)</span></span>
+<span><span class="fu">tm_shape</span><span class="op">(</span><span class="va">hexagon_Hansen</span>, bbox <span class="op">=</span> <span class="va">mapex</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>  <span class="fu">tm_fill</span><span class="op">(</span>col <span class="op">=</span> <span class="st">"accHansen"</span>, n <span class="op">=</span> <span class="fl">10</span>, style <span class="op">=</span> <span class="st">"quantile"</span>,</span>
+<span>          border.col <span class="op">=</span> <span class="st">"black"</span>, border.lwd <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">+</span></span>
+<span><span class="fu">tm_shape</span><span class="op">(</span><span class="va">eldercare</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">tm_symbols</span><span class="op">(</span>size <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">tm_layout</span><span class="op">(</span>main.title <span class="op">=</span> <span class="st">"Accessibility to eldercare: Hansen method"</span>,</span>
+<span>            main.title.position <span class="op">=</span> <span class="st">"center"</span>, main.title.size <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>            legend.outside <span class="op">=</span> <span class="cn">FALSE</span>, legend.height <span class="op">=</span> <span class="fl">0.45</span>, </span>
+<span>            legend.width <span class="op">=</span> <span class="fl">3.0</span>, legend.format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>digits <span class="op">=</span> <span class="fl">6</span><span class="op">)</span>,</span>
+<span>            legend.position <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"right"</span>, <span class="st">"top"</span><span class="op">)</span>, frame <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">tm_compass</span><span class="op">(</span>type<span class="op">=</span><span class="st">"8star"</span>, size <span class="op">=</span> <span class="fl">2</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">tm_scale_bar</span><span class="op">(</span>width <span class="op">=</span> <span class="fl">0.15</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">tm_grid</span><span class="op">(</span>lwd <span class="op">=</span> <span class="fl">0.1</span>, alpha <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
-<figure class="figure"><p><img src="Hands-on_Ex09a_files/figure-html/viz_high_flow-1.png" class="img-fluid figure-img" width="672"></p>
+<figure class="figure"><p><img src="Hands-on_Ex09a_files/figure-html/hansen_method-1.png" class="img-fluid figure-img" width="1152"></p>
 </figure>
 </div>
 </div>
-<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co">#           alpha = 0.3)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section></section><section id="statistical-graphic-visualization" class="level3" data-number="8.5"><h3 data-number="8.5" class="anchored" data-anchor-id="statistical-graphic-visualization">
+<span class="header-section-number">8.5</span> Statistical Graphic Visualization</h3>
+<p>In this section, we will compare the distribution of Hansen’s accessibility values by URA Planning Region.</p>
+<section id="comparing-hansens-accessibility-by-region" class="level4" data-number="8.5.1"><h4 data-number="8.5.1" class="anchored" data-anchor-id="comparing-hansens-accessibility-by-region">
+<span class="header-section-number">8.5.1</span> Comparing Hansen’s Accessibility by Region</h4>
+<p>We first add the planning region field to <code>hexagon_Hansen</code> by spatially joining it with the <code>mpsz</code> dataset.</p>
+<div class="cell">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">hexagon_Hansen</span> <span class="op">&lt;-</span> <span class="fu">st_join</span><span class="op">(</span><span class="va">hexagon_Hansen</span>, <span class="va">mpsz</span>, join <span class="op">=</span> <span class="va">st_intersects</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Then, we use <code>ggplot()</code> to visualize the distribution of Hansen’s accessibility values by URA Planning Region, using a boxplot.</p>
+<div class="cell">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">ggplot</span><span class="op">(</span>data<span class="op">=</span><span class="va">hexagon_Hansen</span>, </span>
+<span>       <span class="fu">aes</span><span class="op">(</span>y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">log</a></span><span class="op">(</span><span class="va">accHansen</span><span class="op">)</span>, x<span class="op">=</span> <span class="va">REGION_N</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">geom_boxplot</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">geom_point</span><span class="op">(</span>stat<span class="op">=</span><span class="st">"summary"</span>, fun.y<span class="op">=</span><span class="st">"mean"</span>, colour <span class="op">=</span><span class="st">"red"</span>, size<span class="op">=</span><span class="fl">2</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure"><p><img src="Hands-on_Ex09a_files/figure-html/hexagon_hansen_boxplot-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Observations:</strong> The Central Region shows the highest and most consistent accessibility, while the West Region exhibits the most variation and lower overall accessibility. The East Region has many outliers, indicating some areas with very low accessibility compared to the rest. The North-East and North Regions show moderate variation, with the North Region exhibiting more negative extremes than the North-East.</p>
+</div>
+</div>
+</section></section></section><section id="modelling-and-visualising-accessibility-using-kd2sfca-method" class="level2" data-number="9"><h2 data-number="9" class="anchored" data-anchor-id="modelling-and-visualising-accessibility-using-kd2sfca-method">
+<span class="header-section-number">9</span> Modelling and Visualising Accessibility using KD2SFCA Method</h2>
+<section id="computing-accessibility" class="level3" data-number="9.1"><h3 data-number="9.1" class="anchored" data-anchor-id="computing-accessibility">
+<span class="header-section-number">9.1</span> Computing Accessibility</h3>
+<p>We calculate accessibility using the KD2SFCA method with the <code>ac()</code> function from <strong>SpatialAcc</strong>. <code><a href="https://rdrr.io/r/base/data.frame.html">data.frame()</a></code> is used to save the output in a data frame called <code>acc_KD2SFCA</code>.</p>
+<p>Note that KD2SFCA is used for family argument.</p>
+<div class="cell">
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">acc_KD2SFCA</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span><span class="fu">ac</span><span class="op">(</span><span class="va">hexagons</span><span class="op">$</span><span class="va">demand</span>, <span class="va">eldercare</span><span class="op">$</span><span class="va">capacity</span>, <span class="va">distmat_km</span>, d0 <span class="op">=</span> <span class="fl">50</span>, power <span class="op">=</span> <span class="fl">2</span>, family <span class="op">=</span> <span class="st">"KD2SFCA"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">acc_KD2SFCA</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">"accKD2SFCA"</span></span>
+<span><span class="va">acc_KD2SFCA</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/as_tibble.html">as_tibble</a></span><span class="op">(</span><span class="va">acc_KD2SFCA</span><span class="op">)</span></span>
+<span><span class="va">hexagon_KD2SFCA</span> <span class="op">&lt;-</span> <span class="fu">bind_cols</span><span class="op">(</span><span class="va">hexagons</span>, <span class="va">acc_KD2SFCA</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section><section id="visualizing-kd2sfca-accessibility" class="level3" data-number="9.2"><h3 data-number="9.2" class="anchored" data-anchor-id="visualizing-kd2sfca-accessibility">
+<span class="header-section-number">9.2</span> Visualizing KD2SFCA Accessibility</h3>
+<p>We create a map showing accessibility using the KD2SFCA method.</p>
+<div class="cell">
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">tmap_mode</span><span class="op">(</span><span class="st">"plot"</span><span class="op">)</span></span>
+<span><span class="fu">tm_shape</span><span class="op">(</span><span class="va">hexagon_KD2SFCA</span>, bbox <span class="op">=</span> <span class="va">mapex</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>  <span class="fu">tm_fill</span><span class="op">(</span>col <span class="op">=</span> <span class="st">"accKD2SFCA"</span>, n <span class="op">=</span> <span class="fl">10</span>, style <span class="op">=</span> <span class="st">"quantile"</span>, border.col <span class="op">=</span> <span class="st">"black"</span>, border.lwd <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">tm_shape</span><span class="op">(</span><span class="va">eldercare</span><span class="op">)</span> <span class="op">+</span> <span class="fu">tm_symbols</span><span class="op">(</span>size <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">tm_layout</span><span class="op">(</span>main.title <span class="op">=</span> <span class="st">"Accessibility to Eldercare: KD2SFCA Method"</span>, main.title.position <span class="op">=</span> <span class="st">"center"</span>, main.title.size <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure"><p><img src="Hands-on_Ex09a_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid figure-img" width="1152"></p>
+</figure>
+</div>
+</div>
+</div>
+</section><section id="statistical-graphic-visualisation" class="level3" data-number="9.3"><h3 data-number="9.3" class="anchored" data-anchor-id="statistical-graphic-visualisation">
+<span class="header-section-number">9.3</span> Statistical Graphic Visualisation</h3>
+<p>Now, we will compare the distribution of KD2CFA accessibility values by URA Planning Region.</p>
+<p>Firstly, we need to add the planning region field into <em>hexagon_KD2SFCA</em> simple feature data frame by using the code below.</p>
+<div class="cell">
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">hexagon_KD2SFCA</span> <span class="op">&lt;-</span> <span class="fu">st_join</span><span class="op">(</span><span class="va">hexagon_KD2SFCA</span>, <span class="va">mpsz</span>, </span>
+<span>                          join <span class="op">=</span> <span class="va">st_intersects</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Next, ggplot() will be used to plot the distribution by using boxplot graphical method.</p>
+<div class="cell">
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">ggplot</span><span class="op">(</span>data<span class="op">=</span><span class="va">hexagon_KD2SFCA</span>, </span>
+<span>       <span class="fu">aes</span><span class="op">(</span>y <span class="op">=</span> <span class="va">accKD2SFCA</span>, </span>
+<span>           x<span class="op">=</span> <span class="va">REGION_N</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">geom_boxplot</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">geom_point</span><span class="op">(</span>stat<span class="op">=</span><span class="st">"summary"</span>, </span>
+<span>             fun.y<span class="op">=</span><span class="st">"mean"</span>, </span>
+<span>             colour <span class="op">=</span><span class="st">"red"</span>, </span>
+<span>             size<span class="op">=</span><span class="fl">2</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure"><p><img src="Hands-on_Ex09a_files/figure-html/unnamed-chunk-19-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Observations:</strong></p>
+<ul>
+<li>The Central Region stands out with significantly higher accessibility to services compared to other regions.</li>
+<li>Most regions have lower accessibility, with minimal differences between the East, North-East, North, and West Regions.</li>
+</ul>
+</div>
+</div>
+</section></section><section id="modelling-and-visualising-accessibility-using-spatial-accessibility-measure-sam-method" class="level2" data-number="10"><h2 data-number="10" class="anchored" data-anchor-id="modelling-and-visualising-accessibility-using-spatial-accessibility-measure-sam-method">
+<span class="header-section-number">10</span> Modelling and Visualising Accessibility using Spatial Accessibility Measure (SAM) Method</h2>
+<section id="computing-accessibility-1" class="level3" data-number="10.1"><h3 data-number="10.1" class="anchored" data-anchor-id="computing-accessibility-1">
+<span class="header-section-number">10.1</span> Computing Accessibility</h3>
+<p>We repeat the steps for the SAM method, using <code>ac()</code>.</p>
+<div class="cell">
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">acc_SAM</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span><span class="fu">ac</span><span class="op">(</span><span class="va">hexagons</span><span class="op">$</span><span class="va">demand</span>, <span class="va">eldercare</span><span class="op">$</span><span class="va">capacity</span>, <span class="va">distmat_km</span>, d0 <span class="op">=</span> <span class="fl">50</span>, power <span class="op">=</span> <span class="fl">2</span>, family <span class="op">=</span> <span class="st">"SAM"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">acc_SAM</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">"accSAM"</span></span>
+<span><span class="va">acc_SAM</span> <span class="op">&lt;-</span> <span class="fu">tbl_df</span><span class="op">(</span><span class="va">acc_SAM</span><span class="op">)</span></span>
+<span><span class="va">hexagon_SAM</span> <span class="op">&lt;-</span> <span class="fu">bind_cols</span><span class="op">(</span><span class="va">hexagons</span>, <span class="va">acc_SAM</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section><section id="visualizing-sam-accessibility" class="level3" data-number="10.2"><h3 data-number="10.2" class="anchored" data-anchor-id="visualizing-sam-accessibility">
+<span class="header-section-number">10.2</span> Visualizing SAM Accessibility</h3>
+<p>We create a map to visualize SAM accessibility.</p>
+<div class="cell">
+<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">tm_shape</span><span class="op">(</span><span class="va">hexagon_SAM</span>, bbox <span class="op">=</span> <span class="va">mapex</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>  <span class="fu">tm_fill</span><span class="op">(</span>col <span class="op">=</span> <span class="st">"accSAM"</span>, n <span class="op">=</span> <span class="fl">10</span>, style <span class="op">=</span> <span class="st">"quantile"</span>, border.col <span class="op">=</span> <span class="st">"black"</span>, border.lwd <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">tm_shape</span><span class="op">(</span><span class="va">eldercare</span><span class="op">)</span> <span class="op">+</span> <span class="fu">tm_symbols</span><span class="op">(</span>size <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">tm_layout</span><span class="op">(</span>main.title <span class="op">=</span> <span class="st">"Accessibility to Eldercare: SAM Method"</span>, main.title.position <span class="op">=</span> <span class="st">"center"</span>, main.title.size <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure"><p><img src="Hands-on_Ex09a_files/figure-html/unnamed-chunk-21-1.png" class="img-fluid figure-img" width="1152"></p>
+</figure>
+</div>
+</div>
+</div>
+</section><section id="comparing-sam-accessibility-by-region" class="level3" data-number="10.3"><h3 data-number="10.3" class="anchored" data-anchor-id="comparing-sam-accessibility-by-region">
+<span class="header-section-number">10.3</span> Comparing SAM Accessibility by Region</h3>
+<p>We add the planning region field to <code>hexagon_SAM</code> and visualize accessibility values using boxplots.</p>
+<div class="cell">
+<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">hexagon_SAM</span> <span class="op">&lt;-</span> <span class="fu">st_join</span><span class="op">(</span><span class="va">hexagon_SAM</span>, <span class="va">mpsz</span>, join <span class="op">=</span> <span class="va">st_intersects</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">ggplot</span><span class="op">(</span>data<span class="op">=</span><span class="va">hexagon_SAM</span>, </span>
+<span>       <span class="fu">aes</span><span class="op">(</span>y <span class="op">=</span> <span class="va">accSAM</span>, x<span class="op">=</span> <span class="va">REGION_N</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">geom_boxplot</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">geom_point</span><span class="op">(</span>stat<span class="op">=</span><span class="st">"summary"</span>, fun.y<span class="op">=</span><span class="st">"mean"</span>, colour <span class="op">=</span><span class="st">"red"</span>, size<span class="op">=</span><span class="fl">2</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure"><p><img src="Hands-on_Ex09a_files/figure-html/unnamed-chunk-22-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Observations:</strong></p>
+<p>A relatively large number of smaller outliers indicate some areas within the Central Region have much higher accessibility than most others.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Overall Observations comparing the three methods:</strong></p>
+<ul>
+<li><p>Across all three methods—Hansen, KD2SFCA, and SAM—the Central Region consistently had the highest accessibility values.</p></li>
+<li><p>The Hansen method revealed a broader range of accessibility across the Central Region, while KD2SFCA and SAM produced similar results with fewer outliers and a more concentrated range of values.</p></li>
+</ul>
+</div>
 </div>
 
 

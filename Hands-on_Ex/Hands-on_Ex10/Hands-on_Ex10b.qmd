@@ -1,5 +1,5 @@
 ---
-title: "9B: Calibrating Spatial Interaction Models with R"
+title: "10B: Calibrating Spatial Interaction Models with R"
 subtitle: "In this exercise, we will learn to calibrate Spatial Interaction Models (SIMs) using various regression methods to determine factors affecting public bus passenger flows during the morning peak in Singapore."
 # draft: true
 date: "Sep 29, 2024"
@@ -20,7 +20,7 @@ number-offset: 1
 editor: visual
 ---
 
-## Exercise 9B Reference
+## Exercise 10B Reference
 
 [R for Geospatial Data Science and Analytics - 16  Calibrating Spatial Interaction Models with R](https://r4gdsa.netlify.app/chap16)
 
@@ -53,10 +53,10 @@ Calibration is the process of adjusting parameters in the model to try and get t
 
 ## The Data
 
-This exercise is a continuation of Hands-on Exercise 9A and the following datasets will be used in this exercise:
+This exercise is a continuation of Hands-on Exercise 10A and the following datasets will be used in this exercise:
 
 | **Data Set** | **Description** | **Format** |
-|---------------|-------------------------------------------|---------------|
+|----------------|----------------------------------------|----------------|
 | od_data.rds | Weekday morning peak passenger flows at the planning subzone level. | RDS |
 | mpsz.rds | URA Master Plan 2019 Planning Subzone boundary in simple feature tibble data frame format. | RDS |
 | pop.csv | Additional attribute data file providing population information. | CSV |
@@ -70,7 +70,7 @@ These datasets will be utilized to calibrate and visualize the Spatial Interacti
 The following R packages will be used in this exercise:
 
 | **Package** | **Purpose** | **Use Case in Exercise** |
-|--------------|--------------------------|--------------------------------|
+|-----------------|-------------------------|------------------------------|
 | **sf** | Imports, integrates, processes, and transforms vector-based geospatial data. | Handling vector geospatial data, such as the URA Master Plan 2019 Planning Subzone boundary. |
 | **tidyverse** | A collection of packages for data science tasks such as data manipulation, visualization, and modeling. | Importing CSV files, wrangling data, and performing relational joins. |
 | **tmap** | Creates static and interactive thematic maps using cartographic quality elements. | Visualizing regional development indicators and plotting maps showing spatial relationships and patterns. |
@@ -85,7 +85,6 @@ To install and load these packages, use the following code:
 ```{r}
 pacman::p_load(tmap, sf, sp, performance, reshape2, ggpubr, tidyverse)
 ```
-
 
 ### Computing Distance Matrix
 
@@ -121,7 +120,6 @@ Now, we compute the Euclidean distance between centroids of planning subzones us
 **Do you know why the distance is calculated between two centroids of a pair of spatial polygons?**
 
 Centroids simplify distance calculations by representing each polygon with a single point, avoiding the complexity of measuring distances between all boundary points of irregular shapes
-
 :::
 
 ```{r}
@@ -153,11 +151,9 @@ head(distPair, 10)
 ```
 
 ::: callout-note
-
 **Observations:**
 
 The within zone distance is 0.
-
 :::
 
 ### Updating Intra-Zonal Distances
@@ -171,6 +167,7 @@ distPair %>%
   filter(dist > 0) %>%
   summary()
 ```
+
 Then, we replace intra-zonal distances (which are 0) with a constant value of 50m.
 
 ```{r}
@@ -178,6 +175,7 @@ distPair$dist <- ifelse(distPair$dist == 0, 50, distPair$dist)
 distPair %>%
   summary()
 ```
+
 ### Renaming Fields and Saving
 
 Next, qe rename the origin and destination fields for clarity.
@@ -262,7 +260,7 @@ In this section, we will prepare the origin and destination attribute data.
 pop <- read_csv("data/aspatial/pop.csv")
 ```
 
-### Geospatial Data Wrangling 
+### Geospatial Data Wrangling
 
 Join the population data with `mpsz`.
 
@@ -329,11 +327,9 @@ ggplot(data = SIM_data, aes(x = TRIPS)) +
 ```
 
 ::: callout-note
-
 **Observations:**
 
 Notice that the distribution is highly skewed and not resemble bell shape or also known as normal distribution.
-
 :::
 
 We can also visualize the relationship between `TRIPS` and `distance` using a scatter plot.
@@ -345,11 +341,9 @@ ggplot(data = SIM_data, aes(x = dist, y = TRIPS)) +
 ```
 
 ::: callout-note
-
 **Observations:**
 
 the relationship between `TRIPS` and `distance` hardly resemble a linear relationship.
-
 :::
 
 We can perform log-transformation on both variables to make he relationship appears more linear.
@@ -369,6 +363,7 @@ We will compute the summary statistics of all variables in SIM_data data frame.
 ```{r}
 summary(SIM_data)
 ```
+
 The print report above reveals that variables ORIGIN_AGE7_12, ORIGIN_AGE13_24, ORIGIN_AGE25_64,DESTIN_AGE7_12, DESTIN_AGE13_24, DESTIN_AGE25_64 consist of 0 values.
 
 ```{r}
@@ -381,18 +376,17 @@ SIM_data$ORIGIN_AGE25_64 <- ifelse(SIM_data$ORIGIN_AGE25_64 == 0, 0.99, SIM_data
 
 summary(SIM_data)
 ```
+
 All the 0 values have been replaced by 0.99.
 
 ### Unconstrained Spatial Interaction Model
 
-In this section, we will calibrate an unconstrained spatial interaction model by using `glm()` of Base Stats. 
+In this section, we will calibrate an unconstrained spatial interaction model by using `glm()` of Base Stats.
 
 ::: callout-note
-
 The general formula of Unconstrained Spatial Interaction Model
 
 $\lambda_{ij} = \exp \left( k + \mu \ln V_i + \alpha \ln W_j - \beta \ln d_{ij} \right)$
-
 :::
 
 The explanatory variables are origin population by different age cohort, destination population by different age cohort (i.e. `ORIGIN_AGE25_64`) and distance between origin and destination in km (i.e. `dist`). To fit an unconstrained Spatial Interaction Model using Poisson regression:
@@ -404,6 +398,7 @@ uncSIM <- glm(formula = TRIPS ~ log(ORIGIN_AGE25_64) + log(DESTIN_AGE25_64) + lo
               na.action = na.exclude)
 uncSIM
 ```
+
 ### Calculating R-squared for Unconstrained SIM
 
 In order to measure how much variation of the trips can be accounted by the model, we will define a function to calculate R-squared and apply it to the model.
@@ -428,17 +423,15 @@ r2_mcfadden(uncSIM)
 ```
 
 ::: callout-note
-
 **McFadden's R-squared**
 
-- **Interpretation**: McFadden's R-squared is used for logistic regression models and measures the improvement of the fitted model over the null model. It is not directly comparable to the traditional R-squared.
-- **Range**: McFadden's R-squared values typically range from 0 to just under 1.
-  - **0**: The model is no better than the null model.
-  - **1**: The model perfectly predicts the outcome.
-- **Good Range**:
-  - **0.2 to 0.4**: Considered good for logistic regression models.
-  - **Above 0.4**: Indicates a very strong model.
-
+-   **Interpretation**: McFadden's R-squared is used for logistic regression models and measures the improvement of the fitted model over the null model. It is not directly comparable to the traditional R-squared.
+-   **Range**: McFadden's R-squared values typically range from 0 to just under 1.
+    -   **0**: The model is no better than the null model.
+    -   **1**: The model perfectly predicts the outcome.
+-   **Good Range**:
+    -   **0.2 to 0.4**: Considered good for logistic regression models.
+    -   **Above 0.4**: Indicates a very strong model.
 :::
 
 ### Origin (Production) Constrained SIM
@@ -446,7 +439,6 @@ r2_mcfadden(uncSIM)
 In this section, we will fit an origin constrained SIM, where the trips are constrained by the origin.
 
 ::: callout-note
-
 The general formula of Origin Constrained Spatial Interaction Model
 
 $\lambda_{ij} = \exp\left( k + \mu_i + \alpha \ln W_j - \beta \ln d_{ij} \right)$
@@ -461,6 +453,7 @@ orcSIM <- glm(formula = TRIPS ~ ORIGIN_SZ + log(DESTIN_AGE25_64) + log(dist),
               na.action = na.exclude)
 summary(orcSIM)
 ```
+
 Similarly, we can calculate R-squared for the origin-constrained model:
 
 ```{r}
@@ -472,14 +465,11 @@ CalcRSquared(orcSIM$data$TRIPS, orcSIM$fitted.values)
 In this section, We will fit a destination-constrained Spatial Interaction Model (SIM).
 
 ::: callout-note
-
 The general formula of Destination Constrained Spatial Interaction Model
 
 $\lambda_{ij} = \exp \left( k + \mu \ln V_i + \alpha_i - \beta \ln d_{ij} \right)$
 
-
 Notice that the difference between Unconstrained Spatial Interaction Model and this formula lies in the third term. In the Unconstrained Spatial Interaction Model formula, it is $\alpha \ln W_j$ as compared to $\alpha_i$ in Destination Constrained Spatial Interaction Model.
-
 :::
 
 ```{r}
@@ -504,14 +494,11 @@ CalcRSquared(decSIM$data$TRIPS, decSIM$fitted.values)
 In this section, We will fit a doubly constrained SIM.
 
 ::: callout-note
-
 The general formula of Doubly Constrained Spatial Interaction Model
 
 $\lambda_{ij} = \exp \left( k + \mu_i + \alpha_i - \beta \ln d_{ij} \right)$
 
-
 Notice that the difference between Unconstrained Spatial Interaction Model and this formula lies in the second and third term. Comparing Unconstrained Spatial Interaction Model formula and Doubly Constrained Spatial Interaction Model, it is $\mu \ln V_i$ compared to $\mu_i$ and $\alpha \ln W_j$ compared to $\alpha_i$ respectively.
-
 :::
 
 ```{r}
@@ -532,11 +519,9 @@ CalcRSquared(dbcSIM$data$TRIPS, dbcSIM$fitted.values)
 ```
 
 ::: callout-note
-
 **Observations:**
 
 There is a relatively greater improvement in the $R^2$ value using the doubly constrained model.
-
 :::
 
 ### Model Comparison
@@ -552,7 +537,6 @@ model_list <- list(unconstrained=uncSIM,
                    doublyConstrained=dbcSIM)
 ```
 
-
 Then, compare their RMSE values:
 
 ```{r}
@@ -561,11 +545,9 @@ compare_performance(model_list,
 ```
 
 ::: callout-note
-
 **Observations:**
 
 The doubly constrained SIM has the lowest RMSE, making it the best model.
-
 :::
 
 ### Visualizing Fitted Values
@@ -637,14 +619,11 @@ ggarrange(unc_p, orc_p, dec_p, dbc_p,
 ```
 
 ::: callout-note
-
 **Observations:**
 
-- The doubly constrained model provides the best fit to the data, as seen by the closer clustering around the diagonal line.
+-   The doubly constrained model provides the best fit to the data, as seen by the closer clustering around the diagonal line.
 
-- Both the origin and destination-constrained models improve over the unconstrained model but still show some deviations.
+-   Both the origin and destination-constrained models improve over the unconstrained model but still show some deviations.
 
-- The unconstrained model performs the worst, with a weak relationship between predicted and actual values.
-
+-   The unconstrained model performs the worst, with a weak relationship between predicted and actual values.
 :::
-

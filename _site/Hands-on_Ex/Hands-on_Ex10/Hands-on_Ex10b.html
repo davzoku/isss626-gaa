@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <meta name="author" content="Teng Kok Wai (Walter)">
 <meta name="dcterms.date" content="2024-09-29">
-<title>9B: Calibrating Spatial Interaction Models with R – Walter Teng’s Coursework for SMU ISSS626: Geospatial Analytics and Applications</title>
+<title>10B: Calibrating Spatial Interaction Models with R – Walter Teng’s Coursework for SMU ISSS626: Geospatial Analytics and Applications</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -133,13 +133,13 @@ window.Quarto = {
   typesetMath
 };
 </script><link rel="stylesheet" href="../../styles.css">
-<meta property="og:title" content="9B: Calibrating Spatial Interaction Models with R – Walter Teng’s Coursework for SMU ISSS626: Geospatial Analytics and Applications">
+<meta property="og:title" content="10B: Calibrating Spatial Interaction Models with R – Walter Teng’s Coursework for SMU ISSS626: Geospatial Analytics and Applications">
 <meta property="og:description" content="In this exercise, we will learn to calibrate Spatial Interaction Models (SIMs) using various regression methods to determine factors affecting public bus passenger flows during the morning peak in Singapore.">
-<meta property="og:image" content="https://isss626-gaa.netlify.app/Hands-on_Ex/Hands-on_Ex09/og-img.png">
+<meta property="og:image" content="https://isss626-gaa.netlify.app/Hands-on_Ex/Hands-on_Ex10/og-img.png">
 <meta property="og:site_name" content="Walter Teng's Coursework for SMU ISSS626: Geospatial Analytics and Applications">
-<meta name="twitter:title" content="9B: Calibrating Spatial Interaction Models with R – Walter Teng’s Coursework for SMU ISSS626: Geospatial Analytics and Applications">
+<meta name="twitter:title" content="10B: Calibrating Spatial Interaction Models with R – Walter Teng’s Coursework for SMU ISSS626: Geospatial Analytics and Applications">
 <meta name="twitter:description" content="In this exercise, we will learn to calibrate Spatial Interaction Models (SIMs) using various regression methods to determine factors affecting public bus passenger flows during the morning peak in Singapore.">
-<meta name="twitter:image" content="https://isss626-gaa.netlify.app/Hands-on_Ex/Hands-on_Ex09/og-img.png">
+<meta name="twitter:image" content="https://isss626-gaa.netlify.app/Hands-on_Ex/Hands-on_Ex10/og-img.png">
 <meta name="twitter:creator" content="@davzoku">
 <meta name="twitter:site" content="@davzoku">
 <meta name="twitter:card" content="summary_large_image">
@@ -325,7 +325,7 @@ window.Quarto = {
         <nav id="TOC" role="doc-toc" class="toc-active"><h2 id="toc-title">On this page</h2>
    
   <ul>
-<li><a href="#exercise-9b-reference" id="toc-exercise-9b-reference" class="nav-link active" data-scroll-target="#exercise-9b-reference"><span class="header-section-number">1</span> Exercise 9B Reference</a></li>
+<li><a href="#exercise-10b-reference" id="toc-exercise-10b-reference" class="nav-link active" data-scroll-target="#exercise-10b-reference"><span class="header-section-number">1</span> Exercise 10B Reference</a></li>
   <li><a href="#overview" id="toc-overview" class="nav-link" data-scroll-target="#overview"><span class="header-section-number">2</span> Overview</a></li>
   <li><a href="#learning-outcome" id="toc-learning-outcome" class="nav-link" data-scroll-target="#learning-outcome"><span class="header-section-number">3</span> Learning Outcome</a></li>
   <li><a href="#the-data" id="toc-the-data" class="nav-link" data-scroll-target="#the-data"><span class="header-section-number">4</span> The Data</a></li>
@@ -378,7 +378,7 @@ window.Quarto = {
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block default"><div class="quarto-title">
-<h1 class="title">9B: Calibrating Spatial Interaction Models with R</h1>
+<h1 class="title">10B: Calibrating Spatial Interaction Models with R</h1>
 <p class="subtitle lead">In this exercise, we will learn to calibrate Spatial Interaction Models (SIMs) using various regression methods to determine factors affecting public bus passenger flows during the morning peak in Singapore.</p>
 </div>
 
@@ -403,7 +403,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Modified</div>
     <div class="quarto-title-meta-contents">
-      <p class="date-modified">September 29, 2024</p>
+      <p class="date-modified">October 14, 2024</p>
     </div>
   </div>
     
@@ -411,8 +411,8 @@ window.Quarto = {
   
 
 
-</header><section id="exercise-9b-reference" class="level2" data-number="1"><h2 data-number="1" class="anchored" data-anchor-id="exercise-9b-reference">
-<span class="header-section-number">1</span> Exercise 9B Reference</h2>
+</header><section id="exercise-10b-reference" class="level2" data-number="1"><h2 data-number="1" class="anchored" data-anchor-id="exercise-10b-reference">
+<span class="header-section-number">1</span> Exercise 10B Reference</h2>
 <p><a href="https://r4gdsa.netlify.app/chap16">R for Geospatial Data Science and Analytics - 16&nbsp; Calibrating Spatial Interaction Models with R</a></p>
 </section><section id="overview" class="level2" data-number="2"><h2 data-number="2" class="anchored" data-anchor-id="overview">
 <span class="header-section-number">2</span> Overview</h2>
@@ -449,12 +449,12 @@ Note
 <li>Visualize and compare model performance using <strong>ggplot2</strong> and <strong>performance</strong> packages.</li>
 </ul></section><section id="the-data" class="level2" data-number="4"><h2 data-number="4" class="anchored" data-anchor-id="the-data">
 <span class="header-section-number">4</span> The Data</h2>
-<p>This exercise is a continuation of Hands-on Exercise 9A and the following datasets will be used in this exercise:</p>
+<p>This exercise is a continuation of Hands-on Exercise 10A and the following datasets will be used in this exercise:</p>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 20%">
-<col style="width: 58%">
-<col style="width: 20%">
+<col style="width: 22%">
+<col style="width: 55%">
+<col style="width: 22%">
 </colgroup>
 <thead><tr class="header">
 <th><strong>Data Set</strong></th>
@@ -488,9 +488,9 @@ Note
 <p>The following R packages will be used in this exercise:</p>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 19%">
-<col style="width: 36%">
-<col style="width: 44%">
+<col style="width: 23%">
+<col style="width: 34%">
+<col style="width: 41%">
 </colgroup>
 <thead><tr class="header">
 <th><strong>Package</strong></th>
@@ -833,7 +833,7 @@ Note
 <span>  <span class="fu">geom_histogram</span><span class="op">(</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
-<figure class="figure"><p><img src="Hands-on_Ex09b_files/figure-html/hist_trips-1.png" class="img-fluid figure-img" width="672"></p>
+<figure class="figure"><p><img src="Hands-on_Ex10b_files/figure-html/hist_trips-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -859,7 +859,7 @@ Note
 <span>  <span class="fu">geom_smooth</span><span class="op">(</span>method <span class="op">=</span> <span class="va">lm</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
-<figure class="figure"><p><img src="Hands-on_Ex09b_files/figure-html/scatter_trips_dist-1.png" class="img-fluid figure-img" width="672"></p>
+<figure class="figure"><p><img src="Hands-on_Ex10b_files/figure-html/scatter_trips_dist-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -885,7 +885,7 @@ Note
 <span>  <span class="fu">geom_smooth</span><span class="op">(</span>method <span class="op">=</span> <span class="va">lm</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
-<figure class="figure"><p><img src="Hands-on_Ex09b_files/figure-html/scatter_log_trips_dist-1.png" class="img-fluid figure-img" width="672"></p>
+<figure class="figure"><p><img src="Hands-on_Ex10b_files/figure-html/scatter_log_trips_dist-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -2572,7 +2572,7 @@ Note
 <span>          nrow <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
-<figure class="figure"><p><img src="Hands-on_Ex09b_files/figure-html/compare_models-1.png" class="img-fluid figure-img" width="1152"></p>
+<figure class="figure"><p><img src="Hands-on_Ex10b_files/figure-html/compare_models-1.png" class="img-fluid figure-img" width="1152"></p>
 </figure>
 </div>
 </div>
