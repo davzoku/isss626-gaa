@@ -115,12 +115,6 @@ condo_resale = read_csv("data/aspatial/Condo_resale_2015.csv")
 glimpse(condo_resale)
 ```
 
-```{r}
-#| echo: false
-
-knitr::kable(condo_resale)
-```
-
 To display summary statistics of *condo_resale*:
 
 ```{r}
