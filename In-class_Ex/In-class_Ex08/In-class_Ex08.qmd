@@ -93,10 +93,10 @@ In the code below, the `get_coords` function retrieves latitude and longitude co
 
 ```{r}
 get_coords <- function(add_list){
-  
+
   # Create a data frame to store all retrieved coordinates
   postal_coords <- data.frame()
-    
+
   for (i in add_list){
     #print(i)
 
@@ -107,53 +107,53 @@ get_coords <- function(add_list){
     data <- fromJSON(rawToChar(r$content))
     found <- data$found
     res <- data$results
-    
+
     # Create a new data frame for each address
     new_row <- data.frame()
-    
-    # If single result, append 
+
+    # If single result, append
     if (found == 1){
-      postal <- res$POSTAL 
+      postal <- res$POSTAL
       lat <- res$LATITUDE
       lng <- res$LONGITUDE
-      new_row <- data.frame(address= i, 
-                            postal = postal, 
-                            latitude = lat, 
+      new_row <- data.frame(address= i,
+                            postal = postal,
+                            latitude = lat,
                             longitude = lng)
     }
-    
+
     # If multiple results, drop NIL and append top 1
     else if (found > 1){
       # Remove those with NIL as postal
       res_sub <- res[res$POSTAL != "NIL", ]
-      
+
       # Set as NA first if no Postal
       if (nrow(res_sub) == 0) {
-          new_row <- data.frame(address= i, 
-                                postal = NA, 
-                                latitude = NA, 
+          new_row <- data.frame(address= i,
+                                postal = NA,
+                                latitude = NA,
                                 longitude = NA)
       }
-      
+
       else{
         top1 <- head(res_sub, n = 1)
-        postal <- top1$POSTAL 
+        postal <- top1$POSTAL
         lat <- top1$LATITUDE
         lng <- top1$LONGITUDE
-        new_row <- data.frame(address= i, 
-                              postal = postal, 
-                              latitude = lat, 
+        new_row <- data.frame(address= i,
+                              postal = postal,
+                              latitude = lat,
                               longitude = lng)
       }
     }
 
     else {
-      new_row <- data.frame(address= i, 
-                            postal = NA, 
-                            latitude = NA, 
+      new_row <- data.frame(address= i,
+                            postal = NA,
+                            latitude = NA,
                             longitude = NA)
     }
-    
+
     # Add the row
     postal_coords <- rbind(postal_coords, new_row)
   }
@@ -237,8 +237,8 @@ Note that in this case, we use random sampling method to split the data into tra
 ```{r}
 
 set.seed(1234)
-resale_split <- initial_split(mdata, 
-                              prop = 6.5/10,) 
+resale_split <- initial_split(mdata,
+                              prop = 6.5/10,)
 train_data <- training(resale_split)
 test_data <- testing(resale_split)
 ```
@@ -246,7 +246,6 @@ test_data <- testing(resale_split)
 
 
 ```{r}
-#| eval: False
 
 write_rds(train_data, "data/rds/train_data.rds")
 write_rds(test_data, "data/rds/test_data.rds")
@@ -278,7 +277,7 @@ In this example, we build a non-spatial multiple linear regression model using t
 price_mlr <- lm(resale_price ~ floor_area_sqm +
                   storey_order + remaining_lease_mths +
                   PROX_CBD + PROX_ELDERLYCARE + PROX_HAWKER +
-                  PROX_MRT + PROX_PARK + PROX_MALL + 
+                  PROX_MRT + PROX_PARK + PROX_MALL +
                   PROX_SUPERMARKET + WITHIN_350M_KINDERGARTEN +
                   WITHIN_350M_CHILDCARE + WITHIN_350M_BUS +
                   WITHIN_1KM_PRISCH,
@@ -314,12 +313,12 @@ plot(vif) +
 An adaptive bandwidth is calculated using geographically weighted regression (GWR), which allows for local variations in relationships between variables.
 
 ```{r}
-#| eval: false
+#| eval: False
 # Compute adaptive bandwidth
 bw_adaptive <- bw.gwr(resale_price ~ floor_area_sqm +
                   storey_order + remaining_lease_mths +
                   PROX_CBD + PROX_ELDERLYCARE + PROX_HAWKER +
-                  PROX_MRT + PROX_PARK + PROX_MALL + 
+                  PROX_MRT + PROX_PARK + PROX_MALL +
                   PROX_SUPERMARKET + WITHIN_350M_KINDERGARTEN +
                   WITHIN_350M_CHILDCARE + WITHIN_350M_BUS +
                   WITHIN_1KM_PRISCH,
@@ -333,9 +332,13 @@ bw_adaptive <- bw.gwr(resale_price ~ floor_area_sqm +
 Then, we save this model for future use:
 
 ```{r}
-#| eval: false
+#| eval: False
 # Save adaptive bandwidth
 write_rds(bw_adaptive, "data/rds/bw_adaptive.rds")
+```
+
+```{r}
+bw_adaptive <- read_rds("data/rds/bw_adaptive.rds")
 ```
 
 ### Model Calibration
@@ -343,19 +346,19 @@ write_rds(bw_adaptive, "data/rds/bw_adaptive.rds")
 The GWR model is then calibrated to examine spatially varying relationships:
 
 ```{r}
-#| eval: false
+#| eval: False
 # Calibrate gwr-based hedonic pricing model
 gwr_adaptive <- gwr.basic(formula = resale_price ~
                             floor_area_sqm + storey_order +
-                            remaining_lease_mths + PROX_CBD + 
+                            remaining_lease_mths + PROX_CBD +
                             PROX_ELDERLYCARE + PROX_HAWKER +
-                            PROX_MRT + PROX_PARK + PROX_MALL + 
+                            PROX_MRT + PROX_PARK + PROX_MALL +
                             PROX_SUPERMARKET + WITHIN_350M_KINDERGARTEN +
                             WITHIN_350M_CHILDCARE + WITHIN_350M_BUS +
                             WITHIN_1KM_PRISCH,
                           data=train_data,
-                          bw = bw_adaptive, 
-                          kernel = 'gaussian', 
+                          bw = bw_adaptive,
+                          kernel = 'gaussian',
                           adaptive=TRUE,
                           longlat = FALSE)
 ```
@@ -363,23 +366,26 @@ gwr_adaptive <- gwr.basic(formula = resale_price ~
 Then, we save this calibrated model for future use:
 
 ```{r}
-#| eval: false
+#| eval: False
 # Save calibrated model
 write_rds(gwr_adaptive, "data/rds/gwr_adaptive.rds")
 ```
 
+```{r}
+gwr_adaptive <- read_rds("data/rds/gwr_adaptive.rds")
+```
 
 ```{r}
-#| eval: false
+#| eval: False
 # Compute test data adaptive bandwidth
 gwr_bw_test_adaptive <- bw.gwr(resale_price ~ floor_area_sqm +
                   storey_order + remaining_lease_mths +
                   PROX_CBD + PROX_ELDERLYCARE + PROX_HAWKER +
-                  PROX_MRT + PROX_PARK + PROX_MALL + 
+                  PROX_MRT + PROX_PARK + PROX_MALL +
                   PROX_SUPERMARKET + WITHIN_350M_KINDERGARTEN +
                   WITHIN_350M_CHILDCARE + WITHIN_350M_BUS +
                   WITHIN_1KM_PRISCH,
-                  data=test_data_sp,
+                  data=test_data,
                   approach="CV",
                   kernel="gaussian",
                   adaptive=TRUE,
@@ -389,21 +395,21 @@ gwr_bw_test_adaptive <- bw.gwr(resale_price ~ floor_area_sqm +
 To compute the predicted values:
 
 ```{r}
-#| eval: false
+#| eval: False
 # Compute predicted values
 gwr_pred <- gwr.predict(formula = resale_price ~
                           floor_area_sqm + storey_order +
-                          remaixwning_lease_mths + PROX_CBD + 
-                          PROX_ELDERLYCARE + PROX_HAWKER + 
-                          PROX_MRT + PROX_PARK + PROX_MALL + 
+                          remaixwning_lease_mths + PROX_CBD +
+                          PROX_ELDERLYCARE + PROX_HAWKER +
+                          PROX_MRT + PROX_PARK + PROX_MALL +
                           PROX_SUPERMARKET + WITHIN_350M_KINDERGARTEN +
-                          WITHIN_350M_CHILDCARE + WITHIN_350M_BUS + 
-                          WITHIN_1KM_PRISCH, 
-                        data=train_data_sp, 
-                        predictdata = test_data_sp, 
+                          WITHIN_350M_CHILDCARE + WITHIN_350M_BUS +
+                          WITHIN_1KM_PRISCH,
+                        data=train_data_sp,
+                        predictdata = test_data,
                         bw = bw_adaptive,
-                        kernel = 'gaussian', 
-                        adaptive=TRUE, 
+                        kernel = 'gaussian',
+                        adaptive=TRUE,
                         longlat = FALSE)
 ```
 
@@ -414,19 +420,23 @@ Since the `SpatialML` package is based on the `ranger` package, coordinate data 
 ### Preparing Coordinate Data
 
 ```{r}
-#| eval: false
 # Get coordinates from full, training and test data
 coords <- st_coordinates(mdata)
 coords_train <- st_coordinates(train_data)
 coords_test <- st_coordinates(test_data)
+write_rds(coords_train, "data/rds/coords_train.rds" )
+write_rds(coords_test, "data/rds/coords_test.rds" )
 ```
 
+```{r}
+coords_train <- read_rds("data/rds/coords_train.rds")
+coords_test <- read_rds("data/rds/coords_test.rds")
+```
 Additionally, the geometry field is removed:
 
 ```{r}
-#| eval: false
 # Drop geometry
-train_data_nogeom <- train_data %>% 
+train_data_nogeom <- train_data %>%
   st_drop_geometry()
 ```
 
@@ -435,20 +445,28 @@ train_data_nogeom <- train_data %>%
 To calibrate a RF model:
 
 ```{r}
-#| eval: false
 # Set seed
 set.seed(1234)
 
 # Calibrate random forest model
-rf <- ranger(resale_price ~ floor_area_sqm + storey_order + 
-               remaining_lease_mths + PROX_CBD + PROX_ELDERLYCARE + 
-               PROX_HAWKER + PROX_MRT + PROX_PARK + PROX_MALL + 
+rf <- ranger(resale_price ~ floor_area_sqm + storey_order +
+               remaining_lease_mths + PROX_CBD + PROX_ELDERLYCARE +
+               PROX_HAWKER + PROX_MRT + PROX_PARK + PROX_MALL +
                PROX_SUPERMARKET + WITHIN_350M_KINDERGARTEN +
-               WITHIN_350M_CHILDCARE + WITHIN_350M_BUS + 
+               WITHIN_350M_CHILDCARE + WITHIN_350M_BUS +
                WITHIN_1KM_PRISCH,
              data=train_data_nogeom)
 
 # Check result
+rf
+```
+
+```{r}
+write_rds(rf, "data/rds/rf.rds")
+```
+
+```{r}
+rf <- read_rds("data/rds/rf.rds")
 rf
 ```
 
@@ -457,7 +475,7 @@ rf
 To calibrate a GRF model:
 
 ```{r}
-#| eval: false
+#| eval: False
 # Set seed
 set.seed(42)
 
@@ -468,7 +486,7 @@ gwRF_adaptive <- grf(formula = resale_price ~ floor_area_sqm + storey_order +
                        PROX_SUPERMARKET + WITHIN_350M_KINDERGARTEN +
                        WITHIN_350M_CHILDCARE + WITHIN_350M_BUS +
                        WITHIN_1KM_PRISCH,
-                     dframe=train_data_nogeom, 
+                     dframe=train_data_nogeom,
                      bw=55,
                      ntree = 100, # default - 500
                      mtry = 2, # default - p/3 ~ 4
@@ -479,13 +497,12 @@ gwRF_adaptive <- grf(formula = resale_price ~ floor_area_sqm + storey_order +
 The model can be saved and loaded for future use:
 
 ```{r}
-#| eval: false
+#| eval: False
 # Save model output
 write_rds(gwRF_adaptive, "data/rds/gwRF_adaptive.rds")
 ```
 
 ```{r}
-#| eval: false
 # Load model output
 gwRF_adaptive <- read_rds("data/rds/gwRF_adaptive.rds")
 ```
@@ -506,33 +523,29 @@ The global model is a `ranger` object which can provide additional insights:
 Since the GRF model requires coordinate data as part of its input, the coordinates from the test data need to be merged with the original dataset after removing the geometry field.
 
 ```{r}
-#| eval: false
 test_data_nogeom <- cbind(
   test_data, coords_test) %>%
-  st_drop_geometry() 
+  st_drop_geometry()
 ```
 
 Next, `predict.grf()` of spatialML package will be used to predict the resale value by using the test data and gwRF_adaptive model calibrated earlier.
 
 
 ```{r}
-#| eval: false
-gwRF_pred <- predict.grf(gwRF_adaptive, 
-                         test_data_nogeom, 
+gwRF_pred <- predict.grf(gwRF_adaptive,
+                         test_data_nogeom,
                          x.var.name="X",
-                         y.var.name="Y", 
+                         y.var.name="Y",
                          local.w=1,
                          global.w=0,
                          nthreads = 4)
 ```
 
 ```{r}
-#| eval: false
 GRF_pred <- write_rds(gwRF_pred, "data/rds/GRF_pred.rds")
 ```
 
 ```{r}
-#| eval: false
 GRF_pred <- read_rds("data/rds/GRF_pred.rds")
 GRF_pred_df <- as.data.frame(GRF_pred)
 ```
@@ -540,7 +553,6 @@ GRF_pred_df <- as.data.frame(GRF_pred)
 To analyze the differences between the predicted and actual values, the predictions are merged back with the test dataset to compare predicted against actual resale prices.
 
 ```{r}
-#| eval: False
 # Combine predicted values with test data
 test_data_pred <- cbind(test_data, GRF_pred_df)
 ```
@@ -549,28 +561,24 @@ test_data_pred <- cbind(test_data, GRF_pred_df)
 Save the combined data for future reference:
 
 ```{r}
-#| eval: False
-write_rds(test_data_p, "data/rds/test_data_p.rds")
+write_rds(test_data_pred, "data/rds/test_data_pred.rds")
 ```
 
 ```{r}
-#| eval: False
-test_data_p <- read_rds("data/rds/test_data_p.rds")
+test_data_pred <- read_rds("data/rds/test_data_pred.rds")
 ```
 
 To calculate Root Mean Square Error (RMSE):
 
 ```{r}
-#| eval: False
-rmse(test_data_p$resale_price, 
-     test_data_p$GRF_pred)
+rmse(test_data_pred$resale_price,
+     test_data_pred$GRF_pred)
 ```
 
 To visualize the predicted vs actual value with a scatterplot.
 
 ```{r}
-#| eval: False
-ggplot(data = test_data_p,
+ggplot(data = test_data_pred,
        aes(x = GRF_pred,
            y = resale_price)) +
   geom_point()
