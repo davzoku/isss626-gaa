@@ -1,8 +1,8 @@
 ---
 title: "In-Class Exercise 9"
-subtitle: "#todo"
-draft: true
-date: "Sep 00, 2024"
+subtitle: "In this exercise, we will import geospatial data, create buffers for accessibility analysis, use spatial joins to assess facility proximity, visualize spatial data on maps, and calculate Hansen's Accessibility metrics."
+# draft: true
+date: "Oct 28, 2024"
 date-modified: "last-modified"
 author: Teng Kok Wai (Walter)
 execute:
@@ -22,20 +22,202 @@ editor: visual
 
 ## Exercise Reference
 
-#todo
+- [ISSS626 Geospatial Analytics and Applications – In-class Exercise 9: Geography of Accessibility](https://isss626-ay2024-25aug.netlify.app/in-class_ex/in-class_ex09/in-class_ex09#/title-slide)
 
-## Learning Outcome
+## Overview
 
-#todo
-
+In this exercise, we will import geospatial data, create buffers for accessibility analysis, use spatial joins to assess facility proximity, visualize spatial data on maps, and calculate Hansen's Accessibility metrics.
 
 ## Import the R Packages
 
-#todo
+The following R packages will be used in this exercise:
 
+| **Package**   | **Purpose**                                               | **Use Case in Exercise**                                   |
+|---------------|-----------------------------------------------------------|------------------------------------------------------------|
+| **tidyverse** | Data manipulation and visualization in R.                 | Data wrangling, cleaning, and visualization.               |
+| **sf**        | Handling and visualizing geospatial data.                 | Importing and managing geospatial data, creating buffers.  |
+| **SpatialAcc**| Measuring spatial accessibility metrics.                  | Computing Hansen’s Accessibility.                          |
+| **tmap**      | Thematic map visualization.                               | Creating maps for spatial data visualization.              |
+| **ggstatsplot** | Enhanced statistical data visualization.                | Visualizing accessibility differences across regions.      |
+
+To install and load these packages, use the following code:
 
 ```{r}
-pacman::p_load(sf)
+pacman::p_load(SpatialAcc, sf, tidyverse, tmap, ggstatsplot)
 ```
 
-## The Data
+## Data Wrangling
+
+We will download and use the CHAS Clinics and Eldercare Services data sets from data.gov.sg portal.
+
+To read the *ELDERCARE* shapefile data:
+
+```{r}
+eldercare <- st_read(dsn = "data/raw_data",
+                     layer = "ELDERCARE") %>%
+  st_transform(crs = 3414)
+```
+To read the CHAS clinics kml file:
+
+```{r}
+CHAS <- st_read("data/raw_data/CHASClinics.kml") %>%
+  st_transform(crs = 3414)
+```
+We will also use the datasets from Hands-on Exercise 9
+
+```{r}
+mpsz <- st_read(dsn = "data/geospatial",
+                layer = "MP14_SUBZONE_NO_SEA_PL") %>%
+  st_transform(crs = 3414)
+
+hexagons <- st_read(dsn = "data/geospatial",
+                   layer = "hexagons") %>%
+  st_transform(crs = 3414)
+
+eldercare <- st_read(dsn = "data/geospatial",
+                     layer = "ELDERCARE") %>%
+  st_transform(csr = 3414)
+```
+```{r}
+ODMatrix <- read_csv("data/aspatial/OD_Matrix.csv", 
+                     skip = 0)
+```
+### Data Cleaning and Updating Attributes
+
+#### Supply:
+
+Set to 100 first to calibrate the model.
+
+```{r}
+eldercare <- eldercare %>%
+  select(fid, ADDRESSPOS) %>%
+  mutate(capacity = 100)
+```
+
+#### Demand:
+
+```{r}
+hexagons <- hexagons %>%
+  select(fid) %>%
+  mutate(demand = 100)
+```
+
+#### OD Matrix
+
+```{r}
+distmat <- ODMatrix %>%
+  select(origin_id, destination_id, total_cost) %>%
+  spread(destination_id, total_cost)%>%
+  select(c(-c('origin_id')))
+```
+
+Convert the distance matrix to km units:
+```{r}
+distmat_km <- as.matrix(distmat/1000)
+```
+
+## Count Number of CHAS Clinics within a Distance Around Each Eldercare Centre
+
+To count the number of points within a distance, we will do the following steps:
+
+1. create a buffer of 1 km around each eldercare centre
+2. visualize the data
+3. count points
+
+### Create Buffer
+
+Note the singapore crs is in metres. To create a 1km buffer, `dist` should be 1000.
+
+```{r}
+buffer_1km <- st_buffer(eldercare, 
+                        dist = 1000)
+```
+
+### Visualize Plots
+
+```{r fig.height=8, fig.width=12}
+tmap_mode("view")
+tm_shape(buffer_1km) +
+  tm_polygons() +
+tm_shape(CHAS) +
+  tm_dots()
+```
+### Count Points
+
+To count number of CHAS Clinics within 1 KM around each Eldercare Centre
+
+```{r}
+buffer_1km$pts_count <- lengths(
+  st_intersects(buffer_1km, CHAS))
+buffer_1km$pts_count
+```
+
+## Computing Hansen's Accessibility
+
+To compute Hansen's Accessibility:
+
+```{r}
+acc_Hansen <- data.frame(ac(hexagons$demand,
+                            eldercare$capacity,
+                            distmat_km, 
+                            #d0 = 50,
+                            power = 2, 
+                            family = "Hansen"))
+```
+
+Then we tidy the output:
+
+```{r}
+colnames(acc_Hansen) <- "accHansen"
+
+acc_Hansen <- as_tibble(acc_Hansen)
+
+hexagon_Hansen <- bind_cols(hexagons, acc_Hansen)
+```
+
+### Visualising Hansen's Accessibility
+
+```{r hansen_hexa, fig.height=8, fig.width=12}
+#| eval: false
+mapex <- st_bbox(hexagons)
+
+tmap_mode("plot")
+tm_shape(hexagon_Hansen,
+         bbox = mapex) + 
+  tm_fill(col = "accHansen",
+          n = 10,
+          style = "quantile",
+          border.col = "black",
+          border.lwd = 1) +
+tm_shape(eldercare) +
+  tm_symbols(size = 0.1) +
+  tm_layout(main.title = "Accessibility to eldercare: Hansen method",
+            main.title.position = "center",
+            main.title.size = 2,
+            legend.outside = FALSE,
+            legend.height = 0.45, 
+            legend.width = 3.0,
+            legend.format = list(digits = 6),
+            legend.position = c("right", "top"),
+            frame = TRUE) +
+  tm_compass(type="8star", size = 2) +
+  tm_scale_bar(width = 0.15) +
+  tm_grid(lwd = 0.1, alpha = 0.5)
+```
+
+### Visualize Statistical Graphic
+
+```{r}
+hexagon_Hansen <- st_join(hexagon_Hansen, mpsz, 
+                          join = st_intersects)
+```
+
+```{r hansen_stats_viz, fig.height=8, fig.width=12}
+ggbetweenstats(
+  data = hexagon_Hansen,
+  x = REGION_N,
+  y = accHansen,
+  type = "p")
+```
+
+
