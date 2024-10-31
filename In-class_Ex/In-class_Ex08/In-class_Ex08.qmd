@@ -22,20 +22,18 @@ editor: visual
 
 ## Exercise Reference
 
-- NA
-
+- [ISSS626 Geospatial Analytics and Applications – In-class Exercise 8: Supplement to Hands-on Exercise 8](https://isss626-ay2024-25aug.netlify.app/in-class_ex/in-class_ex08/in-class_ex08#/title-slide)
 
 ## Overview
 
 In this exercise, we will go through a sample exercise for Take-Home Exercise 3B and In-Class Exercise 08, which supplement what we have learnt in Hands-On Exercise 8.
-
 
 ## Import the R Packages
 
 The following R packages will be used in this exercise:
 
 | **Package** | **Purpose** | **Use Case in Exercise** |
-|---------------|----------------------------|------------------------------|
+|-----------------|---------------------------|----------------------------|
 | **tidyverse** | A collection of R packages for data manipulation and visualization. | Data wrangling, cleaning, and visualization tasks. |
 | **sf** | Provides tools for handling spatial data. | Importing and managing geospatial data. |
 | **httr** | Simplifies working with URLs and HTTP requests. | Accessing APIs and retrieving data from web services. |
@@ -54,15 +52,12 @@ The HDB resale data can be downloaded from [here](https://data.gov.sg/datasets?q
 
 The code below reads the raw CSV file containing the resale flat data and filters it to include only records from January 2023 to September 2024.
 
-
 ```{r}
 resale <- read_csv("data/raw_data/resale.csv") %>%
   filter(month >= "2023-01" & month <= "2024-09")
 ```
-The following code tidies the data by creating new columns:
-- `address`: Combines `block` and `street_name` to form a complete address.
-- `remaining_lease_yr`: Extracts the remaining lease years as an integer.
-- `remaining_lease_mth`: Extracts the remaining lease months as an integer.
+
+The following code tidies the data by creating new columns: - `address`: Combines `block` and `street_name` to form a complete address. - `remaining_lease_yr`: Extracts the remaining lease years as an integer. - `remaining_lease_mth`: Extracts the remaining lease months as an integer.
 
 ```{r}
 resale_tidy <- resale %>%
@@ -86,10 +81,7 @@ Then, we generate a sorted list of unique addresses from the filtered dataset. T
 add_list <- sort(unique(resale_selected$address))
 ```
 
-In the code below, the `get_coords` function retrieves latitude and longitude coordinates for each address in the list. It uses the OneMap API to query addresses and returns a dataframe with postal codes and geographical coordinates:
-- If a single result is found, the coordinates are retrieved and stored.
-- If multiple results are found, addresses with "NIL" as postal are dropped, and the top result is selected.
-- If no valid results are found, `NA` is stored.
+In the code below, the `get_coords` function retrieves latitude and longitude coordinates for each address in the list. It uses the OneMap API to query addresses and returns a dataframe with postal codes and geographical coordinates: - If a single result is found, the coordinates are retrieved and stored. - If multiple results are found, addresses with "NIL" as postal are dropped, and the top result is selected. - If no valid results are found, `NA` is stored.
 
 ```{r}
 get_coords <- function(add_list){
@@ -171,30 +163,28 @@ coords <- get_coords(add_list)
 write_rds(coords, "data/rds/coords.rds")
 ```
 
-
 This concludes the sample exercise on how to handle the dataset for Take-Home Exercise 3B.
 
----
+------------------------------------------------------------------------
 
 We will proceed with In-Class Exercise 08 next.
-
 
 ## Import the R Packages
 
 The following R packages will be used in this exercise:
 
-| **Package**    | **Purpose**                                                         | **Use Case in Exercise**                                          |
-|----------------|--------------------------------------------------------------------|-------------------------------------------------------------------|
-| **sf**         | Handles spatial data for vector operations.                       | Importing and manipulating geospatial data.                       |
-| **spdep**      | Provides spatial dependence analysis tools.                        | Conducting spatial autocorrelation and spatial weights analysis.  |
-| **GWmodel**    | Implements Geographically Weighted Models.                         | Building and analyzing geographically weighted regression models. |
-| **SpatialML**  | Supports machine learning models with spatial data.                | Applying machine learning techniques to spatial datasets.         |
-| **kableExtra** | Enhances table creation for displaying results.                    | Creating well-formatted tables for presenting data summaries.     |
-| **tmap**       | Creates thematic maps for spatial data visualization.              | Visualizing geospatial data and model results.                    |
-| **rsample**    | Facilitates data resampling techniques for statistical modeling.   | Splitting data into training and testing sets.                    |
-| **Metrics**    | Provides performance metrics for model evaluation.                 | Assessing accuracy, RMSE, and other evaluation metrics.           |
-| **tidyverse**  | A suite of packages for data manipulation and visualization.       | Data wrangling, cleaning, and visualization tasks.                |
-| **olsrr**      | Tools for OLS regression diagnostics and variable selection.       | Diagnosing and improving multiple linear regression models.       |
+| **Package** | **Purpose** | **Use Case in Exercise** |
+|---------------|-----------------------------|----------------------------|
+| **sf** | Handles spatial data for vector operations. | Importing and manipulating geospatial data. |
+| **spdep** | Provides spatial dependence analysis tools. | Conducting spatial autocorrelation and spatial weights analysis. |
+| **GWmodel** | Implements Geographically Weighted Models. | Building and analyzing geographically weighted regression models. |
+| **SpatialML** | Supports machine learning models with spatial data. | Applying machine learning techniques to spatial datasets. |
+| **kableExtra** | Enhances table creation for displaying results. | Creating well-formatted tables for presenting data summaries. |
+| **tmap** | Creates thematic maps for spatial data visualization. | Visualizing geospatial data and model results. |
+| **rsample** | Facilitates data resampling techniques for statistical modeling. | Splitting data into training and testing sets. |
+| **Metrics** | Provides performance metrics for model evaluation. | Assessing accuracy, RMSE, and other evaluation metrics. |
+| **tidyverse** | A suite of packages for data manipulation and visualization. | Data wrangling, cleaning, and visualization tasks. |
+| **olsrr** | Tools for OLS regression diagnostics and variable selection. | Diagnosing and improving multiple linear regression models. |
 
 To install and load these packages, use the following code:
 
@@ -207,23 +197,23 @@ pacman::p_load(sf, spdep, GWmodel, SpatialML, kableExtra,
 
 The data file `mdata.rds` consists of the following information:
 
-| **Dataset Type**                | **Description**                                                                                                         | **Source & Format**                                                                                                   |
-|---------------------------------|-------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------|
-| **Aspatial Dataset**            | HDB Resale data: A list of HDB resale transacted prices in Singapore from Jan 2017 onwards.                            | Data.gov.sg, CSV format                                                                                               |
-| **Geospatial Dataset**          | *MP14_SUBZONE_WEB_PL*: URA 2014 Master Plan Planning Subzone boundary data.                                             | Data.gov.sg, ESRI Shapefile format                                                                                    |
-| **Locational Factors with Geographic Coordinates** | Eldercare data: A list of eldercare locations in Singapore.                                                                 | Data.gov.sg, Shapefile format                                                                                        |
-|                                 | Hawker Centre data: A list of hawker centres in Singapore.                                                             | Data.gov.sg, GeoJSON format                                                                                           |
-|                                 | Parks data: A list of parks in Singapore.                                                                               | Data.gov.sg, GeoJSON format                                                                                           |
-|                                 | Supermarket data: A list of supermarkets in Singapore.                                                                 | Data.gov.sg, GeoJSON format                                                                                           |
-|                                 | CHAS Clinics data: A list of CHAS clinics in Singapore.                                                                | Data.gov.sg, GeoJSON format                                                                                           |
-|                                 | Childcare Service data: A list of childcare services in Singapore.                                                     | Data.gov.sg, GeoJSON format                                                                                           |
-|                                 | Kindergartens data: A list of kindergartens in Singapore.                                                              | Data.gov.sg, GeoJSON format                                                                                           |
-|                                 | MRT data: A list of MRT/LRT stations with names and codes.                                                             | Datamall.lta.gov.sg, Shapefile format                                                                                 |
-|                                 | Bus Stops data: A list of bus stops in Singapore.                                                                      | Datamall.lta.gov.sg, Shapefile format                                                                                 |
-| **Locational Factors without Geographic Coordinates** | Primary School data: General information on schools in Singapore.                                                    | Data.gov.sg, CSV format                                                                                               |
-|                                 | CBD Coordinates: Central Business District coordinates obtained from Google.                                           | Google                                                                                                                |
-|                                 | Shopping Malls data: A list of shopping malls in Singapore.                                                           | Wikipedia, [List of shopping malls in Singapore](https://en.wikipedia.org/wiki/List_of_shopping_malls_in_Singapore)  |
-|                                 | Good Primary Schools: A ranking of primary schools based on popularity.                                               | [Local Salary Forum](https://www.salary.sg/2021/best-primary-schools-2021-by-popularity)                              |
+| **Dataset Type** | **Description** | **Source & Format** |
+|---------------|-----------------------------|----------------------------|
+| **Aspatial Dataset** | HDB Resale data: A list of HDB resale transacted prices in Singapore from Jan 2017 onwards. | Data.gov.sg, CSV format |
+| **Geospatial Dataset** | *MP14_SUBZONE_WEB_PL*: URA 2014 Master Plan Planning Subzone boundary data. | Data.gov.sg, ESRI Shapefile format |
+| **Locational Factors with Geographic Coordinates** | Eldercare data: A list of eldercare locations in Singapore. | Data.gov.sg, Shapefile format |
+|  | Hawker Centre data: A list of hawker centres in Singapore. | Data.gov.sg, GeoJSON format |
+|  | Parks data: A list of parks in Singapore. | Data.gov.sg, GeoJSON format |
+|  | Supermarket data: A list of supermarkets in Singapore. | Data.gov.sg, GeoJSON format |
+|  | CHAS Clinics data: A list of CHAS clinics in Singapore. | Data.gov.sg, GeoJSON format |
+|  | Childcare Service data: A list of childcare services in Singapore. | Data.gov.sg, GeoJSON format |
+|  | Kindergartens data: A list of kindergartens in Singapore. | Data.gov.sg, GeoJSON format |
+|  | MRT data: A list of MRT/LRT stations with names and codes. | Datamall.lta.gov.sg, Shapefile format |
+|  | Bus Stops data: A list of bus stops in Singapore. | Datamall.lta.gov.sg, Shapefile format |
+| **Locational Factors without Geographic Coordinates** | Primary School data: General information on schools in Singapore. | Data.gov.sg, CSV format |
+|  | CBD Coordinates: Central Business District coordinates obtained from Google. | Google |
+|  | Shopping Malls data: A list of shopping malls in Singapore. | Wikipedia, [List of shopping malls in Singapore](https://en.wikipedia.org/wiki/List_of_shopping_malls_in_Singapore) |
+|  | Good Primary Schools: A ranking of primary schools based on popularity. | [Local Salary Forum](https://www.salary.sg/2021/best-primary-schools-2021-by-popularity) |
 
 To load the dataset into R:
 
@@ -233,9 +223,45 @@ mdata <- read_rds("data/rds/mdata.rds")
 
 ## Data Sampling
 
-Note that in this case, we use random sampling method to split the data into training and testing sets. No stratification was applied. (We should adopt a stratification method for Take-Home Exercise 3B to ensure better representation across subgroups.)
-```{r}
+Calibrating predictive models are computational intensive, especially random forest method is used. For quick prototyping, a 10% sample will be selected at random from the data by using the code block below.
 
+```{r}
+set.seed(1234)
+HDB_sample <- mdata %>%
+  sample_n(1500)
+```
+
+## Checking of overlapping point
+
+::: callout-warning
+When using GWmodel to calibrate explanatory or predictive models, **it is very important to ensure that there are no overlapping point features.**
+:::
+
+The code block below is used to check if there are overlapping point features.
+
+```{r}
+overlapping_points <- HDB_sample %>%
+  mutate(overlap = lengths(st_equals(., .)) > 1)
+```
+
+### Spatial jitter
+
+In the code code block below, [`st_jitter()`](https://r-spatial.github.io/sf/reference/st_jitter.html) of **sf** package is used to move the point features by 5m to avoid overlapping point features. 
+
+```{r}
+HDB_sample <- HDB_sample %>%
+  st_jitter(amount = 5)
+```
+
+
+## Train-Test Split
+
+Note that in this case, we use random sampling method to split the data into training and testing sets. No stratification was applied. (We should adopt a stratification method for Take-Home Exercise 3B to ensure better representation across subgroups.)
+
+We will use *initial_split()* of **rsample** package. `rsample` is a package from [tidymodels framework](https://www.tidymodels.org/).
+
+```{r}
+#| eval: False
 set.seed(1234)
 resale_split <- initial_split(mdata,
                               prop = 6.5/10,)
@@ -243,19 +269,20 @@ train_data <- training(resale_split)
 test_data <- testing(resale_split)
 ```
 
-
-
 ```{r}
-
+#| eval: False
 write_rds(train_data, "data/rds/train_data.rds")
 write_rds(test_data, "data/rds/test_data.rds")
 ```
 
+```{r}
+train_data <- read_rds("data/rds/train_data.rds")
+test_data <- read_rds("data/rds/test_data.rds")
+```
 
 ### Multicolinearity Check
 
-Multicollinearity can affect the stability and interpretability of a regression model. To identify potential multicollinearity, a correlation matrix is generated for the variables in the dataset, excluding spatial components.
-
+Multicollinearity can affect the stability and interpretability of a regression model. To identify potential multicollinearity, we will use [`ggcorrmat()`](https://indrajeetpatil.github.io/ggstatsplot/articles/web_only/ggcorrmat.html) of **ggstatsplot** to plot a correlation matrix to check if there are pairs of highly correlated independent variables.
 
 ```{r, fig.height = 10, fig.width=12}
 mdata_nogeo <- mdata %>%
@@ -306,7 +333,7 @@ plot(vif) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-## Predictive Modelling with MLR
+## Predictive Modelling with gwr
 
 ### Computing Adaptive Bandwidth
 
@@ -375,6 +402,8 @@ write_rds(gwr_adaptive, "data/rds/gwr_adaptive.rds")
 gwr_adaptive <- read_rds("data/rds/gwr_adaptive.rds")
 ```
 
+### Predicting with test data
+
 ```{r}
 #| eval: False
 # Compute test data adaptive bandwidth
@@ -392,6 +421,20 @@ gwr_bw_test_adaptive <- bw.gwr(resale_price ~ floor_area_sqm +
                   longlat=FALSE)
 ```
 
+Then, we save the output for future use:
+
+```{r}
+#| eval: False
+write_rds(gwr_bw_test_adaptive,
+          "data/rds/gwr_bw_test.rds")
+```
+
+```{r}
+# #| eval: False
+gwr_bw_test_adaptive <- read_rds(
+  "data/rds/gwr_bw_test.rds")
+```
+
 To compute the predicted values:
 
 ```{r}
@@ -399,21 +442,21 @@ To compute the predicted values:
 # Compute predicted values
 gwr_pred <- gwr.predict(formula = resale_price ~
                           floor_area_sqm + storey_order +
-                          remaixwning_lease_mths + PROX_CBD +
-                          PROX_ELDERLYCARE + PROX_HAWKER +
-                          PROX_MRT + PROX_PARK + PROX_MALL +
+                          remaining_lease_mths + PROX_CBD + 
+                          PROX_ELDERLYCARE + PROX_HAWKER + 
+                          PROX_MRT + PROX_PARK + PROX_MALL + 
                           PROX_SUPERMARKET + WITHIN_350M_KINDERGARTEN +
-                          WITHIN_350M_CHILDCARE + WITHIN_350M_BUS +
-                          WITHIN_1KM_PRISCH,
-                        data=train_data_sp,
-                        predictdata = test_data,
-                        bw = bw_adaptive,
-                        kernel = 'gaussian',
-                        adaptive=TRUE,
+                          WITHIN_350M_CHILDCARE + WITHIN_350M_BUS + 
+                          WITHIN_1KM_PRISCH, 
+                        data=train_data, 
+                        predictdata = test_data, 
+                        bw=bw_adaptive, 
+                        kernel = 'gaussian', 
+                        adaptive=TRUE, 
                         longlat = FALSE)
 ```
 
-## Predictive Modelling with SpatialML
+## Predictive Modelling: RF method
 
 Since the `SpatialML` package is based on the `ranger` package, coordinate data must be prepared before calibration.
 
@@ -432,6 +475,7 @@ write_rds(coords_test, "data/rds/coords_test.rds" )
 coords_train <- read_rds("data/rds/coords_train.rds")
 coords_test <- read_rds("data/rds/coords_test.rds")
 ```
+
 Additionally, the geometry field is removed:
 
 ```{r}
@@ -440,7 +484,7 @@ train_data_nogeom <- train_data %>%
   st_drop_geometry()
 ```
 
-### Calibrating Random Forest and GRF Models
+### Calibrating Random Forest Model
 
 To calibrate a RF model:
 
@@ -475,9 +519,9 @@ rf
 To calibrate a GRF model:
 
 ```{r}
-#| eval: False
+# #| eval: False
 # Set seed
-set.seed(42)
+set.seed(1234)
 
 # Calibrate geographic random forest model
 gwRF_adaptive <- grf(formula = resale_price ~ floor_area_sqm + storey_order +
@@ -497,7 +541,7 @@ gwRF_adaptive <- grf(formula = resale_price ~ floor_area_sqm + storey_order +
 The model can be saved and loaded for future use:
 
 ```{r}
-#| eval: False
+# #| eval: False
 # Save model output
 write_rds(gwRF_adaptive, "data/rds/gwRF_adaptive.rds")
 ```
@@ -508,15 +552,12 @@ gwRF_adaptive <- read_rds("data/rds/gwRF_adaptive.rds")
 ```
 
 ::: callout-tip
-
 The global model is a `ranger` object which can provide additional insights:
 
-- **Local Variable Importance**: This metric calculates the importance of each variable for every data point, allowing us to see which predictors are more influential in different locations.
-- **Local Goodness of Fit (LGofFit)**: For each data point, the model assesses how well the local predictions match the observed values, offering insights into model performance across different areas.
-- **Forests**: Each local forest contains various metrics, such as sample size, to understand the local behavior and conditions affecting predictions.
-
+-   **Local Variable Importance**: This metric calculates the importance of each variable for every data point, allowing us to see which predictors are more influential in different locations.
+-   **Local Goodness of Fit (LGofFit)**: For each data point, the model assesses how well the local predictions match the observed values, offering insights into model performance across different areas.
+-   **Forests**: Each local forest contains various metrics, such as sample size, to understand the local behavior and conditions affecting predictions.
 :::
-
 
 ### Predict with Test Data
 
@@ -529,7 +570,6 @@ test_data_nogeom <- cbind(
 ```
 
 Next, `predict.grf()` of spatialML package will be used to predict the resale value by using the test data and gwRF_adaptive model calibrated earlier.
-
 
 ```{r}
 gwRF_pred <- predict.grf(gwRF_adaptive,
@@ -547,6 +587,7 @@ GRF_pred <- write_rds(gwRF_pred, "data/rds/GRF_pred.rds")
 
 ```{r}
 GRF_pred <- read_rds("data/rds/GRF_pred.rds")
+# create df
 GRF_pred_df <- as.data.frame(GRF_pred)
 ```
 
@@ -556,7 +597,6 @@ To analyze the differences between the predicted and actual values, the predicti
 # Combine predicted values with test data
 test_data_pred <- cbind(test_data, GRF_pred_df)
 ```
-
 
 Save the combined data for future reference:
 
@@ -585,4 +625,3 @@ ggplot(data = test_data_pred,
 ```
 
 Ideally, points should align along the diagonal line, indicating accurate predictions. Points below it show underestimation, while points above indicate overestimation of price prediction.
-
