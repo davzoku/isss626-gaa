@@ -1,8 +1,8 @@
 ---
 title: "In-Class Exercise 10"
-subtitle: "#todo"
-draft: true
-date: "Sep 00, 2024"
+subtitle: "In this exercise, we will recap on the use of geocoding."
+# draft: true
+date: "Nov 04, 2024"
 date-modified: "last-modified"
 author: Teng Kok Wai (Walter)
 execute:
@@ -22,20 +22,81 @@ editor: visual
 
 ## Exercise Reference
 
-#todo
+- TBC
 
 ## Learning Outcome
 
-#todo
-
+In this exercise, we will recap on the use of geocoding.
 
 ## Import the R Packages
 
-#todo
-
-
 ```{r}
-pacman::p_load(sf)
+pacman::p_load(tidyverse, sf, tmap, httr, performance)
 ```
 
-## The Data
+## Geocoding
+
+The HDB resale data can be downloaded from [here](https://data.gov.sg/datasets?query=resale&page=1&resultId=d_8b84c4ee58e3cfc0ece0d773c8ca6abc). The dataset contains resale flat prices based on registration date from Jan 2017 to Sep 2024.
+
+The code below reads the raw CSV file containing the resale flat data and filters it to include only records from January 2023 to September 2024.
+
+```{r}
+resale <- read_csv("data/raw_data/resale.csv") %>%
+  filter(month >= "2023-01" & month <= "2024-09")
+```
+
+The following code tidies the data by creating new columns: - `address`: Combines `block` and `street_name` to form a complete address. - `remaining_lease_yr`: Extracts the remaining lease years as an integer. - `remaining_lease_mth`: Extracts the remaining lease months as an integer.
+
+```{r}
+resale_tidy <- resale %>%
+  mutate(address = paste(block,street_name)) %>%
+  mutate(remaining_lease_yr = as.integer(
+    str_sub(remaining_lease, 0, 2)))%>%
+  mutate(remaining_lease_mth = as.integer(
+    str_sub(remaining_lease, 9, 11)))
+```
+
+Next, we filter the tidy dataset to include only records from September 2024.
+
+```{r}
+resale_selected <- resale_tidy %>%
+  filter(month == "2024-09")
+```
+
+Then, we generate a sorted list of unique addresses from the filtered dataset. This will be used to retrieve geographical coordinates.
+
+```{r}
+add_list <- sort(unique(resale_selected$address))
+```
+
+In the code below, we will perform geocoding and save the output into 2 data frames, `found` and `not_found`.
+
+`found` data frames contains data from successful API calls and `not_found` contains data with api errors etc. These data require additional care and manual geocoding may be required.
+
+In the example below, we will try with the first address in the `add_list`
+
+```{r}
+url <- "https://onemap.gov.sg/api/common/elastic/search"
+found <- data.frame()
+not_found <- data.frame()
+
+for (postcode in add_list[1]){
+  query <- list('searchVal'=postcode, 'returnGeom'='Y', 
+                'getAddrDetails'='Y', 'pageNum'='1')
+  res <- GET(url, query=query)
+  if ((content(res)$found)!=0){
+    found <- rbind(found, data.frame(content(res))[4:13])
+  } else {not_found = data.frame(postcode)
+  }
+}
+```
+
+```{r}
+found
+```
+
+```{r}
+not_found
+```
+
+In this example, we get 1 successful call and 0 failures when performing geocoding.
