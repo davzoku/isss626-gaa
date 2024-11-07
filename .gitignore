@@ -28,3 +28,4 @@
 /.quarto/
 
 **/data
+.env

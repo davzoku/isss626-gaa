@@ -109,11 +109,11 @@ gtag('js', new Date());
 gtag('config', 'G-4MGB7PXBSL', { 'anonymize_ip': true});
 </script><link rel="stylesheet" href="../../styles.css">
 <meta property="og:title" content="In-Class Exercise 10 – Walter Teng’s Coursework for SMU ISSS626: Geospatial Analytics and Applications">
-<meta property="og:description" content="In this exercise, we will recap on the use of geocoding.">
+<meta property="og:description" content="In this exercise, we will recap on the use of geocoding and learn how to work with Open Government Data.">
 <meta property="og:image" content="https://isss626-gaa.netlify.app/In-class_Ex/In-class_Ex10/og-img.png">
 <meta property="og:site_name" content="Walter Teng's Coursework for SMU ISSS626: Geospatial Analytics and Applications">
 <meta name="twitter:title" content="In-Class Exercise 10 – Walter Teng’s Coursework for SMU ISSS626: Geospatial Analytics and Applications">
-<meta name="twitter:description" content="In this exercise, we will recap on the use of geocoding.">
+<meta name="twitter:description" content="In this exercise, we will recap on the use of geocoding and learn how to work with Open Government Data.">
 <meta name="twitter:image" content="https://isss626-gaa.netlify.app/In-class_Ex/In-class_Ex10/og-img.png">
 <meta name="twitter:creator" content="@davzoku">
 <meta name="twitter:site" content="@davzoku">
@@ -309,7 +309,7 @@ gtag('config', 'G-4MGB7PXBSL', { 'anonymize_ip': true});
 <!-- main -->
 <main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block default"><div class="quarto-title">
 <h1 class="title">In-Class Exercise 10</h1>
-<p class="subtitle lead">In this exercise, we will recap on the use of geocoding.</p>
+<p class="subtitle lead">In this exercise, we will recap on the use of geocoding and learn how to work with Open Government Data.</p>
 </div>
 
 
@@ -333,7 +333,7 @@ gtag('config', 'G-4MGB7PXBSL', { 'anonymize_ip': true});
     <div>
     <div class="quarto-title-meta-heading">Modified</div>
     <div class="quarto-title-meta-contents">
-      <p class="date-modified">November 6, 2024</p>
+      <p class="date-modified">November 7, 2024</p>
     </div>
   </div>
     
@@ -344,10 +344,10 @@ gtag('config', 'G-4MGB7PXBSL', { 'anonymize_ip': true});
 </header><section id="exercise-reference" class="level2" data-number="1"><h2 data-number="1" class="anchored" data-anchor-id="exercise-reference">
 <span class="header-section-number">1</span> Exercise Reference</h2>
 <ul>
-<li>TBC</li>
+<li>https://isss626-ay2024-25aug.netlify.app/in-class_ex/in-class_ex10/in-class_ex10#/title-slide</li>
 </ul></section><section id="learning-outcome" class="level2" data-number="2"><h2 data-number="2" class="anchored" data-anchor-id="learning-outcome">
 <span class="header-section-number">2</span> Learning Outcome</h2>
-<p>In this exercise, we will recap on the use of geocoding.</p>
+<p>In this exercise, we will recap on the use of geocoding and learn how to work with Open Government Data.</p>
 </section><section id="import-the-r-packages" class="level2" data-number="3"><h2 data-number="3" class="anchored" data-anchor-id="import-the-r-packages">
 <span class="header-section-number">3</span> Import the R Packages</h2>
 <div class="cell">
@@ -370,51 +370,227 @@ gtag('config', 'G-4MGB7PXBSL', { 'anonymize_ip': true});
 <span>  <span class="fu">mutate</span><span class="op">(</span>remaining_lease_mth <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html">as.integer</a></span><span class="op">(</span></span>
 <span>    <span class="fu">str_sub</span><span class="op">(</span><span class="va">remaining_lease</span>, <span class="fl">9</span>, <span class="fl">11</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Next, we filter the tidy dataset to include only records from September 2024.</p>
+<p>Next, we filter the tidy dataset to include only records from September 2024 and take the first 10 addresses as an example.</p>
 <div class="cell">
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">resale_selected</span> <span class="op">&lt;-</span> <span class="va">resale_tidy</span> <span class="op">%&gt;%</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="va">month</span> <span class="op">==</span> <span class="st">"2024-09"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span>  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="va">month</span> <span class="op">==</span> <span class="st">"2024-09"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">first_10_resale</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">resale_selected</span>, <span class="fl">10</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Then, we generate a sorted list of unique addresses from the filtered dataset. This will be used to retrieve geographical coordinates.</p>
 <div class="cell">
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">add_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sort.html">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html">unique</a></span><span class="op">(</span><span class="va">resale_selected</span><span class="op">$</span><span class="va">address</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">add_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sort.html">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html">unique</a></span><span class="op">(</span><span class="va">first_10_resale</span><span class="op">$</span><span class="va">address</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">add_list</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "174 ANG MO KIO AVE 4"  "223 ANG MO KIO AVE 1"  "225 ANG MO KIO AVE 1" 
+[4] "308A ANG MO KIO AVE 1" "308B ANG MO KIO AVE 1" "314 ANG MO KIO AVE 3" 
+[7] "320 ANG MO KIO AVE 1"  "321 ANG MO KIO AVE 1"  "331 ANG MO KIO AVE 1" </code></pre>
+</div>
 </div>
 <p>In the code below, we will perform geocoding and save the output into 2 data frames, <code>found</code> and <code>not_found</code>.</p>
 <p><code>found</code> data frames contains data from successful API calls and <code>not_found</code> contains data with api errors etc. These data require additional care and manual geocoding may be required.</p>
-<p>In the example below, we will try with the first address in the <code>add_list</code></p>
 <div class="cell">
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">url</span> <span class="op">&lt;-</span> <span class="st">"https://onemap.gov.sg/api/common/elastic/search"</span></span>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">url</span> <span class="op">&lt;-</span> <span class="st">"https://onemap.gov.sg/api/common/elastic/search"</span></span>
 <span><span class="va">found</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">not_found</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
-<span><span class="kw">for</span> <span class="op">(</span><span class="va">postcode</span> <span class="kw">in</span> <span class="va">add_list</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span><span class="op">{</span></span>
-<span>  <span class="va">query</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="st">'searchVal'</span><span class="op">=</span><span class="va">postcode</span>, <span class="st">'returnGeom'</span><span class="op">=</span><span class="st">'Y'</span>, </span>
+<span><span class="kw">for</span> <span class="op">(</span><span class="va">address</span> <span class="kw">in</span> <span class="va">add_list</span><span class="op">)</span><span class="op">{</span></span>
+<span>  <span class="va">query</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="st">'searchVal'</span><span class="op">=</span><span class="va">address</span>, <span class="st">'returnGeom'</span><span class="op">=</span><span class="st">'Y'</span>, </span>
 <span>                <span class="st">'getAddrDetails'</span><span class="op">=</span><span class="st">'Y'</span>, <span class="st">'pageNum'</span><span class="op">=</span><span class="st">'1'</span><span class="op">)</span></span>
 <span>  <span class="va">res</span> <span class="op">&lt;-</span> <span class="fu">GET</span><span class="op">(</span><span class="va">url</span>, query<span class="op">=</span><span class="va">query</span><span class="op">)</span></span>
+<span>  </span>
 <span>  <span class="kw">if</span> <span class="op">(</span><span class="op">(</span><span class="fu">content</span><span class="op">(</span><span class="va">res</span><span class="op">)</span><span class="op">$</span><span class="va">found</span><span class="op">)</span><span class="op">!=</span><span class="fl">0</span><span class="op">)</span><span class="op">{</span></span>
-<span>    <span class="va">found</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html">rbind</a></span><span class="op">(</span><span class="va">found</span>, <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span><span class="fu">content</span><span class="op">(</span><span class="va">res</span><span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="fl">4</span><span class="op">:</span><span class="fl">13</span><span class="op">]</span><span class="op">)</span></span>
-<span>  <span class="op">}</span> <span class="kw">else</span> <span class="op">{</span><span class="va">not_found</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span><span class="va">postcode</span><span class="op">)</span></span>
+<span>    <span class="va">tmp_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span><span class="fu">content</span><span class="op">(</span><span class="va">res</span><span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="fl">4</span><span class="op">:</span><span class="fl">13</span><span class="op">]</span></span>
+<span>    <span class="va">tmp_df</span><span class="op">$</span><span class="va">address</span><span class="op">&lt;-</span> <span class="va">address</span></span>
+<span>    <span class="va">found</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html">rbind</a></span><span class="op">(</span><span class="va">found</span>, <span class="va">tmp_df</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
+<span>    <span class="va">not_found</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html">rbind</a></span><span class="op">(</span><span class="va">not_found</span>, <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span>address <span class="op">=</span> <span class="va">address</span><span class="op">)</span><span class="op">)</span></span>
 <span>  <span class="op">}</span></span>
+<span>  </span>
 <span><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">found</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">found</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>                        results.SEARCHVAL results.BLK_NO    results.ROAD_NAME
-1 1 BEDOK SOUTH AVENUE 1 SINGAPORE 460001              1 BEDOK SOUTH AVENUE 1
-  results.BUILDING                         results.ADDRESS results.POSTAL
-1              NIL 1 BEDOK SOUTH AVENUE 1 SINGAPORE 460001         460001
-         results.X        results.Y results.LATITUDE results.LONGITUDE
-1 39173.8123528324 33678.8556520101 1.32085208689731  103.933721091441</code></pre>
+<pre><code>                         results.SEARCHVAL results.BLK_NO   results.ROAD_NAME
+1                        KEBUN BARU LINK 1            174 ANG MO KIO AVENUE 4
+2 223 ANG MO KIO AVENUE 1 SINGAPORE 560223            223 ANG MO KIO AVENUE 1
+3 225 ANG MO KIO AVENUE 1 SINGAPORE 560225            225 ANG MO KIO AVENUE 1
+4                          TECK GHEE VISTA           308A ANG MO KIO AVENUE 1
+5                          TECK GHEE VISTA           308B ANG MO KIO AVENUE 1
+6                      TECK GHEE EVERGREEN            314 ANG MO KIO AVENUE 3
+7     STAR LEARNERS @ ANG MO KIO PTE. LTD.            320 ANG MO KIO AVENUE 1
+8      NEIGHBOURHOOD POLICE POST TECK GHEE            321 ANG MO KIO AVENUE 1
+9                           MY FIRST SKOOL            331 ANG MO KIO AVENUE 1
+                      results.BUILDING
+1                    KEBUN BARU LINK 1
+2                                  NIL
+3                                  NIL
+4                      TECK GHEE VISTA
+5                      TECK GHEE VISTA
+6                  TECK GHEE EVERGREEN
+7 STAR LEARNERS @ ANG MO KIO PTE. LTD.
+8  NEIGHBOURHOOD POLICE POST TECK GHEE
+9                       MY FIRST SKOOL
+                                                                results.ADDRESS
+1                    174 ANG MO KIO AVENUE 4 KEBUN BARU LINK 1 SINGAPORE 560174
+2                                      223 ANG MO KIO AVENUE 1 SINGAPORE 560223
+3                                      225 ANG MO KIO AVENUE 1 SINGAPORE 560225
+4                     308A ANG MO KIO AVENUE 1 TECK GHEE VISTA SINGAPORE 561308
+5                     308B ANG MO KIO AVENUE 1 TECK GHEE VISTA SINGAPORE 562308
+6                  314 ANG MO KIO AVENUE 3 TECK GHEE EVERGREEN SINGAPORE 560314
+7 320 ANG MO KIO AVENUE 1 STAR LEARNERS @ ANG MO KIO PTE. LTD. SINGAPORE 560320
+8  321 ANG MO KIO AVENUE 1 NEIGHBOURHOOD POLICE POST TECK GHEE SINGAPORE 560321
+9                       331 ANG MO KIO AVENUE 1 MY FIRST SKOOL SINGAPORE 560331
+  results.POSTAL        results.X        results.Y results.LATITUDE
+1         560174 28478.5794445509 39676.8076131288 1.37509746867904
+2         560223 28534.6432265872 38676.1728609148 1.36604808445916
+3         560225  28537.680043661 38825.2326317504 1.36739612776859
+4         561308 29198.1455183588 38613.7381223254 1.36548342757106
+5         562308 29248.5946499519 38589.7120627463  1.3652661423815
+6         560314 29865.9980458226 38695.9702712912 1.36622707120636
+7         560320  29676.907292584 38625.7954039071 1.36559244608528
+8         560321 29712.2350843353 38575.9067748357 1.36514126911853
+9         560331 29941.7457938343 38240.8809963278 1.36211140145298
+  results.LONGITUDE               address
+1   103.83761896123  174 ANG MO KIO AVE 4
+2  103.838122716883  223 ANG MO KIO AVE 1
+3  103.838150007464  225 ANG MO KIO AVE 1
+4  103.844084739929 308A ANG MO KIO AVE 1
+5  103.844538059044 308B ANG MO KIO AVE 1
+6  103.850085858983  314 ANG MO KIO AVE 3
+7  103.848386744168  320 ANG MO KIO AVE 1
+8    103.8487041858  321 ANG MO KIO AVE 1
+9   103.85076647513  331 ANG MO KIO AVE 1</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">not_found</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">not_found</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>data frame with 0 columns and 0 rows</code></pre>
 </div>
 </div>
-<p>In this example, we get 1 successful call and 0 failures when performing geocoding.</p>
+<p>In this example, we get all successful calls and 0 failures when performing geocoding.</p>
+<p>Next, we tidy the field names.</p>
+<div class="cell">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">found</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] "results.SEARCHVAL" "results.BLK_NO"    "results.ROAD_NAME"
+ [4] "results.BUILDING"  "results.ADDRESS"   "results.POSTAL"   
+ [7] "results.X"         "results.Y"         "results.LATITUDE" 
+[10] "results.LONGITUDE" "address"          </code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">found_filtered</span> <span class="op">&lt;-</span> <span class="va">found</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">select</span><span class="op">(</span><span class="va">results.BLK_NO</span>, <span class="va">results.ROAD_NAME</span>, <span class="va">results.POSTAL</span>, <span class="va">results.X</span>, <span class="va">results.Y</span>, <span class="va">address</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">rename</span><span class="op">(</span></span>
+<span>    POSTAL <span class="op">=</span> <span class="va">results.POSTAL</span>,</span>
+<span>    XCOORD <span class="op">=</span> <span class="va">results.X</span>,</span>
+<span>    YCOORD <span class="op">=</span> <span class="va">results.Y</span>,</span>
+<span>    BLK_NO <span class="op">=</span> <span class="va">results.BLK_NO</span>,</span>
+<span>    ROAD_NAME <span class="op">=</span> <span class="va">results.ROAD_NAME</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="va">found_filtered</span> </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  BLK_NO           ROAD_NAME POSTAL           XCOORD           YCOORD
+1    174 ANG MO KIO AVENUE 4 560174 28478.5794445509 39676.8076131288
+2    223 ANG MO KIO AVENUE 1 560223 28534.6432265872 38676.1728609148
+3    225 ANG MO KIO AVENUE 1 560225  28537.680043661 38825.2326317504
+4   308A ANG MO KIO AVENUE 1 561308 29198.1455183588 38613.7381223254
+5   308B ANG MO KIO AVENUE 1 562308 29248.5946499519 38589.7120627463
+6    314 ANG MO KIO AVENUE 3 560314 29865.9980458226 38695.9702712912
+7    320 ANG MO KIO AVENUE 1 560320  29676.907292584 38625.7954039071
+8    321 ANG MO KIO AVENUE 1 560321 29712.2350843353 38575.9067748357
+9    331 ANG MO KIO AVENUE 1 560331 29941.7457938343 38240.8809963278
+                address
+1  174 ANG MO KIO AVE 4
+2  223 ANG MO KIO AVE 1
+3  225 ANG MO KIO AVE 1
+4 308A ANG MO KIO AVE 1
+5 308B ANG MO KIO AVE 1
+6  314 ANG MO KIO AVE 3
+7  320 ANG MO KIO AVE 1
+8  321 ANG MO KIO AVE 1
+9  331 ANG MO KIO AVE 1</code></pre>
+</div>
+</div>
+<p>Next, we join <code>resale</code> with <code>found</code> to form <code>resale_geocoded</code>. Then we convert this tibble dataframe to sf point feature data frame.</p>
+<div class="cell">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># we need to add an address column for joining</span></span>
+<span><span class="va">first_10_resale</span> <span class="op">&lt;-</span> <span class="va">first_10_resale</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">mutate</span><span class="op">(</span>address <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span><span class="op">(</span><span class="va">block</span>, <span class="va">street_name</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">resale_geocoded</span> <span class="op">=</span> <span class="fu">left_join</span><span class="op">(</span></span>
+<span>  <span class="va">first_10_resale</span>, <span class="va">found_filtered</span>, </span>
+<span>  by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">'address'</span> <span class="op">=</span> <span class="st">'address'</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">resale_geocoded</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 10 × 19
+   month   town       flat_type block street_name    storey_range floor_area_sqm
+   &lt;chr&gt;   &lt;chr&gt;      &lt;chr&gt;     &lt;chr&gt; &lt;chr&gt;          &lt;chr&gt;                 &lt;dbl&gt;
+ 1 2024-09 ANG MO KIO 2 ROOM    314   ANG MO KIO AV… 01 TO 03                 44
+ 2 2024-09 ANG MO KIO 2 ROOM    174   ANG MO KIO AV… 10 TO 12                 45
+ 3 2024-09 ANG MO KIO 2 ROOM    174   ANG MO KIO AV… 04 TO 06                 45
+ 4 2024-09 ANG MO KIO 3 ROOM    223   ANG MO KIO AV… 10 TO 12                 82
+ 5 2024-09 ANG MO KIO 3 ROOM    320   ANG MO KIO AV… 04 TO 06                 73
+ 6 2024-09 ANG MO KIO 3 ROOM    331   ANG MO KIO AV… 01 TO 03                 68
+ 7 2024-09 ANG MO KIO 3 ROOM    308A  ANG MO KIO AV… 16 TO 18                 70
+ 8 2024-09 ANG MO KIO 3 ROOM    321   ANG MO KIO AV… 07 TO 09                 88
+ 9 2024-09 ANG MO KIO 3 ROOM    308B  ANG MO KIO AV… 22 TO 24                 70
+10 2024-09 ANG MO KIO 3 ROOM    225   ANG MO KIO AV… 01 TO 03                 67
+# ℹ 12 more variables: flat_model &lt;chr&gt;, lease_commence_date &lt;dbl&gt;,
+#   remaining_lease &lt;chr&gt;, resale_price &lt;dbl&gt;, address &lt;chr&gt;,
+#   remaining_lease_yr &lt;int&gt;, remaining_lease_mth &lt;int&gt;, BLK_NO &lt;chr&gt;,
+#   ROAD_NAME &lt;chr&gt;, POSTAL &lt;chr&gt;, XCOORD &lt;chr&gt;, YCOORD &lt;chr&gt;</code></pre>
+</div>
+</div>
+<p>To convert to sf:</p>
+<div class="cell">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">resale_geocoded_sf</span> <span class="op">&lt;-</span> <span class="fu">st_as_sf</span><span class="op">(</span><span class="va">resale_geocoded</span>, </span>
+<span>                            coords <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"XCOORD"</span>,</span>
+<span>                                       <span class="st">"YCOORD"</span><span class="op">)</span>,</span>
+<span>                            crs<span class="op">=</span><span class="fl">3414</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Next we check for overlapping point features.</p>
+<div class="cell">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">overlapping_points</span> <span class="op">&lt;-</span> <span class="va">resale_geocoded_sf</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">mutate</span><span class="op">(</span>overlap <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/lengths.html">lengths</a></span><span class="op">(</span><span class="fu">st_equals</span><span class="op">(</span><span class="va">.</span>, <span class="va">.</span><span class="op">)</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">1</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>In the code below, <code>st_jitter()</code> of sf package is used to move the point features by 5m to avoid overlapping point features.</p>
+<div class="cell">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">resale_geocoded_sf</span> <span class="op">&lt;-</span> <span class="va">resale_geocoded_sf</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">st_jitter</span><span class="op">(</span>amount <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">resale_geocoded_sf</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Simple feature collection with 10 features and 17 fields
+Geometry type: POINT
+Dimension:     XY
+Bounding box:  xmin: 28475.2 ymin: 38239.86 xmax: 29945.86 ymax: 39681.17
+Projected CRS: SVY21 / Singapore TM
+# A tibble: 10 × 18
+   month   town       flat_type block street_name    storey_range floor_area_sqm
+ * &lt;chr&gt;   &lt;chr&gt;      &lt;chr&gt;     &lt;chr&gt; &lt;chr&gt;          &lt;chr&gt;                 &lt;dbl&gt;
+ 1 2024-09 ANG MO KIO 2 ROOM    314   ANG MO KIO AV… 01 TO 03                 44
+ 2 2024-09 ANG MO KIO 2 ROOM    174   ANG MO KIO AV… 10 TO 12                 45
+ 3 2024-09 ANG MO KIO 2 ROOM    174   ANG MO KIO AV… 04 TO 06                 45
+ 4 2024-09 ANG MO KIO 3 ROOM    223   ANG MO KIO AV… 10 TO 12                 82
+ 5 2024-09 ANG MO KIO 3 ROOM    320   ANG MO KIO AV… 04 TO 06                 73
+ 6 2024-09 ANG MO KIO 3 ROOM    331   ANG MO KIO AV… 01 TO 03                 68
+ 7 2024-09 ANG MO KIO 3 ROOM    308A  ANG MO KIO AV… 16 TO 18                 70
+ 8 2024-09 ANG MO KIO 3 ROOM    321   ANG MO KIO AV… 07 TO 09                 88
+ 9 2024-09 ANG MO KIO 3 ROOM    308B  ANG MO KIO AV… 22 TO 24                 70
+10 2024-09 ANG MO KIO 3 ROOM    225   ANG MO KIO AV… 01 TO 03                 67
+# ℹ 11 more variables: flat_model &lt;chr&gt;, lease_commence_date &lt;dbl&gt;,
+#   remaining_lease &lt;chr&gt;, resale_price &lt;dbl&gt;, address &lt;chr&gt;,
+#   remaining_lease_yr &lt;int&gt;, remaining_lease_mth &lt;int&gt;, BLK_NO &lt;chr&gt;,
+#   ROAD_NAME &lt;chr&gt;, POSTAL &lt;chr&gt;, geometry &lt;POINT [m]&gt;</code></pre>
+</div>
+</div>
 
 
 </section></main><!-- /main --><script id="quarto-html-after-body" type="application/javascript">
