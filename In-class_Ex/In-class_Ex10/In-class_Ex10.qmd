@@ -22,7 +22,7 @@ editor: visual
 
 ## Exercise Reference
 
-- https://isss626-ay2024-25aug.netlify.app/in-class_ex/in-class_ex10/in-class_ex10#/title-slide
+- [ISSS626 Geospatial Analytics and Applications – In-class Exercise 10: Working with Open Government Data](https://isss626-ay2024-25aug.netlify.app/in-class_ex/in-class_ex10/in-class_ex10#/title-slide)
 
 ## Learning Outcome
 
