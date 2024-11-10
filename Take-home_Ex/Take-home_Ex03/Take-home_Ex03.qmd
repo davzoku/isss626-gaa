@@ -858,7 +858,7 @@ resale_geocoded_jit_sf <- left_join(resale_geocoded_jit_sf,  storey_range_order,
 
 ### Remaining Lease (Months)
 
-1.Combine `remaining_lease_yr` and `remaining_lease_mth` into a single column, `remaining_lease`, calculated in months.
+Combine `remaining_lease_yr` and `remaining_lease_mth` into a single column, `remaining_lease`, calculated in months:
 
 
 ```{r}
@@ -873,8 +873,7 @@ summary(resale_geocoded_jit_sf$remaining_lease)
 
 ### Age of Unit (Months)
 
-1. Reverse-engineer the `age` based on a typical 99-year lease, subtracting the `remaining_lease` from 99 years in months.
-
+Reverse-engineer the `age` based on a typical 99-year lease, subtracting the `remaining_lease` from 99 years in months:
 
 ```{r}
 resale_geocoded_jit_sf <- resale_geocoded_jit_sf %>%
@@ -883,9 +882,9 @@ resale_geocoded_jit_sf <- resale_geocoded_jit_sf %>%
 summary(resale_geocoded_jit_sf$age)
 ```
 
-### HDB Upgrade Program
+### HDB Upgrade Program (HIP / MUP)
 
-1. 1. Load the HDB upgrade data and join it with `resale_geocoded_jit_sf`, adding `hip` and `mup` one-hot encoded flags to indicate whether each property has undergone the Home Improvement Program (HIP) or the Main Upgrading Program (MUP).
+Load the HDB upgrade data and join it with `resale_geocoded_jit_sf`, adding `hip` and `mup` one-hot encoded flags to indicate whether each property has undergone the Home Improvement Program (HIP) or the Main Upgrading Program (MUP).
 
 ```{r}
 #| eval: false 
@@ -917,7 +916,7 @@ proximity <- function(df1, df2, varname) {
 }
 ```
 
-From [this site](https://www.latlong.net/place/downtown-core-singapore-20616.html), we can consider **Downtown Core** as the CBD location
+From [this site](https://www.latlong.net/place/downtown-core-singapore-20616.html), we can consider **Downtown Core** as the CBD location.
 
 
 ```{r}
@@ -1128,11 +1127,11 @@ plot_factors <- function(data, factors, ncol = 2, nrow = 2, is_categorical = FAL
   plots <- lapply(factors, function(var) {
     if (is_categorical) {
       ggplot(data, aes_string(x = var)) +
-        geom_bar(color = "black", fill = "light blue") +
+        geom_bar(color = "black", fill = fill_col) +
         ggtitle(paste("Dist. of", var))
     } else {
       ggplot(data, aes_string(x = var)) +
-        geom_histogram(bins = 20, color = "black", fill = "light blue") +
+        geom_histogram(bins = 20, color = "black", fill = fill_col) +
         ggtitle(paste("Dist. of", var))
     }
   })
@@ -1159,7 +1158,7 @@ The bar charts show the distribution of the `mup` and `hip` variables across the
    - Similar to MUP, most records do not have the HIP completed, with a large count for `hip = 0`.
    - However, the count of `hip = 1` (indicating HIP completion) is slightly higher than that of MUP.
 
-This distribution indicates that most of the resale flats in the dataset have not undergone these upgrading programs. Let's keep a mental note on this.
+This distribution indicates that **most of the resale flats in the dataset have not undergone these upgrading programs**. Let's keep a mental note on this.
 :::
 
 
@@ -1172,6 +1171,7 @@ plot_factors(resale_train_sf, struct_factors_num, ncol = 2, nrow = 2, is_categor
 
 ::: callout-note
 **Observations**
+
 The figure aboves show the distribution of the categorical structural factors for the train set:
 
 1. **Floor Area (sqm)**:
@@ -1206,12 +1206,17 @@ plot_factors(resale_train_sf, loc_factors, ncol = 4, nrow = 4, is_categorical = 
 **Observations**
 
 **Proximity Variables (PROX)**
+
 - **General Skewness**: Most proximity-based location factors (e.g., PROX_CC, PROX_ELDERCARE, PROX_PARK) show right-skewed distributions.
+
 - **Proximity to CBD (PROX_CBD)**: This variable is slightly left-skewed, indicating that most units are further from the CBD, with fewer closer to the city center.
+
 - **Common Amenities**: Proximity to facilities such as Community Centers, Libraries, Malls and Sports Centers generally peaks around 500–1000 meters, showing moderate accessibility for most flats.
 
 **Number of Facility Counts within Radius (NUM)**
-- **Skewness**: Radius-based factors such as NUM_KINDERGRATEN, NUM_CLINIC shows a strong right skew, with most units having between 0-3 facilities within 350 meters.
+
+- **NUM_KINDERGRATEN, NUM_CLINIC**: These factors shows a strong right skew, with most units having between 0-3 facilities within 350 meters.
+
 - **NUM_CHILDCARE_350M**: The distribution shows a slight right skew, with most units having between 0-5 childcare centers within 350 meters.
 
 - **NUM_BUS_STOP_350M**: The distribution is more balanced, with counts mostly ranging between 5-10 bus stops within 350 meters. This indicates relatively good access to bus stops, which is essential for public transport connectivity.
@@ -1285,6 +1290,7 @@ ggstatsplot::ggcorrmat(resale_nogeo, corr_list)
 ```
 ::: callout-note
 **Observations**
+
 From the matrix, we observe that:
 
 - **Age** and **Remaining Lease** are perfectly negatively correlated (`-1`), meaning they carry the same information in opposite directions. We will retain only one of these variables (remove **Age**) to avoid redundancy.
@@ -1358,7 +1364,7 @@ write_rds(resale_mlr2, "data/rds/resale_mlr2.rds")
 
 ### Test for Linear Regression Assumptions
 
-Referencing In-Class Exercise 07, we will run a few more test on the `resale_mlr2` model.
+Referencing In-Class Exercise 07, we will run a few more tests on the `resale_mlr2` model.
 
 #### Multicolinearity Check with VIF
 
@@ -1428,7 +1434,7 @@ The figure reveals that the residual of `resale_mlr2` resembles normal distribut
 :::
 
 
-The residuals appear normally distributed. For a formal test, we can use `ols_test_normality()`:
+For a formal test, we can use `ols_test_normality()`:
 
 Unlike the class exercise, we need to sample a subset of residuals as these test has a sample limit of 5000. To ensure reproducibility, a seed is set before sampling.
 
@@ -1463,6 +1469,8 @@ resale_res_sf <- cbind(resale_train_sf,
 Using **tmap**, we visualize the spatial distribution of the residuals:
 
 ```{r res_viz, fig.width=12, fig.height=8}
+#| code-fold: true
+
 tmap_mode("plot")
 tmap_options(check.and.fix = TRUE) 
 
@@ -1491,6 +1499,7 @@ tm_shape(mpsz_sf) +
 ```
 ::: callout-note
 **Observations**
+
 In the plot above, there are indications of spatial autocorrelation, we need to statistically validate this observation.
 :::
 
@@ -1700,6 +1709,7 @@ We save the output for reference:
 write_rds(gwRF_adaptive, "data/rds/gwRF_adaptive.rds")
 ```
 
+
 ## Model Evaluation
 
 In this section, we evaluate three models—Multiple Linear Regression (MLR), Random Forest (RF), and Geographically Weighted Random Forest (GWRF)—using the test dataset. We load each saved model and generate predictions to assess their performance. These models are trained using the same set of variables to ensure a fair comparison.
@@ -1802,6 +1812,8 @@ While the visualizations suggest some differences in performance, it’s challen
 The code below calculates and displays the RMSE (Root Mean Square Error) and MAE (Mean Absolute Error) for three different models and format the results neatly using `kable`.
 
 ```{r}
+#| code-fold: true
+
 model_predictions <- list(
   MLR = model_eval$pred_mlr,
   RF = model_eval$pred_rf,
@@ -1866,13 +1878,21 @@ metrics_town_df <- model_eval %>%
 table(metrics_town_df$best_model_RMSE)
 ```
 
-From above, we can use that RF is the prefered model for 14 towns and gwRF is a close second at 11.
+From above, we can use that RF is the prefered model for 13 towns and gwRF is a close second at 10.
 
 To visualize the results on a map:
 
+
+
 ```{r, best_model_by_town, fig.width=12, fig.height=8}
+#| code-fold: true
 metrics_town_df <- metrics_town_df %>%
-  st_drop_geometry()
+  st_drop_geometry() %>%
+  mutate(town = ifelse(town == "KALLANG/WHAMPOA", "KALLANG", town)) %>% # to match with mpsz
+  mutate(town = ifelse(town == "CENTRAL AREA", "DOWNTOWN CORE", town)) # to match with mpsz
+
+tmap_mode("view")
+tmap_options(check.and.fix = TRUE)
 
 best_model_by_town <- mpsz_sf %>%
   left_join(metrics_town_df, by = c("PLN_AREA_N" = "town"))
@@ -1979,7 +1999,7 @@ plot_variable_importance(gwrf_vi_df, "[gwRF] Variable Importance", "seagreen")
 ::: callout-note
 **Comparsion of Variable Importance across mdoels**
 
--Across all three models (MLR, RF, gwRF), the top predictors are consistently `PROX_CBD`, `remaining_lease`, `storey_order`, `floor_area_sqm`, indicating these factors play crucial roles in predicting resale prices.
+- Across all three models (MLR, RF, gwRF), the top predictors are consistently `PROX_CBD`, `remaining_lease`, `storey_order`, `floor_area_sqm`, indicating these factors play crucial roles in predicting resale prices.
 
 - In MLR, `PROX_CBD` and `remaining_lease` have a more pronounced lead in importance over other variables compared to RF and gwRF.
 
@@ -2023,7 +2043,9 @@ plot_ly(model_eval, y = ~error_rf, type = "box", name = "RF Error") %>%
 
 The box plot shows that the RF model has a tighter error distribution around zero, with fewer extreme outliers, indicating more consistent predictions. 
 
-In comparison, the gwRF model has a wider spread with more outliers, suggesting higher variability and larger errors in certain cases. Overall, RF appears to provide more stable predictions.
+In comparison, the gwRF model has a wider spread with more outliers, suggesting higher variability and larger errors in certain cases. 
+
+**Overall, RF appears to provide more stable predictions.**
 
 :::
 
@@ -2044,8 +2066,8 @@ error_extremes_df
 
 ::: callout-note
 **Observations**
-It is interesting to observe that both the minimum errors for the RF and gwRF models occur with the same flat in Clementi.
 
+It is interesting to observe that both the minimum errors for the RF and gwRF models occur with the same flat in Clementi.
 
 :::
 
@@ -2079,7 +2101,7 @@ tmap_arrange(error_rf, error_grf,
 ::: callout-note
 **Observations**
 
-Both maps show similar spatial error patterns for the RF and gwRF models. Slight differences in the error magnitudes can be observed, particularly with gwRF showing slightly higher error values in certain areas (Clementi North), as seen in the expanded scale on the right map. 
+Both maps show similar spatial error patterns for the RF and gwRF models. Slight differences in the error magnitudes can be observed, particularly with gwRF showing slightly higher error values in certain areas *(Clementi North)*, as seen in the expanded scale on the right map. 
 
 :::
 
