@@ -9,7 +9,7 @@ SMU ISSS626 Geospatial Analytics and Applications
     <img src="https://api.netlify.com/api/v1/badges/c8232a4a-8711-496d-87f7-5b900c9ec700/deploy-status" alt="Netlify Status" />
   </a>
   <img alt="Built with Quarto" src="https://img.shields.io/badge/built_with-quarto-69b1e9">
-  <img alt="Coursework Status" src="https://img.shields.io/badge/coursework-in_progress-e0ae24">
+  <img alt="Coursework Status" src="https://img.shields.io/badge/coursework-completed-e0ae24">
 </p>
 
 <p align="center">
